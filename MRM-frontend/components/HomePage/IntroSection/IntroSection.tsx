@@ -65,10 +65,10 @@ const IntroSection = () => (
           <Box
             sx={{
               position: "relative",
+              height: index === 1 || index === 2 ? 340 : 320,
               width: 200,
-              aspectRatio: ".6",
               transform: index === 1 || index === 2 ? "scale(0.9)" : "scale(1)",
-              borderRadius: "35px",
+              borderRadius: "50% / 30%",
               overflow: "hidden",
               display: "flex",
               alignItems: "flex-end",
@@ -78,8 +78,11 @@ const IntroSection = () => (
             <Image
               src={feature.image}
               alt={feature.title}
-              fill
-              style={{ objectFit: "cover" }}
+              layout="fill" // fill the container
+              objectFit="cover"
+              style={{
+                borderRadius: "50% / 30%",
+              }}
             />
             <Box
               sx={{

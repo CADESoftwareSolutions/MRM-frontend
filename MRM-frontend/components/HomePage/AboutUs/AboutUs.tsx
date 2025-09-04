@@ -84,7 +84,7 @@ const AboutUs = () => (
         {/* Left side categories */}
         <Grid component={"div"} size={{ xs: 12, md: 4 }}>
           {[
-            { title: "Exploration and Production", active: true },
+            { title: "Payment Management", active: true },
             { title: "Refining and Processing" },
             { title: "Transportation and Distribution" },
             { title: "Marketing and Sales" },
@@ -110,7 +110,6 @@ const AboutUs = () => (
           ))}
         </Grid>
 
-        {/* Right side main card */}
         <Grid component={"div"} size={{ xs: 12, md: 8 }}>
           <Paper
             sx={{
@@ -120,7 +119,7 @@ const AboutUs = () => (
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-              Exploration and Production
+              Payment Management
             </Typography>
             <Card
               sx={{
@@ -131,16 +130,16 @@ const AboutUs = () => (
             >
               <CardMedia
                 component="img"
-                image="/images/oilrig.png"
-                alt="Exploration and Production"
-                sx={{ width: "100%", height: 250, objectFit: "cover" }}
+                image="/images/HomePage/4.jpg"
+                alt="Payment Management"
+                sx={{ width: "100%", height: 250, objectFit: "contain" }}
               />
             </Card>
             <Typography sx={{ color: "text.secondary", mb: 1 }}>
-              The need for energy is universal. That's why ExxonMobil scientists
-              and engineers are pioneering new research and pursuing new
-              technologies to reduce emissions while creating more efficient
-              fuels.
+              Managing mineral rights and payments is a complex task. That's why
+              Pathway's software provides the easiest, most user-friendly access
+              on the market. We simplify everything from payment tracking to
+              compliance, giving you the clarity and control you need.
             </Typography>
             <Button variant="text" color="error">
               Start a free trial →
