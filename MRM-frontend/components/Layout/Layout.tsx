@@ -38,7 +38,8 @@ const Layout: React.FC<PropsWithChildren> = ({ children }) => (
     <CssBaseline />
     <div style={{ overflow: "hidden" }}>
       <Head>
-        <title>Drinkology</title>
+        <title>Pathway</title>
+        <link rel="icon" href="/images/homePage/logo.png" />
       </Head>
       <Header />
       <div>{children}</div>

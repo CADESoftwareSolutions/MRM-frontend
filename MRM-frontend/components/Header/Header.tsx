@@ -1,5 +1,5 @@
-// components/Header/Header.tsx
-import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material";
+import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import Image from "next/image";
 import Link from "next/link";
 
 const Header = () => {
@@ -13,15 +13,18 @@ const Header = () => {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        {/* ===== Logo ===== */}
         <Typography
           variant="h6"
           sx={{ fontWeight: 700, cursor: "pointer", color: "#fff" }}
         >
-          LOGO
+          <Image
+            src={"/images/homePage/logo.png"}
+            alt={"logo"}
+            width={120}
+            height={80}
+            style={{ objectFit: "cover" }}
+          />
         </Typography>
-
-        {/* ===== Nav Links ===== */}
         <Box sx={{ display: "flex", gap: 4 }}>
           {["Home", "Products", "Pricing", "Contact Us"].map((link) => (
             <Link
@@ -48,8 +51,6 @@ const Header = () => {
             </Link>
           ))}
         </Box>
-
-        {/* ===== Login Button ===== */}
         <Button
           variant="outlined"
           sx={{
