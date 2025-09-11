@@ -19,7 +19,7 @@ const Footer = () => (
       © {new Date().getFullYear()} Pathway. All rights reserved.
     </Typography>
 
-    <Box sx={{ display: "flex", gap: 4, mt: { xs: 2, sm: 0 } }}>
+    {/* <Box sx={{ display: "flex", gap: 4, mt: { xs: 2, sm: 0 } }}>
       {["Home", "Products", "Pricing", "Contact Us"].map((link) => (
         <Link
           key={link}
@@ -43,7 +43,7 @@ const Footer = () => (
           </Typography>
         </Link>
       ))}
-    </Box>
+    </Box> */}
   </Box>
 );
 

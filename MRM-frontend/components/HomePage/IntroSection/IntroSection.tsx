@@ -8,18 +8,18 @@ const homeImages = [
     offset: "-20px",
   },
   {
-    title: "Document Handling",
+    title: "Accounting & Revenue Management",
     image: "/images/homePage/homePageImage2.png",
     offset: "20px",
   },
   {
-    title: "Landowner Communication",
-    image: "/images/homePage/homePageImage3.png",
+    title: "Land & Mineral Management",
+    image: "/images/homePage/homePageImage3.jpg",
     offset: "20px",
   },
   {
-    title: "Reporting & Compliance",
-    image: "/images/homePage/homePageImage4.png",
+    title: "Reports",
+    image: "/images/homePage/homePageImage4.jpg",
     offset: "-20px",
   },
 ];
@@ -40,18 +40,16 @@ const IntroSection = () => (
     }}
   >
     <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
-      Smarter Solutions For{" "}
+      Smarter Solutions for{" "}
       <Box component="span" sx={{ color: "#e91e63" }}>
-        Landowner{" "}
+        Integrated{" "}
       </Box>
-      Relations
+      Software
     </Typography>
     <Typography variant="subtitle1" sx={{ mb: 4, maxWidth: 600 }}>
-      Designed for oil, gas, and mineral rights management — modern, reliable,
-      and built for growth.
+      Designed for land and accounting management - modern, reliable, and built
+      for growth
     </Typography>
-
-    {/* Hero Cards */}
     <Grid container spacing={4} justifyContent="center">
       {homeImages.map((feature, index) => (
         <Grid
@@ -78,7 +76,7 @@ const IntroSection = () => (
             <Image
               src={feature.image}
               alt={feature.title}
-              layout="fill" // fill the container
+              layout="fill"
               objectFit="cover"
               style={{
                 borderRadius: "50% / 30%",
