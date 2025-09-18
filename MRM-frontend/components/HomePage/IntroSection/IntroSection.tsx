@@ -3,22 +3,22 @@ import Image from "next/image";
 
 const homeImages = [
   {
-    title: "Payment Management",
+    title: "Accounting & Revenue Management",
     image: "/images/homePage/homePageImage1.png",
     offset: "-20px",
   },
   {
-    title: "Accounting & Revenue Management",
+    title: "Land & Mineral Management",
     image: "/images/homePage/homePageImage2.png",
     offset: "20px",
   },
   {
-    title: "Land & Mineral Management",
+    title: "Document Management",
     image: "/images/homePage/homePageImage3.jpg",
     offset: "20px",
   },
   {
-    title: "Reports",
+    title: "Reports Management",
     image: "/images/homePage/homePageImage4.jpg",
     offset: "-20px",
   },
@@ -47,7 +47,7 @@ const IntroSection = () => (
       Software
     </Typography>
     <Typography variant="subtitle1" sx={{ mb: 4, maxWidth: 600 }}>
-      Designed for land and accounting management - modern, reliable, and built
+      Designed for Accounting and Land Management - modern, reliable and built
       for growth
     </Typography>
     <Grid container spacing={4} justifyContent="center">

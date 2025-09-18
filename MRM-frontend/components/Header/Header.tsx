@@ -26,14 +26,10 @@ const Header = () => {
           />
         </Typography>
         <Box sx={{ display: "flex", gap: 4 }}>
-          {["Home", "Products", "Pricing", "Contact Us"].map((link) => (
+          {["Home", "Services", "Pricing", "Contact Us"].map((link) => (
             <Link
               key={link}
-              href={
-                link === "Home"
-                  ? "/"
-                  : `/${link.toLowerCase().replace(" ", "-")}`
-              }
+              href={link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`}
               passHref
               style={{ textDecoration: "none" }}
             >
