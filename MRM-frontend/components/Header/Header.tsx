@@ -17,13 +17,7 @@ const Header = () => {
           variant="h6"
           sx={{ fontWeight: 700, cursor: "pointer", color: "#fff" }}
         >
-          <Image
-            src={"/images/homePage/logo.png"}
-            alt={"logo"}
-            width={120}
-            height={80}
-            style={{ objectFit: "cover" }}
-          />
+          CADE Software Solutions
         </Typography>
         <Box sx={{ display: "flex", gap: 4 }}>
           {["Home", "Services", "Pricing", "Contact Us"].map((link) => (

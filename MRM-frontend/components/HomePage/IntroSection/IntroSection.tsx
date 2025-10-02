@@ -4,17 +4,17 @@ import Image from "next/image";
 const homeImages = [
   {
     title: "Accounting & Revenue Management",
-    image: "/images/homePage/homePageImage1.png",
+    image: "/images/homePage/homePageImage1.jpg",
     offset: "-20px",
   },
   {
     title: "Land & Mineral Management",
-    image: "/images/homePage/homePageImage2.png",
+    image: "/images/homePage/homePageImage2.jpg",
     offset: "20px",
   },
   {
     title: "Document Management",
-    image: "/images/homePage/homePageImage3.jpg",
+    image: "/images/homePage/homePageImage3.jpeg",
     offset: "20px",
   },
   {
@@ -85,12 +85,22 @@ const IntroSection = () => (
             <Box
               sx={{
                 position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
+              }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
                 bottom: 16,
                 left: "50%",
                 transform: "translateX(-50%)",
                 px: 2,
                 py: 0.5,
                 borderRadius: 1,
+                color: "#fff",
+                textAlign: "center",
               }}
             >
               <Typography variant="subtitle1" fontWeight={700}>

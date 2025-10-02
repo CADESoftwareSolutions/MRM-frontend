@@ -190,7 +190,12 @@ const AboutUs = () => {
                       component="img"
                       image={activeFeature.image}
                       alt={activeFeature.title}
-                      sx={{ width: "100%", height: 360, objectFit: "fill" }}
+                      sx={{
+                        width: "100%",
+                        height: 360,
+                        objectFit: "cover",
+                        borderRadius: 2,
+                      }}
                     />
                   </Card>
                   <Typography sx={{ color: "text.secondary", mb: 1 }}>
