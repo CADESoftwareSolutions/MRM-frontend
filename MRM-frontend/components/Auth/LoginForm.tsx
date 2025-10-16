@@ -46,7 +46,7 @@ const LoginForm: React.FC = () => {
 
       if (response.ok) {
         console.log("Login successful!", data);
-        router.push("/dashboard");
+        router.push("/Dashboard");
       } else {
         setError(data.message || "Invalid username or password.");
       }
