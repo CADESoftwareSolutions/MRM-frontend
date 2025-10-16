@@ -29,8 +29,8 @@ export const ourFeatures = [
     title: "Well and Division Order Management",
     description:
       "Take control of your assets, track ownership, monitor well performance and confirm your decimal interest with the built-in calculator",
-    image: "/images/features/deed-management.png",
-    active: false,
+    image: "/images/HomePage/wellAndDivision.png",
+    active: true,
   },
   {
     title: "Acquisition/Divestiture/Operator Management",
@@ -193,7 +193,7 @@ const AboutUs = () => {
                       sx={{
                         width: "100%",
                         height: 360,
-                        objectFit: "cover",
+                        objectFit: "contain",
                         borderRadius: 2,
                       }}
                     />

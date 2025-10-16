@@ -1,5 +1,4 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
-import Image from "next/image";
 import Link from "next/link";
 
 const Header = () => {
@@ -17,7 +16,7 @@ const Header = () => {
           variant="h6"
           sx={{ fontWeight: 700, cursor: "pointer", color: "#fff" }}
         >
-          CADE Software Solutions
+          CADE Solutions
         </Typography>
         <Box sx={{ display: "flex", gap: 4 }}>
           {["Home", "Services", "Pricing", "Contact Us"].map((link) => (
@@ -41,19 +40,21 @@ const Header = () => {
             </Link>
           ))}
         </Box>
-        <Button
-          variant="outlined"
-          sx={{
-            color: "#fff",
-            borderColor: "#fff",
-            "&:hover": {
-              borderColor: "#e91e63",
-              color: "#e91e63",
-            },
-          }}
-        >
-          Login
-        </Button>
+        <Link href={"/Login/Login"} passHref style={{ textDecoration: "none" }}>
+          <Button
+            variant="outlined"
+            sx={{
+              color: "#fff",
+              borderColor: "#fff",
+              "&:hover": {
+                borderColor: "#e91e63",
+                color: "#e91e63",
+              },
+            }}
+          >
+            Login
+          </Button>
+        </Link>
       </Toolbar>
     </AppBar>
   );
