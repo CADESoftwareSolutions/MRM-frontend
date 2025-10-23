@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Box, TextField, Button, Typography } from "@mui/material";
+import { Box, TextField, Button, Typography, Card } from "@mui/material";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 const CreateAccountForm: React.FC = () => {
   const router = useRouter();
@@ -38,34 +39,46 @@ const CreateAccountForm: React.FC = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleCreateAccount} sx={{ mt: 1 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Create Account
-      </Typography>
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        label="Username"
-        name="username"
-        value={formData.username}
-        onChange={handleInputChange}
-      />
+    <Card sx={{ p: 2 }} elevation={2}>
+      <Box component="form" onSubmit={handleCreateAccount} sx={{ mt: 1 }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Create Account
+        </Typography>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          label="Username"
+          name="username"
+          value={formData.username}
+          onChange={handleInputChange}
+        />
 
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        type="password"
-        label="Password"
-        name="password"
-        value={formData.password}
-        onChange={handleInputChange}
-      />
-      <Button type="submit" fullWidth variant="contained" sx={{ mt: 3 }}>
-        Create Account
-      </Button>
-    </Box>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          type="password"
+          label="Password"
+          name="password"
+          value={formData.password}
+          onChange={handleInputChange}
+        />
+        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3 }}>
+          Create Account
+        </Button>
+        <Button
+          component={Link}
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3 }}
+          href="/Login/Login"
+          color="secondary"
+        >
+          Already have an account?
+        </Button>
+      </Box>
+    </Card>
   );
 };
 
