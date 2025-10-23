@@ -59,7 +59,7 @@ const ContactUs = () => {
                   component="span"
                   sx={{ color: "#e91e63", fontWeight: 600 }}
                 >
-                  support@pathway.com
+                  support@CADE.com
                 </Box>
               </Typography>
 

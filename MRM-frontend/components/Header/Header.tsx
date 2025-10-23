@@ -1,7 +1,9 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
+  const pathname = usePathname();
   return (
     <AppBar
       position="sticky"
@@ -19,26 +21,29 @@ const Header = () => {
           CADE Solutions
         </Typography>
         <Box sx={{ display: "flex", gap: 4 }}>
-          {["Home", "Services", "Pricing", "Contact Us"].map((link) => (
-            <Link
-              key={link}
-              href={link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`}
-              passHref
-              style={{ textDecoration: "none" }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#fff",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  "&:hover": { color: "#e91e63" },
-                }}
+          {["Home", "Services", "Pricing", "Contact Us"].map((link) => {
+            const href = link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`;
+            return (
+              <Link
+                key={link}
+                href={href}
+                passHref
+                style={{ textDecoration: "none" }}
               >
-                {link}
-              </Typography>
-            </Link>
-          ))}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: pathname !== href ? "#fff" : "#e91e63",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    "&:hover": { color: "#e91e63" },
+                  }}
+                >
+                  {link}
+                </Typography>
+              </Link>
+            );
+          })}
         </Box>
         <Link href={"/Login/Login"} passHref style={{ textDecoration: "none" }}>
           <Button

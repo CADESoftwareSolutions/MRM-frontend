@@ -22,7 +22,7 @@ export const ourFeatures = [
     title: "Deed, Lease and Surface Management",
     description:
       "Provide a comprehensive view of deeds, leases and surface ownership",
-    image: "/images/features/well-management.png",
+    image: "/images/HomePage/deed.jpg",
     active: false,
   },
   {
@@ -36,28 +36,28 @@ export const ourFeatures = [
     title: "Acquisition/Divestiture/Operator Management",
     description:
       "Track changes in property ownership, operators and purchasers through a single, integrated system",
-    image: "/images/features/acquisition-management.png",
+    image: "/images/HomePage/oil-management.jpg",
     active: false,
   },
   {
     title: "Document Management/PDF Conversion",
     description:
       "Securely store documents and convert revenue check details to excel for easy analysis",
-    image: "/images/features/document-management.png",
+    image: "/images/HomePage/pdf.jpg",
     active: false,
   },
   {
     title: "Tax Management",
     description:
       "Streamline Ad Valorem tax analysis and year-end tax reporting",
-    image: "/images/features/tax-management.png",
+    image: "/images/HomePage/taxes.jpg",
     active: false,
   },
   {
     title: "Reports Management",
     description:
       "Access to a variety of reports, including the ability to create custom reports at the click of a button",
-    image: "/images/features/reports-management.png",
+    image: "/images/HomePage/homePageImage4.jpg",
     active: false,
   },
 ];
@@ -164,7 +164,7 @@ const AboutUs = () => {
             ))}
           </Grid>
 
-          <Grid component={"div"} size={{ xs: 12, md: 8 }}>
+          <Grid component={"div"} size={{ xs: 12, md: 7 }}>
             {ourFeatures
               .filter((f, index) => index === activeIndex)
               .map((activeFeature) => (
@@ -180,24 +180,45 @@ const AboutUs = () => {
                     {activeFeature.title}
                   </Typography>
                   <Card
+                    elevation={2}
                     sx={{
-                      borderRadius: 2,
+                      position: "relative",
+                      width: "100%",
+                      height: 280,
+                      borderRadius: 3,
                       overflow: "hidden",
-                      mb: 2,
+                      backgroundColor: "#f9fafb",
+                      mb: 3,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
-                    <CardMedia
-                      component="img"
-                      image={activeFeature.image}
-                      alt={activeFeature.title}
+                    <Box
                       sx={{
+                        p: 2,
                         width: "100%",
-                        height: 360,
-                        objectFit: "contain",
-                        borderRadius: 2,
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        boxSizing: "border-box",
                       }}
-                    />
+                    >
+                      <CardMedia
+                        component="img"
+                        image={activeFeature.image}
+                        alt={activeFeature.title}
+                        sx={{
+                          width: 320,
+                          height: 220,
+                          objectFit: "contain",
+                          borderRadius: 2,
+                        }}
+                      />
+                    </Box>
                   </Card>
+
                   <Typography sx={{ color: "text.secondary", mb: 1 }}>
                     {activeFeature.description}
                   </Typography>

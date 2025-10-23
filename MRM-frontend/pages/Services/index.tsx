@@ -56,14 +56,18 @@ const Services = () => (
                   borderRadius: 4,
                   overflow: "hidden",
                   boxShadow: 3,
+                  height: 330,
+                  position: "relative",
                 }}
               >
                 <Image
                   src={service.image}
                   alt={service.title}
-                  width={500}
-                  height={300}
-                  style={{ objectFit: "cover", width: "100%", height: "auto" }}
+                  fill
+                  style={{
+                    objectFit: "cover",
+                    objectPosition: "center",
+                  }}
                 />
               </Card>
             </Grid>

@@ -9,7 +9,7 @@ const homeImages = [
   },
   {
     title: "Land & Mineral Management",
-    image: "/images/homePage/Image2.png",
+    image: "/images/homePage/homePageImage2.png",
     offset: "20px",
   },
   {
