@@ -36,7 +36,7 @@ const theme = createTheme({
 const Layout: React.FC<PropsWithChildren> = ({ children }) => (
   <ThemeProvider theme={theme}>
     <CssBaseline />
-    <div style={{ overflow: "hidden" }}>
+    <div>
       <Head>
         <title>CADE</title>
         <link rel="icon" href="/images/homePage/logo.png" />

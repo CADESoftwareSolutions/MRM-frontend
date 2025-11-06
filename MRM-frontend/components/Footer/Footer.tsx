@@ -13,8 +13,6 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        background:
-          "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",

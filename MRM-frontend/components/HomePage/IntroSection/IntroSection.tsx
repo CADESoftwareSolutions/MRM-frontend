@@ -14,7 +14,7 @@ const homeImages = [
   },
   {
     title: "Document Management",
-    image: "/images/homePage/image.png",
+    image: "/images/homePage/homePageImage3.png",
     offset: "20px",
   },
   {

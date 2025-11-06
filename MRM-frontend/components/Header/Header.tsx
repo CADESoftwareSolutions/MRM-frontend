@@ -1,9 +1,20 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MouseEvent, useState } from "react";
+import ServicesDropDown from "./ServicesDropDown/ServicesDropDown";
 
 const Header = () => {
   const pathname = usePathname();
+  const [openServices, setOpenServices] = useState<boolean>(false);
+  const [headerAnchorEl, setHeaderAnchorEl] =
+    useState<HTMLButtonElement | null>(null);
+
+  const handleOpenServices = (e: MouseEvent<HTMLButtonElement>) => {
+    setHeaderAnchorEl(e.currentTarget);
+    setOpenServices(true);
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -20,9 +31,29 @@ const Header = () => {
         >
           CADE Solutions
         </Typography>
-        <Box sx={{ display: "flex", gap: 4 }}>
+        <Box sx={{ display: "flex", gap: 4, alignItems: "center" }}>
           {["Home", "Services", "Pricing", "Contact Us"].map((link) => {
             const href = link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`;
+            if (link === "Services") {
+              return (
+                <Button
+                  key={link}
+                  onClick={(e) => handleOpenServices(e)}
+                  variant="text"
+                  disableRipple
+                  sx={{
+                    color: "#fff",
+                    fontWeight: 500,
+                    textTransform: "none",
+                    textDecoration: "none",
+                    fontSize: 16,
+                    "&:hover": { color: "#e91e63", bgcolor: "transparent" },
+                  }}
+                >
+                  {link}
+                </Button>
+              );
+            }
             return (
               <Link
                 key={link}
@@ -61,6 +92,13 @@ const Header = () => {
           </Button>
         </Link>
       </Toolbar>
+      {openServices && (
+        <ServicesDropDown
+          openServices={openServices}
+          setOpenServices={setOpenServices}
+          headerAnchorEl={headerAnchorEl}
+        />
+      )}
     </AppBar>
   );
 };

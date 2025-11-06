@@ -7,7 +7,9 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
+import Image from "next/image";
 import { useState } from "react";
+import WaterDropIcon from "@mui/icons-material/WaterDrop";
 
 export const ourFeatures = [
   {
@@ -17,6 +19,8 @@ export const ourFeatures = [
     image: "/images/HomePage/revenueManagement.jpg",
 
     active: true,
+    path: "/pages/Services/TaxManagement",
+    slug: "accounting-management",
   },
   {
     title: "Deed, Lease and Surface Management",
@@ -24,6 +28,8 @@ export const ourFeatures = [
       "Provide a comprehensive view of deeds, leases and surface ownership",
     image: "/images/HomePage/deed.jpg",
     active: false,
+    path: "/pages/Services/TaxManagement",
+    slug: "deed-lease-surface-management",
   },
   {
     title: "Well and Division Order Management",
@@ -31,6 +37,8 @@ export const ourFeatures = [
       "Take control of your assets, track ownership, monitor well performance and confirm your decimal interest with the built-in calculator",
     image: "/images/HomePage/wellAndDivision.png",
     active: true,
+    path: "/pages/Services/TaxManagement",
+    slug: "well-division-order-management",
   },
   {
     title: "Acquisition/Divestiture/Operator Management",
@@ -38,6 +46,8 @@ export const ourFeatures = [
       "Track changes in property ownership, operators and purchasers through a single, integrated system",
     image: "/images/HomePage/oil-management.jpg",
     active: false,
+    path: "/pages/Services/TaxManagement",
+    slug: "acquisition-divestiture-management",
   },
   {
     title: "Document Management/PDF Conversion",
@@ -45,6 +55,8 @@ export const ourFeatures = [
       "Securely store documents and convert revenue check details to excel for easy analysis",
     image: "/images/HomePage/pdf.jpg",
     active: false,
+    path: "/pages/Services/TaxManagement",
+    slug: "document-management",
   },
   {
     title: "Tax Management",
@@ -52,6 +64,8 @@ export const ourFeatures = [
       "Streamline Ad Valorem tax analysis and year-end tax reporting",
     image: "/images/HomePage/taxes.jpg",
     active: false,
+    path: "/pages/Services/TaxManagement",
+    slug: "tax-management",
   },
   {
     title: "Reports Management",
@@ -59,6 +73,8 @@ export const ourFeatures = [
       "Access to a variety of reports, including the ability to create custom reports at the click of a button",
     image: "/images/HomePage/homePageImage4.jpg",
     active: false,
+    path: "/pages/Services/TaxManagement",
+    slug: "reports-management",
   },
 ];
 
@@ -74,21 +90,28 @@ const AboutUs = () => {
       }}
     >
       <Grid container spacing={6} alignItems="center" sx={{ mb: 12 }}>
-        <Grid component={"div"} size={{ xs: 12, md: 6 }}>
+        <Grid>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
             Who we are
           </Typography>
           <Typography sx={{ mb: 2, color: "text.secondary" }}>
-            At Cade Software Solutions, we simplify the complex world of mineral
+            At CADE Solutions, we simplify the complex world of mineral
             management. Backed by over 95 years of combined experience in oil,
             gas and software development, our team is committed in delivering
             quality and proven results. Our platform streamlines revenue
             tracking, as well as lease, surface and document management so you
             can focus on what matters most.
           </Typography>
-          <Typography sx={{ mb: 3, color: "text.secondary" }}>
-            Cade makes the process clear and straightforward and brings clarity,
-            trust and simplifies the process.
+          <Typography sx={{ mb: 2, color: "text.secondary" }}>
+            <WaterDropIcon /> CADE brings clarity and makes the process
+            straightforward.
+          </Typography>
+          <Typography sx={{ mb: 2, color: "text.secondary" }}>
+            <WaterDropIcon /> CADE delivers trusted, accurate results.
+          </Typography>
+          <Typography sx={{ mb: 2, color: "text.secondary" }}>
+            <WaterDropIcon /> CADE simplifies the process of managing your
+            minerals.
           </Typography>
         </Grid>
 
@@ -138,8 +161,21 @@ const AboutUs = () => {
         >
           Take control of your Assets
         </Typography>
-        <Grid container spacing={4}>
-          <Grid component={"div"} size={{ xs: 12, md: 4 }}>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 4,
+          }}
+        >
+          <Box
+            component="div"
+            sx={{
+              width: { xs: "100%", md: "40%" },
+              flexShrink: 0,
+            }}
+          >
             {ourFeatures.map((feature, index) => (
               <Paper
                 key={feature.title}
@@ -154,7 +190,7 @@ const AboutUs = () => {
                       : "1px solid #e5e7eb",
                   backgroundColor: index === activeIndex ? "#f0fdf4" : "white",
                   cursor: "pointer",
-                  "&:hover": { boxShadow: 2 },
+                  "&:hover": { boxShadow: 4 },
                 }}
               >
                 <Typography sx={{ fontWeight: 600 }}>
@@ -162,9 +198,15 @@ const AboutUs = () => {
                 </Typography>
               </Paper>
             ))}
-          </Grid>
+          </Box>
 
-          <Grid component={"div"} size={{ xs: 12, md: 7 }}>
+          <Box
+            component="div"
+            sx={{
+              width: { xs: "100%", md: "66.6666%", lg: "33%" },
+              flexGrow: 1,
+            }}
+          >
             {ourFeatures
               .filter((f, index) => index === activeIndex)
               .map((activeFeature) => (
@@ -179,53 +221,32 @@ const AboutUs = () => {
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                     {activeFeature.title}
                   </Typography>
-                  <Card
-                    elevation={2}
+
+                  <Box
                     sx={{
                       position: "relative",
                       width: "100%",
-                      height: 280,
+                      height: 350,
                       borderRadius: 3,
                       overflow: "hidden",
                       backgroundColor: "#f9fafb",
                       mb: 3,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
                     }}
                   >
-                    <Box
-                      sx={{
-                        p: 2,
-                        width: "100%",
-                        height: "100%",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        boxSizing: "border-box",
-                      }}
-                    >
-                      <CardMedia
-                        component="img"
-                        image={activeFeature.image}
-                        alt={activeFeature.title}
-                        sx={{
-                          width: 320,
-                          height: 220,
-                          objectFit: "contain",
-                          borderRadius: 2,
-                        }}
-                      />
-                    </Box>
-                  </Card>
+                    <Image
+                      src={activeFeature.image}
+                      alt={activeFeature.title}
+                      fill={true}
+                    />
+                  </Box>
 
                   <Typography sx={{ color: "text.secondary", mb: 1 }}>
                     {activeFeature.description}
                   </Typography>
                 </Paper>
               ))}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );
