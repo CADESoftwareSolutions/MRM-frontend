@@ -89,7 +89,7 @@ const AboutUs = () => {
         background: "linear-gradient(to bottom right, #ffffff, #f3e8ff)",
       }}
     >
-      <Grid container spacing={6} alignItems="center" sx={{ mb: 12 }}>
+      <Grid container spacing={2} alignItems="center" sx={{ mb: 12 }}>
         <Grid>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
             Who we are
