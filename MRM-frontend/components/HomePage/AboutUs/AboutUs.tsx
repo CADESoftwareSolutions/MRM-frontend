@@ -89,8 +89,8 @@ const AboutUs = () => {
         background: "linear-gradient(to bottom right, #ffffff, #f3e8ff)",
       }}
     >
-      <Grid container spacing={2} alignItems="center" sx={{ mb: 12 }}>
-        <Grid>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 6, md: 6 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
             Who we are
           </Typography>
@@ -102,53 +102,73 @@ const AboutUs = () => {
             tracking, as well as lease, surface and document management so you
             can focus on what matters most.
           </Typography>
-          <Typography sx={{ mb: 2, color: "text.secondary" }}>
-            <WaterDropIcon /> CADE brings clarity and makes the process
-            straightforward.
+          <Typography
+            sx={{
+              mb: 2,
+              color: "text.secondary",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <WaterDropIcon sx={{ mr: "8px" }} />
+            CADE brings clarity and makes the process straightforward.
           </Typography>
-          <Typography sx={{ mb: 2, color: "text.secondary" }}>
-            <WaterDropIcon /> CADE delivers trusted, accurate results.
+          <Typography
+            sx={{
+              mb: 2,
+              color: "text.secondary",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <WaterDropIcon sx={{ mr: "8px" }} /> CADE delivers trusted, accurate
+            results.
           </Typography>
-          <Typography sx={{ mb: 2, color: "text.secondary" }}>
-            <WaterDropIcon /> CADE simplifies the process of managing your
-            minerals.
+          <Typography
+            sx={{
+              mb: 2,
+              color: "text.secondary",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <WaterDropIcon sx={{ mr: "8px" }} /> CADE simplifies the process of
+            managing your minerals.
           </Typography>
         </Grid>
 
-        <Grid component={"div"} size={{ xs: 12, md: 6 }}>
-          <Grid container spacing={2}>
-            {[
-              "/images/HomePage/1.png",
-              "/images/HomePage/2.jpg",
-              "/images/HomePage/3.jpg",
-              "/images/HomePage/4.jpg",
-            ].map((img, index) => (
-              <Grid
-                component={"div"}
-                size={{ xs: 6 }}
-                key={index}
+        <Grid container spacing={2} size={{ xs: 6, md: 6 }}>
+          {[
+            "/images/HomePage/1.png",
+            "/images/HomePage/2.jpg",
+            "/images/HomePage/3.jpg",
+            "/images/HomePage/4.jpg",
+          ].map((img, index) => (
+            <Grid
+              component={"div"}
+              key={index}
+              size={6}
+              sx={{
+                mt: index % 2 === 1 ? 4 : 0,
+              }}
+            >
+              <Card
+                elevation={0}
                 sx={{
-                  mt: index % 2 === 1 ? 4 : 0,
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  boxShadow: "0px 2px 10px rgba(0,0,0,0.1)",
                 }}
               >
-                <Card
-                  elevation={0}
-                  sx={{
-                    borderRadius: 2,
-                    overflow: "hidden",
-                    boxShadow: "0px 2px 10px rgba(0,0,0,0.1)",
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    image={img}
-                    alt={`Team ${index + 1}`}
-                    sx={{ width: "100%", height: 220, objectFit: "cover" }}
-                  />
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                <CardMedia
+                  component="img"
+                  image={img}
+                  alt={`Team ${index + 1}`}
+                  sx={{ width: "100%", height: 220, objectFit: "cover" }}
+                />
+              </Card>
+            </Grid>
+          ))}
         </Grid>
       </Grid>
       <Box>
@@ -172,7 +192,7 @@ const AboutUs = () => {
           <Box
             component="div"
             sx={{
-              width: { xs: "100%", md: "40%" },
+              width: { xs: "100%", md: "45%" },
               flexShrink: 0,
             }}
           >
@@ -203,47 +223,77 @@ const AboutUs = () => {
           <Box
             component="div"
             sx={{
-              width: { xs: "100%", md: "66.6666%", lg: "33%" },
-              flexGrow: 1,
+              display: "flex",
+              width: 800,
+              background: "linear-gradient(to bottom right, #f5f6fa, #f0f4ff)",
             }}
           >
             {ourFeatures
               .filter((f, index) => index === activeIndex)
               .map((activeFeature) => (
-                <Paper
-                  key={activeFeature.title}
+                <Card
+                  key={activeFeature.slug}
+                  elevation={5}
                   sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                    borderRadius: 4,
+                    p: { xs: 1, md: 5 },
+                    backgroundColor: "#ffffff",
+                    boxShadow:
+                      "0 10px 30px rgba(99, 102, 241, 0.25), 0 4px 12px rgba(0,0,0,0.08)",
+                    display: "flex",
+                    height: 575,
+                    width: "100%",
+
+                    flexDirection: "column",
                   }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                    {activeFeature.title}
-                  </Typography>
-
-                  <Box
-                    sx={{
-                      position: "relative",
-                      width: "100%",
-                      height: 350,
-                      borderRadius: 3,
-                      overflow: "hidden",
-                      backgroundColor: "#f9fafb",
-                      mb: 3,
-                    }}
-                  >
-                    <Image
-                      src={activeFeature.image}
-                      alt={activeFeature.title}
-                      fill={true}
-                    />
+                  <Box sx={{ textAlign: "left", mb: 2 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1e1e1e",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      {activeFeature.title}
+                    </Typography>
                   </Box>
+                  <Grid component="div" size={{ xs: 6, md: 12 }}>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        borderRadius: 3,
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                        width: "100%",
+                        mb: 2,
+                      }}
+                    >
+                      <Image
+                        src={activeFeature.image}
+                        alt={activeFeature.title}
+                        width={800}
+                        height={400}
+                        style={{
+                          objectFit: "cover",
+                          display: "block",
+                          aspectRatio: "1/1",
+                        }}
+                      />
+                    </Box>
 
-                  <Typography sx={{ color: "text.secondary", mb: 1 }}>
-                    {activeFeature.description}
-                  </Typography>
-                </Paper>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: "#555",
+                        fontSize: "1.05rem",
+                        textAlign: "left",
+                      }}
+                    >
+                      {activeFeature.description}
+                    </Typography>
+                  </Grid>
+                </Card>
               ))}
           </Box>
         </Box>
