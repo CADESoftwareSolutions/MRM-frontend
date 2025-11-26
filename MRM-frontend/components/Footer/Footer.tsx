@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography } from "@mui/material";
 import Link from "next/link";
 
 const Footer = () => {
@@ -10,44 +9,29 @@ const Footer = () => {
   }, []);
 
   return (
-    <Box
-      component="footer"
-      sx={{
+    <footer
+      className="flex flex-wrap items-center justify-between px-8 py-4"
+      style={{
         background:
           "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "16px 32px",
-        flexWrap: "wrap",
       }}
     >
-      <Typography variant="body2" sx={{ color: "#fff" }}>
+      <p className="text-sm text-white">
         © {year ?? ""} Cade. All rights reserved.
-      </Typography>
+      </p>
 
-      <Box sx={{ display: "flex", gap: 4, mt: { xs: 2, sm: 0 } }}>
+      <nav className="mt-2 flex gap-8 sm:mt-0">
         {["Home", "Services", "Pricing", "Contact Us"].map((link) => (
           <Link
             key={link}
-            style={{ textDecoration: "none" }}
             href={link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`}
+            className="cursor-pointer font-medium text-white no-underline transition-colors hover:text-[#e91e63]"
           >
-            <Typography
-              component="span"
-              sx={{
-                color: "#fff",
-                fontWeight: 500,
-                cursor: "pointer",
-                "&:hover": { color: "#e91e63" },
-              }}
-            >
-              {link}
-            </Typography>
+            {link}
           </Link>
         ))}
-      </Box>
-    </Box>
+      </nav>
+    </footer>
   );
 };
 

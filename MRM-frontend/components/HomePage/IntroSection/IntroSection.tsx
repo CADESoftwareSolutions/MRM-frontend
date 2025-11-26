@@ -1,5 +1,5 @@
-import { Box, Grid, Typography } from "@mui/material";
 import Image from "next/image";
+import React from "react";
 
 const homeImages = [
   {
@@ -25,52 +25,35 @@ const homeImages = [
 ];
 
 const IntroSection = () => (
-  <Box
-    sx={{
-      minHeight: "90vh",
+  <div
+    className="flex min-h-screen flex-col items-center justify-center px-4 py-12 text-center"
+    style={{
       background:
         "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
-      color: "#fff",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      textAlign: "center",
-      px: 2,
     }}
   >
-    <Typography variant="h2" sx={{ fontWeight: 700, mb: 2 }}>
-      Smarter Solutions for{" "}
-      <Box component="span" sx={{ color: "#e91e63" }}>
-        Integrated{" "}
-      </Box>
+    <h1 className="mb-4 max-w-5xl text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+      Smarter Solutions for <span style={{ color: "#e91e63" }}>Integrated</span>{" "}
       Software
-    </Typography>
-    <Typography variant="subtitle1" sx={{ mb: 4, maxWidth: 600 }}>
+    </h1>
+    <p className="mb-12 max-w-2xl text-base text-white opacity-90 md:text-lg">
       Designed for Accounting and Land Management - modern, reliable and built
       for growth
-    </Typography>
-    <Grid container spacing={4} justifyContent="center">
+    </p>
+    <div className="flex max-w-7xl items-center justify-center gap-6 lg:gap-8">
       {homeImages.map((feature, index) => (
-        <Grid
+        <div
           key={feature.title}
-          sx={{
+          style={{
             transform: `translateY(${feature.offset})`,
-            display: "flex",
-            justifyContent: "center",
           }}
         >
-          <Box
-            sx={{
-              position: "relative",
-              height: index === 1 || index === 2 ? 340 : 320,
-              width: 200,
-              transform: index === 1 || index === 2 ? "scale(0.9)" : "scale(1)",
+          <div
+            className="relative flex items-end justify-center overflow-hidden"
+            style={{
+              height: index === 1 || index === 2 ? "340px" : "320px",
+              width: index === 1 || index === 2 ? "200px" : "200px",
               borderRadius: "50% / 30%",
-              overflow: "hidden",
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
             }}
           >
             <Image
@@ -82,36 +65,23 @@ const IntroSection = () => (
                 borderRadius: "50% / 30%",
               }}
             />
-            <Box
-              sx={{
-                position: "absolute",
-                inset: 0,
+            <div
+              className="absolute inset-0"
+              style={{
                 background:
                   "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.1))",
               }}
             />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 16,
-                left: "50%",
-                transform: "translateX(-50%)",
-                px: 2,
-                py: 0.5,
-                borderRadius: 1,
-                color: "#fff",
-                textAlign: "center",
-              }}
-            >
-              <Typography variant="subtitle1" fontWeight={700}>
+            <div className="absolute bottom-4 left-1/2 w-[90%] -translate-x-1/2 px-4 py-1 text-center text-white">
+              <p className="text-base font-bold leading-tight">
                 {feature.title}
-              </Typography>
-            </Box>
-          </Box>
-        </Grid>
+              </p>
+            </div>
+          </div>
+        </div>
       ))}
-    </Grid>
-  </Box>
+    </div>
+  </div>
 );
 
 export default IntroSection;

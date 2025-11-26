@@ -1,32 +1,36 @@
 import React, { useState } from "react";
-import {
-  Box,
-  AppBar,
-  Toolbar,
-  Typography,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  Avatar,
-  Tooltip,
-  CssBaseline,
-  Menu,
-  MenuItem,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import DescriptionIcon from "@mui/icons-material/Description";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import PaymentIcon from "@mui/icons-material/Payment";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LogoutIcon from "@mui/icons-material/Logout";
 import { useRouter } from "next/router";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Menu,
+  ChevronDown,
+  ChevronUp,
+  CheckSquare,
+  FileText,
+  CreditCard,
+  BarChart3,
+  Settings,
+  LogOut,
+  User,
+} from "lucide-react";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
@@ -37,22 +41,10 @@ const DashboardPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openList, setOpenList] = useState(true);
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const menuOpen = Boolean(anchorEl);
-
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
   const toggleList = () => setOpenList((prev) => !prev);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleLogout = async () => {
-    handleMenuClose();
     try {
       const response = await fetch("http://localhost:5000/logout", {
         method: "POST",
@@ -60,11 +52,9 @@ const DashboardPage: React.FC = () => {
           "Content-Type": "application/json",
         },
       });
-      console.log(response, "--");
 
       const data = await response.json();
 
-      console.log("Logout Successful!", data);
       if (response.ok) {
         console.log("Logout Successful!", data);
         router.push("/");
@@ -75,164 +65,174 @@ const DashboardPage: React.FC = () => {
   };
 
   const menuItems = [
-    { text: "Checks", icon: <CheckBoxIcon /> },
-    { text: "Documents", icon: <DescriptionIcon /> },
-    { text: "Payments", icon: <PaymentIcon /> },
-    { text: "Reports", icon: <BarChartIcon /> },
-    { text: "Settings", icon: <SettingsIcon /> },
+    { text: "Checks", icon: CheckSquare },
+    { text: "Documents", icon: FileText },
+    { text: "Payments", icon: CreditCard },
+    { text: "Reports", icon: BarChart3 },
+    { text: "Settings", icon: Settings },
   ];
 
-  const sidebarItemStyle = {
-    color: "#fff",
-    minWidth: 0,
-    mr: sidebarOpen ? 2 : "auto",
-    justifyContent: "center",
-  };
-
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
+    <div
+      className="flex min-h-screen text-white"
+      style={{
         background:
           "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
-        color: "#fff",
       }}
     >
-      <CssBaseline />
-
-      <Box
-        sx={{
-          width: sidebarOpen ? fullWidth : collapsedWidth,
-          flexShrink: 0,
-          position: "fixed",
-          height: "100vh",
+      {/* Sidebar */}
+      <aside
+        className="fixed flex h-screen flex-col bg-black/70 transition-all duration-300"
+        style={{
+          width: sidebarOpen ? `${fullWidth}px` : `${collapsedWidth}px`,
           zIndex: 1300,
-          bgcolor: "rgba(0, 0, 0, 0.7)",
-          transition: "width 0.3s",
-          display: "flex",
-          flexDirection: "column",
         }}
       >
-        <Toolbar sx={{ justifyContent: sidebarOpen ? "flex-end" : "center" }}>
-          <IconButton onClick={toggleSidebar} sx={{ color: "#fff" }}>
-            <MenuIcon />
-          </IconButton>
-        </Toolbar>
+        {/* Sidebar Header */}
+        <div
+          className="flex items-center px-4"
+          style={{
+            height: `${appBarHeight}px`,
+            justifyContent: sidebarOpen ? "flex-end" : "center",
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="text-white hover:bg-white/10"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
 
-        <List sx={{ px: 1 }}>
-          <ListItemButton onClick={toggleList}>
-            <ListItemIcon sx={sidebarItemStyle}>
-              {openList ? <ExpandLess /> : <ExpandMore />}
-            </ListItemIcon>
-            <Tooltip title={!sidebarOpen ? "Pages" : ""} placement="right">
-              {sidebarOpen && <ListItemText primary="Pages" />}
-            </Tooltip>
-          </ListItemButton>
-
-          <Collapse in={openList} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {menuItems.map((item) => (
-                <Tooltip
-                  key={item.text}
-                  title={!sidebarOpen ? item.text : ""}
-                  placement="right"
+        {/* Sidebar Menu */}
+        <nav className="px-2">
+          <TooltipProvider>
+            <Collapsible open={openList} onOpenChange={setOpenList}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-white hover:bg-white/10"
+                  style={{
+                    justifyContent: sidebarOpen ? "flex-start" : "center",
+                    padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
+                  }}
                 >
-                  <ListItemButton
-                    sx={{
-                      pl: sidebarOpen ? 4 : 0,
-                      justifyContent: sidebarOpen ? "flex-start" : "center",
-                      "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+                  <div
+                    className="flex items-center"
+                    style={{
+                      minWidth: 0,
+                      marginRight: sidebarOpen ? "0.5rem" : "auto",
+                      justifyContent: "center",
                     }}
                   >
-                    <ListItemIcon sx={sidebarItemStyle}>
-                      {item.icon}
-                    </ListItemIcon>
-                    {sidebarOpen && <ListItemText primary={item.text} />}
-                  </ListItemButton>
-                </Tooltip>
-              ))}
-            </List>
-          </Collapse>
-        </List>
-      </Box>
+                    {openList ? (
+                      <ChevronUp className="h-5 w-5" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5" />
+                    )}
+                  </div>
+                  {sidebarOpen && <span>Pages</span>}
+                </Button>
+              </CollapsibleTrigger>
 
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          minHeight: "100vh",
-          width: "100%",
-          marginLeft: collapsedWidth,
-          transition: "margin-left 0.3s ease",
+              <CollapsibleContent className="space-y-1">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const button = (
+                    <Button
+                      key={item.text}
+                      variant="ghost"
+                      className="w-full text-white transition-colors hover:bg-white/10"
+                      style={{
+                        paddingLeft: sidebarOpen ? "2rem" : "0.5rem",
+                        justifyContent: sidebarOpen ? "flex-start" : "center",
+                      }}
+                    >
+                      <div
+                        className="flex items-center"
+                        style={{
+                          minWidth: 0,
+                          marginRight: sidebarOpen ? "0.5rem" : "auto",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      {sidebarOpen && <span>{item.text}</span>}
+                    </Button>
+                  );
+
+                  if (!sidebarOpen) {
+                    return (
+                      <Tooltip key={item.text}>
+                        <TooltipTrigger asChild>{button}</TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.text}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+
+                  return button;
+                })}
+              </CollapsibleContent>
+            </Collapsible>
+          </TooltipProvider>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main
+        className="min-h-screen w-full transition-all duration-300"
+        style={{
+          marginLeft: `${collapsedWidth}px`,
         }}
       >
-        <AppBar
-          position="fixed"
-          sx={{
+        {/* Top App Bar */}
+        <header
+          className="fixed z-[1100] flex items-center justify-end bg-black/30 px-6 shadow-none transition-all duration-300"
+          style={{
             width: `calc(100% - ${collapsedWidth}px)`,
-            marginLeft: collapsedWidth,
-            bgcolor: "rgba(0, 0, 0, 0.3)",
-            boxShadow: "none",
-            transition: "width 0.3s, margin-left 0.3s",
-            zIndex: 1100,
+            marginLeft: `${collapsedWidth}px`,
+            height: `${appBarHeight}px`,
           }}
         >
-          <Toolbar sx={{ justifyContent: "flex-end" }}>
-            <IconButton
-              onClick={handleMenuOpen}
-              size="large"
-              aria-controls={menuOpen ? "account-menu" : undefined}
-              aria-haspopup="true"
-              aria-expanded={menuOpen ? "true" : undefined}
-              sx={{ p: 0 }}
-            >
-              <Avatar sx={{ bgcolor: "#6a0dad" }}>
-                <AccountCircleIcon />
-              </Avatar>
-            </IconButton>
-          </Toolbar>
-        </AppBar>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full p-0"
+              >
+                <Avatar className="h-10 w-10 bg-purple-600">
+                  <AvatarFallback className="bg-purple-600 text-white">
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
 
-        <Menu
-          anchorEl={anchorEl}
-          id="account-menu"
-          open={menuOpen}
-          onClose={handleMenuClose}
-          onClick={handleMenuClose}
-          PaperProps={{
-            elevation: 0,
-            sx: {
-              overflow: "visible",
-              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-              mt: 1.5,
-              "& .MuiAvatar-root": {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
-            },
-          }}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        >
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon fontSize="small" />
-            </ListItemIcon>
-            Logout
-          </MenuItem>
-        </Menu>
-
-        <Box sx={{ p: 3, marginTop: `${appBarHeight}px` }}>
-          <Typography variant="h4">Welcome to your dashboard! 👋</Typography>
-          <Typography sx={{ mt: 2 }}>
+        {/* Page Content */}
+        <div className="p-6" style={{ marginTop: `${appBarHeight}px` }}>
+          <h1 className="text-4xl font-bold">Welcome to your dashboard! 👋</h1>
+          <p className="mt-4 text-lg text-white/80">
             Interact with your data, upload PDFs, pay bills, and more.
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
+          </p>
+        </div>
+      </main>
+    </div>
   );
 };
 

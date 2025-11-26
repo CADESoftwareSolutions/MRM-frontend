@@ -1,105 +1,60 @@
-import {
-  Box,
-  Typography,
-  Container,
-  Grid,
-  Card,
-  CardMedia,
-} from "@mui/material";
+import { Card } from "@/components/ui/card";
 import Layout from "../../components/Layout/Layout";
+import Image from "next/image";
 
 const ContactUs = () => {
   return (
     <Layout>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
+      <section
+        className="flex min-h-screen items-center py-20"
+        style={{
           background:
             "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
-          py: 10,
         }}
       >
-        <Container maxWidth="lg">
-          <Grid container spacing={6} alignItems="center">
-            <Grid component={"div"} size={{ xs: 12, md: 6 }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 700,
-                  color: "#fff",
-                  mb: 3,
-                }}
-              >
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
+            {/* Left Column - Text Content */}
+            <div>
+              <h1 className="mb-6 text-5xl font-bold text-white">
                 Get in Touch
-              </Typography>
+              </h1>
 
-              <Typography
-                variant="h6"
-                sx={{
-                  color: "#d1c4e9",
-                  mb: 2,
-                }}
-              >
-                We’d love to hear from you! Whether you have a question,
+              <p className="mb-4 text-xl text-purple-200">
+                We'd love to hear from you! Whether you have a question,
                 feedback, or just want to say hello, our team is here.
-              </Typography>
+              </p>
 
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#fff",
-                  fontWeight: 500,
-                  mb: 1,
-                }}
-              >
+              <p className="mb-2 font-medium text-white">
                 📧 Email:{" "}
-                <Box
-                  component="span"
-                  sx={{ color: "#e91e63", fontWeight: 600 }}
-                >
+                <span className="font-semibold text-[#e91e63]">
                   support@CADE.com
-                </Box>
-              </Typography>
+                </span>
+              </p>
 
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "#fff",
-                  fontWeight: 500,
-                }}
-              >
+              <p className="font-medium text-white">
                 📞 Phone:{" "}
-                <Box
-                  component="span"
-                  sx={{ color: "#e91e63", fontWeight: 600 }}
-                >
+                <span className="font-semibold text-[#e91e63]">
                   (555) 123-4567
-                </Box>
-              </Typography>
-            </Grid>
+                </span>
+              </p>
+            </div>
 
-            <Grid component={"div"} size={{ xs: 12, md: 6 }}>
-              <Card
-                elevation={0}
-                sx={{
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  boxShadow: "0px 4px 20px rgba(0,0,0,0.3)",
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  image="/images/ContactUs/ContactUs.png"
+            {/* Right Column - Image */}
+            <div>
+              <Card className="overflow-hidden rounded-3xl shadow-2xl">
+                <Image
+                  src="/images/ContactUs/ContactUs.png"
                   alt="Contact Us"
-                  sx={{ height: 400, objectFit: "cover" }}
+                  className="h-[400px] w-full object-cover"
+                  width={200}
+                  height={200}
                 />
               </Card>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
+            </div>
+          </div>
+        </div>
+      </section>
     </Layout>
   );
 };

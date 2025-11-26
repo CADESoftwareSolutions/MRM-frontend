@@ -1,105 +1,76 @@
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MouseEvent, useState } from "react";
+import { Button } from "@/components/ui/button";
 import ServicesDropDown from "./ServicesDropDown/ServicesDropDown";
 
 const Header = () => {
   const pathname = usePathname();
-  const [openServices, setOpenServices] = useState<boolean>(false);
-  const [headerAnchorEl, setHeaderAnchorEl] =
-    useState<HTMLButtonElement | null>(null);
-
-  const handleOpenServices = (e: MouseEvent<HTMLButtonElement>) => {
-    setHeaderAnchorEl(e.currentTarget);
-    setOpenServices(true);
-  };
 
   return (
-    <AppBar
-      position="sticky"
-      elevation={0}
-      sx={{
+    <header
+      className="sticky top-0 z-50"
+      style={{
         background:
           "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
       }}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography
-          variant="h6"
-          sx={{ fontWeight: 700, cursor: "pointer", color: "#fff" }}
+      <nav className="flex items-center justify-between px-6 py-4">
+        <Link
+          href="/"
+          className="cursor-pointer text-xl font-bold text-white no-underline hover:text-white"
         >
           CADE Solutions
-        </Typography>
-        <Box sx={{ display: "flex", gap: 4, alignItems: "center" }}>
-          {["Home", "Services", "Pricing", "Contact Us"].map((link) => {
-            const href = link === "Home" ? "/" : `/${link.replace(/\s+/g, "")}`;
-            if (link === "Services") {
-              return (
-                <Button
-                  key={link}
-                  onClick={(e) => handleOpenServices(e)}
-                  variant="text"
-                  disableRipple
-                  sx={{
-                    color: "#fff",
-                    fontWeight: 500,
-                    textTransform: "none",
-                    textDecoration: "none",
-                    fontSize: 16,
-                    "&:hover": { color: "#e91e63", bgcolor: "transparent" },
-                  }}
-                >
-                  {link}
-                </Button>
-              );
+        </Link>
+
+        <div className="flex items-center gap-8">
+          <Link
+            href="/"
+            className={`text-base font-medium transition-colors no-underline
+            ${
+              pathname === "/"
+                ? "text-[#e91e63]"
+                : "text-white hover:text-[#e91e63]"
             }
-            return (
-              <Link
-                key={link}
-                href={href}
-                passHref
-                style={{ textDecoration: "none" }}
-              >
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: pathname !== href ? "#fff" : "#e91e63",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    "&:hover": { color: "#e91e63" },
-                  }}
-                >
-                  {link}
-                </Typography>
-              </Link>
-            );
-          })}
-        </Box>
-        <Link href={"/Login/Login"} passHref style={{ textDecoration: "none" }}>
+              `}
+          >
+            Home
+          </Link>
+          <ServicesDropDown />
+          <Link
+            href="/Pricing"
+            className={`text-base font-medium transition-colors no-underline
+            ${
+              pathname === "/Pricing"
+                ? "text-[#e91e63]"
+                : "text-white hover:text-[#e91e63]"
+            }
+              `}
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/ContactUs"
+            className={`text-base font-medium transition-colors no-underline
+            ${
+              pathname === "/ContactUs"
+                ? "text-[#e91e63]"
+                : "text-white hover:text-[#e91e63]"
+            }
+              `}
+          >
+            Contact Us
+          </Link>
+        </div>
+        <Link href="/Login/Login">
           <Button
-            variant="outlined"
-            sx={{
-              color: "#fff",
-              borderColor: "#fff",
-              "&:hover": {
-                borderColor: "#e91e63",
-                color: "#e91e63",
-              },
-            }}
+            variant="outline"
+            className="border-white bg-transparent text-white hover:border-[#e91e63] hover:bg-transparent hover:text-[#e91e63] cursor-pointer"
           >
             Login
           </Button>
         </Link>
-      </Toolbar>
-      {openServices && (
-        <ServicesDropDown
-          openServices={openServices}
-          setOpenServices={setOpenServices}
-          headerAnchorEl={headerAnchorEl}
-        />
-      )}
-    </AppBar>
+      </nav>
+    </header>
   );
 };
 

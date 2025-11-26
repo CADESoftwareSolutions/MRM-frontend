@@ -1,57 +1,43 @@
-import React, { Dispatch, SetStateAction } from "react";
-import { ourFeatures } from "../../HomePage/AboutUs/AboutUs";
-import { Box, Menu, MenuItem } from "@mui/material";
+import React from "react";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ourFeatures } from "../../HomePage/AboutUs/AboutUs";
 
-type ServicesDropDownProps = {
-  openServices: boolean;
-  setOpenServices: Dispatch<SetStateAction<boolean>>;
-  headerAnchorEl: HTMLButtonElement | null;
-};
-
-const ServicesDropDown: React.FC<ServicesDropDownProps> = ({
-  openServices,
-  setOpenServices,
-  headerAnchorEl,
-}) => {
-  const handleClose = () => {
-    setOpenServices(false);
-  };
-
+const ServicesDropDown = () => {
   return (
-    <Box>
-      <Menu
-        id="services-menu"
-        anchorEl={headerAnchorEl}
-        open={openServices}
-        disableScrollLock
-        onClose={handleClose}
-      >
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="text-base font-medium text-white transition-colors hover:text-[#e91e63]"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+          }}
+        >
+          Services
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[200px]">
         {ourFeatures.map((feature) => (
-          <MenuItem
-            key={feature.title}
-            component={Link}
-            href={`/Services/${feature.slug}`}
-            sx={{
-              justifyContent: "flex-start",
-              fontSize: ".9rem",
-              fontWeight: 600,
-              color: "#1c2e4a",
-              px: 2,
-              borderBottom: "1px solid #e5e7eb",
-              "&:last-of-type": {
-                borderBottom: "none",
-              },
-              "&:hover": { bgcolor: "#f0fdf4" },
-              whiteSpace: "normal",
-              lineHeight: 1.2,
-            }}
-          >
-            {feature.title}
-          </MenuItem>
+          <DropdownMenuItem key={feature.title} asChild>
+            <Link
+              href={`/Services/${feature.slug}`}
+              className="w-full cursor-pointer whitespace-normal border-b border-gray-200 px-4 py-3 text-sm font-semibold text-[#1c2e4a] no-underline hover:!bg-green-50 focus:!bg-green-50  last:border-b-0"
+              style={{ lineHeight: 1.2 }}
+            >
+              {feature.title}
+            </Link>
+          </DropdownMenuItem>
         ))}
-      </Menu>
-    </Box>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
