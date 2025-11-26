@@ -35,7 +35,23 @@ const Header = () => {
           >
             Home
           </Link>
-          <ServicesDropDown />
+          <div className="inline-flex items-center gap-1">
+            <Link
+              href="/Services"
+              className={`text-base font-medium transition-colors no-underline
+              ${
+                pathname === "/Services"
+                  ? "text-[#e91e63]"
+                  : "text-white hover:text-[#e91e63]"
+              }
+              `}
+            >
+              Services
+            </Link>
+            <div className="relative top-[3px] ">
+              <ServicesDropDown />
+            </div>
+          </div>
           <Link
             href="/Pricing"
             className={`text-base font-medium transition-colors no-underline

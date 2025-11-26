@@ -79,9 +79,7 @@ const AboutUs = () => {
         background: "linear-gradient(to bottom right, #ffffff, #f3e8ff)",
       }}
     >
-      {/* Who We Are Section */}
       <div className="mb-16 grid grid-cols-1 gap-8 md:grid-cols-2">
-        {/* Left Column - Text */}
         <div>
           <h2 className="mb-4 text-4xl font-bold">Who we are</h2>
 
@@ -107,8 +105,7 @@ const AboutUs = () => {
           </div>
         </div>
 
-        {/* Right Column - Images Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           {[
             "/images/HomePage/1.png",
             "/images/HomePage/2.jpg",
@@ -116,21 +113,16 @@ const AboutUs = () => {
             "/images/HomePage/4.jpg",
           ].map((img, index) => (
             <div key={index} className={index % 2 === 1 ? "mt-8" : ""}>
-              <Card className="overflow-hidden rounded-lg shadow-md border-0">
-                <Image
-                  src={img}
-                  alt={"image"}
-                  width={200}
-                  height={220}
-                  className="block aspect-square object-cover"
-                />
+              <Card className="overflow-hidden rounded-lg shadow-md border-0 p-0 h-[240px]">
+                <div className="relative w-full h-full">
+                  <Image src={img} alt="image" fill className="object-cover" />
+                </div>
               </Card>
             </div>
           ))}
         </div>
       </div>
 
-      {/* What We Do Section */}
       <div>
         <h2 className="mb-2 text-4xl font-bold">What we do</h2>
         <p className="mb-8 text-lg font-semibold text-red-600">
@@ -138,7 +130,6 @@ const AboutUs = () => {
         </p>
 
         <div className="flex flex-col gap-8 md:flex-row">
-          {/* Left Column - Feature List */}
           <div className="w-full flex-shrink-0 md:w-[45%]">
             {ourFeatures.map((feature, index) => (
               <Card
@@ -155,7 +146,6 @@ const AboutUs = () => {
             ))}
           </div>
 
-          {/* Right Column - Active Feature Detail */}
           <div
             className="flex w-full"
             style={{
@@ -167,28 +157,32 @@ const AboutUs = () => {
               .map((activeFeature) => (
                 <Card
                   key={activeFeature.slug}
-                  className="h-[575px] w-full rounded-2xl bg-white p-5 shadow-2xl md:p-10 border-0"
+                  className="h-[575px] w-full rounded-2xl bg-white p-0 shadow-2xl border-0"
                   style={{
                     boxShadow:
                       "0 10px 30px rgba(99, 102, 241, 0.25), 0 4px 12px rgba(0,0,0,0.08)",
                   }}
                 >
-                  <CardContent className="flex h-full flex-col p-0">
-                    <div className="mb-4 text-left">
+                  <CardContent className="flex h-full flex-col p-5 md:p-10">
+                    {/* Title */}
+                    <div className="mb-4 text-left flex-shrink-0">
                       <h3 className="text-2xl font-bold tracking-wide text-gray-900">
                         {activeFeature.title}
                       </h3>
                     </div>
-                    <div className="mb-4 overflow-hidden rounded-xl shadow-md">
+
+                    {/* Image fills remaining space */}
+                    <div className="mb-4 relative flex-1 w-full overflow-hidden rounded-xl shadow-md">
                       <Image
                         src={activeFeature.image}
                         alt={activeFeature.title}
-                        width={800}
-                        height={400}
-                        className="block aspect-square object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
-                    <p className="text-left text-lg text-gray-600">
+
+                    {/* Description */}
+                    <p className="text-left text-lg text-gray-600 flex-shrink-0">
                       {activeFeature.description}
                     </p>
                   </CardContent>

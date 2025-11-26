@@ -7,13 +7,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ourFeatures } from "../../HomePage/AboutUs/AboutUs";
-
+import { ChevronDown } from "lucide-react";
 const ServicesDropDown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="text-base font-medium text-white transition-colors hover:text-[#e91e63]"
+          className="text-base font-medium text-white transition-colors hover:text-[#e91e63] "
           style={{
             background: "none",
             border: "none",
@@ -21,7 +21,7 @@ const ServicesDropDown = () => {
             padding: 0,
           }}
         >
-          Services
+          <ChevronDown className="w-4 h-4" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[200px]">

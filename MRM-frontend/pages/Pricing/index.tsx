@@ -42,7 +42,6 @@ const Pricing = () => {
             "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
         }}
       >
-        {/* Header */}
         <div className="mb-12 max-w-2xl text-center">
           <h1 className="mb-4 text-5xl font-bold text-white">Our Pricing</h1>
           <p className="text-xl text-white/80">
@@ -51,7 +50,6 @@ const Pricing = () => {
           </p>
         </div>
 
-        {/* Pricing Cards */}
         <div className="grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
           {tiers.map((tier) => (
             <Card
@@ -68,10 +66,7 @@ const Pricing = () => {
               }}
             >
               <CardContent className="p-8">
-                {/* Plan Name */}
                 <h2 className="mb-2 text-3xl font-bold">{tier.name}</h2>
-
-                {/* Description */}
                 <p
                   className={`mb-4 text-sm ${
                     tier.highlighted ? "text-gray-600" : "text-white/70"
@@ -79,8 +74,6 @@ const Pricing = () => {
                 >
                   {tier.description}
                 </p>
-
-                {/* Price */}
                 <div className="mt-4">
                   <span className="text-5xl font-extrabold">{tier.price}</span>
                   <span
@@ -91,8 +84,6 @@ const Pricing = () => {
                     {tier.frequency}
                   </span>
                 </div>
-
-                {/* Features List */}
                 <div className="mt-6 space-y-3 text-left">
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-center">
@@ -111,14 +102,12 @@ const Pricing = () => {
                     </div>
                   ))}
                 </div>
-
-                {/* CTA Button */}
                 <Button
                   variant={tier.highlighted ? "default" : "outline"}
                   className={`mt-8 w-full rounded-xl py-6 text-base font-semibold ${
                     tier.highlighted
                       ? "bg-purple-600 text-white hover:bg-purple-700"
-                      : "border-white text-white hover:bg-white/15"
+                      : "border-white text-black hover:bg-white/80"
                   }`}
                 >
                   {tier.name === "Enterprise" ? "Contact Us" : "Get Started"}

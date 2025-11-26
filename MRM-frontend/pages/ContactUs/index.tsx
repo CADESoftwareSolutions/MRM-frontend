@@ -14,7 +14,6 @@ const ContactUs = () => {
       >
         <div className="mx-auto max-w-7xl px-4">
           <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2">
-            {/* Left Column - Text Content */}
             <div>
               <h1 className="mb-6 text-5xl font-bold text-white">
                 Get in Touch
@@ -40,9 +39,8 @@ const ContactUs = () => {
               </p>
             </div>
 
-            {/* Right Column - Image */}
             <div>
-              <Card className="overflow-hidden rounded-3xl shadow-2xl">
+              <Card className="overflow-hidden rounded-3xl shadow-2xl p-0">
                 <Image
                   src="/images/ContactUs/ContactUs.png"
                   alt="Contact Us"

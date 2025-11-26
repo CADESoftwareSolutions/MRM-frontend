@@ -36,7 +36,6 @@ const ForgotAccountForm: React.FC = () => {
 
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Field */}
           <div className="space-y-2">
             <Label
               htmlFor="email"
@@ -57,26 +56,24 @@ const ForgotAccountForm: React.FC = () => {
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3">
             <Link href="/Login/Login" className="w-full">
               <Button
                 type="button"
                 variant="outline"
-                className="w-full border-gray-300 text-gray-700 transition-colors hover:bg-gray-50"
+                className="w-40 border-gray-300 text-gray-700 transition-colors hover:bg-gray-50"
               >
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl"
+              className=" bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl"
             >
               Send Reset Link
             </Button>
           </div>
 
-          {/* Back to Login Link */}
           <div className="text-center">
             <Link
               href="/Login/Login"
