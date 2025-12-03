@@ -68,8 +68,18 @@ const Services: React.FC = () => {
                   {service.title}
                 </h3>
 
-                <div className="flex justify-center my-2">
-                  {iconMap[service.title]}
+                <div className="flex flex-col items-center my-4 w-full">
+                  <div className="flex justify-center mb-4">
+                    {iconMap[service.title]}
+                  </div>
+
+                  <div
+                    className="w-[80%] h-[2px] rounded-full"
+                    style={{
+                      background:
+                        "linear-gradient(to right, rgba(128,90,213,0), rgba(128,90,213,0.6), rgba(128,90,213,0))",
+                    }}
+                  ></div>
                 </div>
 
                 <p className="text-gray-700 text-base md:text-lg text-center mt-4">
