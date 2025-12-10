@@ -158,7 +158,6 @@ const DashboardPage = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <main
         className="min-h-screen w-full transition-all duration-300 ease-in-out"
         style={{
@@ -166,7 +165,6 @@ const DashboardPage = () => {
         }}
       >
         <DashboardHeader sidebarWidth={sidebarWidth} />
-        {/* Dashboard Content */}
         <div className="p-6" style={{ marginTop: `${appBarHeight}px` }}>
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Welcome back! 👋</h1>
@@ -175,7 +173,6 @@ const DashboardPage = () => {
             </p>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
               <Card
@@ -217,7 +214,6 @@ const DashboardPage = () => {
             ))}
           </div>
 
-          {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card className="bg-white/5 border-white/10 backdrop-blur-lg hover:bg-white/10 transition-all duration-300">
               <CardHeader>
@@ -275,8 +271,6 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Quick Actions */}
           <Card className="bg-white/5 border-white/10 backdrop-blur-lg">
             <CardHeader>
               <CardTitle className="text-xl text-white">

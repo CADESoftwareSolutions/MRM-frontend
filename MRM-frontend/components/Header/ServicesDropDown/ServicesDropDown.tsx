@@ -6,8 +6,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ourFeatures } from "../../HomePage/AboutUs/AboutUs";
 import { ChevronDown } from "lucide-react";
+import { ourFeatures } from "../../../public/Documents/companyInfo";
 const ServicesDropDown = () => {
   return (
     <DropdownMenu>
