@@ -1,58 +1,180 @@
 export const ourFeatures = [
   {
-    title: "Revenue Management",
+    title: "Accounting Management",
     description:
-      "Revenue, JIB and AFE management with the ability to drill down into revenue check details to ensure accurate payment of decimal interests, production months and product types",
+      "Revenue, JIB and AFE management with the ability to drill down into revenue check details to ensure accurate payment of decimal interests, production months and product types.",
     image: "/images/HomePage/revenueManagement.jpg",
     active: true,
-    path: "/pages/Services/TaxManagement",
-    slug: "revenue-management",
+    path: "/pages/Services/AccountingManagement",
+    slug: "accounting-management",
     sections: [
       {
-        title: "Data Management & Integration",
-        description: "Seamlessly import, validate, and sync your revenue data",
+        title: "Revenue Management",
+        description: "Complete revenue tracking and analysis tools",
         features: [
           {
-            title: "Import & Export Revenue Check Detail",
+            title: "Import/Export Revenue Check Detail",
             description:
-              "Quickly set up revenue using your EnergyLink account, using CDEX, and using your check stub detail.",
+              "Quickly set up your revenue using your EnergyLink account, using CDEX and using your check stub detail.",
           },
           {
-            title: "QuickBooks Integration",
+            title: "Analyze and Manage Revenue",
             description:
-              "Integrates with QuickBooks to eliminate double-entry workload.",
+              "Create custom reports or use canned reports to drill down to the details found on revenue checks.",
+          },
+          {
+            title: "Comprehensive and In-Depth Revenue Tracking",
+            description:
+              "Ensure all wells, all interest types, all product types are in pay, confirm all decimal interests are correct and ensure proper deductions are taken out with our custom Revenue Payment Error Report.",
           },
           {
             title: "Validate Production",
             description:
-              "Compare state-reported production with revenue check detail using the Revenue Production Validation Report.",
-          },
-        ],
-      },
-      {
-        title: "Analysis & Reporting",
-        description:
-          "Powerful analytics and customizable reports for complete visibility",
-        features: [
-          {
-            title: "Analyze and Manage Revenue",
-            description:
-              "Create custom reports or use built-in reports to drill into details found on revenue checks.",
+              "Quickly compare state-reported production with what is received on check detail by running the Revenue Production Validation Report.",
           },
           {
-            title: "Comprehensive Revenue Tracking",
+            title: "QuickBooks Integration",
             description:
-              "Ensure all wells, interest types, and product types are in pay. Validate decimal interests and verify proper deductions with our Revenue Payment Error Report.",
+              "Integrates with QuickBooks to eliminate double-entry.",
           },
           {
             title: "Revenue at a Glance",
             description:
-              "Run reports and customize dashboards to view summaries by operator, well, date, or acquisition.",
+              "Run reports and customize your dashboard to quickly see revenue summaries the way you want to see it - by operator, by well, by date, by acquisition.",
           },
           {
-            title: "Revenue Summary Reporting",
+            title: "Create a Revenue Summary Report",
+            description: "Analyze revenue by operator.",
+          },
+        ],
+      },
+      {
+        title: "JIB and Accounts Payable Management",
+        description: "Comprehensive joint interest billing and AP solutions",
+        features: [
+          {
+            title: "Import/Export JIB Detail",
             description:
-              "Analyze revenue by operator using the Revenue Summary Report.",
+              "Quickly view your JIB information from your EnergyLink account, using CDEX or enter manually.",
+          },
+          {
+            title: "Create Reports",
+            description:
+              "Obtain detailed information necessary to analyze and manage all aspects of joint interest billing.",
+          },
+          {
+            title: "JIB Payment Verification",
+            description:
+              "Prevent duplication and ensure JIB statements are set up and paid only once with our custom JIB Payment Error Notification.",
+          },
+          {
+            title: "JIB Monitoring",
+            description:
+              "Receive JIB notifications and access your JIB calendar to know when upcoming JIB payments are due.",
+          },
+          {
+            title: "Customize Your Dashboard",
+            description:
+              "Create filters on your dashboard to quickly see total JIBs paid/not paid the way you want to see it - by operator, by invoice date or create your own custom filters.",
+          },
+          {
+            title: "JIB ROI Management",
+            description: "Compare both JIB and revenue to track investments.",
+          },
+        ],
+      },
+      {
+        title: "General Ledger",
+        description: "Automated accounting and cost tracking",
+        features: [
+          {
+            title: "Checks are Automatic",
+            description:
+              "General Ledger will automatically be coded with that entry once a check has been entered manually or downloaded into our system.",
+          },
+          {
+            title: "Cost Depletion Calculations",
+            description: "Automated cost depletion tracking and calculations.",
+          },
+          {
+            title: "Track Revenue and Expenses",
+            description:
+              "Complete revenue and expense tracking across all operations.",
+          },
+          {
+            title: "Track Assets and Liabilities",
+            description: "Monitor assets and liabilities in real-time.",
+          },
+          {
+            title: "Custom Chart of Accounts",
+            description:
+              "Create and customize your chart of accounts to match your business needs.",
+          },
+          {
+            title: "Account Balance Trends",
+            description:
+              "Group by account or group by cost-center to quickly see details and trends.",
+          },
+          {
+            title: "Unlimited Number of Companies",
+            description:
+              "Share vendors, customers, properties, owners, accounts and more across unlimited companies.",
+          },
+          {
+            title: "Trend Reporting",
+            description:
+              "Evaluate and see trends on a monthly, quarterly, semi-annual or annual basis at well/cost-center level or summarized into one or more reporting groups.",
+          },
+        ],
+      },
+      {
+        title: "Financial Reporting",
+        description: "Comprehensive financial statements and analysis",
+        features: [
+          {
+            title: "Generate Annual Income Statements",
+            description: "Create detailed annual income statements with ease.",
+          },
+          {
+            title: "Create Portfolio Summary Reports",
+            description:
+              "Create balance sheets, trial balance summary, year-end reporting, lease operating statements (LOS).",
+          },
+          {
+            title: "Compare Year Over Year Results",
+            description:
+              "Run a year over year report to view and forecast trends.",
+          },
+        ],
+      },
+      {
+        title: "AFE Management",
+        description: "Track and manage authorizations for expenditure",
+        features: [
+          {
+            title: "Track Intangible and Tangible Costs",
+            description:
+              "Track intangible costs and tangible costs for both drilling and completion.",
+          },
+          {
+            title: "Track AFE Costs",
+            description:
+              "Track AFE costs by well, by location or create your own custom filters.",
+          },
+          {
+            title: "AFE Process Workflow",
+            description:
+              "Easily implement an AFE process workflow to ensure all working interest parties have approved.",
+          },
+          {
+            title: "AFE Budget Reports",
+            description:
+              "Quickly see AFE budget, amount invoiced and remaining budget with our AFE report.",
+          },
+          {
+            title: "Customize AFE Dashboard",
+            description:
+              "Customize and create filters on your dashboard to quickly see total intangible and tangible costs by operator, by well, by location or create your own custom filters.",
           },
         ],
       },

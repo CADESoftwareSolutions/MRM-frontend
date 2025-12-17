@@ -14,7 +14,7 @@ import { useRouter } from "next/router";
 import { ourFeatures } from "../../public/Documents/companyInfo";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "Revenue Management": <DollarSign className="w-12 h-12 text-white" />,
+  "Account Management": <DollarSign className="w-12 h-12 text-white" />,
   "Deed, Lease and Surface Management": (
     <Layers className="w-12 h-12 text-white" />
   ),

@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   BarChart3,
@@ -5,26 +6,20 @@ import {
   CreditCard,
   FileSpreadsheet,
   FileText,
-  House,
   Layers,
   Settings,
 } from "lucide-react";
-import { useState } from "react";
-import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
-import DashboardHome from "../../components/DashboardComponents/DashboardHome";
-import NewUserDashboard from "../../components/DashboardComponents/NewUserDashboard";
+type ChecksProps = {};
 
-const fullWidth = 240;
-const collapsedWidth = 60;
-const appBarHeight = 64;
-
-const DashboardPage = () => {
+const Checks: React.FC<ChecksProps> = () => {
+  const fullWidth = 240;
+  const collapsedWidth = 60;
+  const appBarHeight = 64;
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarWidth = sidebarOpen ? fullWidth : collapsedWidth;
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   const menuItems = [
-    { text: "Home", icon: House },
     { text: "Checks", icon: CheckSquare },
     { text: "Documents", icon: FileText },
     { text: "Payments", icon: CreditCard },
@@ -32,8 +27,6 @@ const DashboardPage = () => {
     { text: "Reports", icon: BarChart3 },
     { text: "Settings", icon: Settings },
   ];
-
-  const mockData: [] = ["test"];
 
   return (
     <div
@@ -99,18 +92,13 @@ const DashboardPage = () => {
       <main
         className="min-h-screen w-full transition-all duration-300 ease-in-out"
         style={{
-          marginLeft: `${sidebarWidth}px`,
+          marginLeft: `64px`,
         }}
       >
-        <DashboardHeader sidebarWidth={sidebarWidth} />
-        {Array.isArray(mockData) && mockData.length > 0 ? (
-          <DashboardHome />
-        ) : (
-          <NewUserDashboard />
-        )}
+        Check Information like uploading
       </main>
     </div>
   );
 };
 
-export default DashboardPage;
+export default Checks;
