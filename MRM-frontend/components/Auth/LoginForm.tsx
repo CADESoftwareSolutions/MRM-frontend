@@ -36,6 +36,7 @@ const LoginForm: React.FC = () => {
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
@@ -111,7 +112,6 @@ const LoginForm: React.FC = () => {
             </span>
           </div>
 
-          {/* Username Field */}
           <div className="space-y-2">
             <Label
               htmlFor="username"
@@ -131,8 +131,6 @@ const LoginForm: React.FC = () => {
               className="border-gray-300 bg-white focus:border-purple-500 focus:ring-purple-500"
             />
           </div>
-
-          {/* Password Field */}
           <div className="space-y-2">
             <Label
               htmlFor="password"
@@ -151,8 +149,6 @@ const LoginForm: React.FC = () => {
               className="border-gray-300 bg-white focus:border-purple-500 focus:ring-purple-500"
             />
           </div>
-
-          {/* Error Message */}
           {error && (
             <Alert variant="destructive" className="border-red-200 bg-red-50">
               <AlertDescription className="text-sm text-red-800">
@@ -161,7 +157,6 @@ const LoginForm: React.FC = () => {
             </Alert>
           )}
 
-          {/* Forgot Password Link */}
           <div className="flex justify-end">
             <Link
               href="/Login/ForgotAccount"
@@ -171,7 +166,6 @@ const LoginForm: React.FC = () => {
             </Link>
           </div>
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl"
@@ -180,7 +174,6 @@ const LoginForm: React.FC = () => {
             {loading ? "Signing in..." : "Sign In"}
           </Button>
 
-          {/* Create Account Link */}
           <div className="text-center">
             <span className="text-sm text-gray-600">
               Don't have an account?{" "}
