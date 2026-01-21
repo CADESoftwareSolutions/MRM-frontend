@@ -157,7 +157,7 @@ export const field = {
   }),
 };
 
-const STATES = [
+export const STATES = [
   "AL",
   "AK",
   "AZ",

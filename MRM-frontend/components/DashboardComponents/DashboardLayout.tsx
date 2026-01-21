@@ -1,19 +1,8 @@
-import React, { PropsWithChildren } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  BarChart3,
-  CheckSquare,
-  CreditCard,
-  FileSpreadsheet,
-  FileText,
-  House,
-  Layers,
-  Settings,
-  Users,
-} from "lucide-react";
-import { useState } from "react";
-import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
+import { FileText, House, Layers, Settings, Users } from "lucide-react";
 import { useRouter } from "next/router";
+import React, { PropsWithChildren, useState } from "react";
+import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
 
 import {
   Accordion,
@@ -21,12 +10,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useAtom } from "jotai";
+import { openAccordionsAtom } from "@/atoms/NavigationAtom";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
 const appBarHeight = 64;
 
 const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
+  const [openAccordions, setOpenAccordions] = useAtom(openAccordionsAtom);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const router = useRouter();
   const sidebarWidth = sidebarOpen ? fullWidth : collapsedWidth;
@@ -39,7 +31,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Land",
       icon: Layers,
       items: [
-        { text: "Leases", route: "/Dashboard/DashboardDirectory/Lease" },
+        { text: "Leases", route: "/Dashboard/DashboardDirectory/Leases" },
         { text: "Wells", route: "/Dashboard/DashboardDirectory/Well" },
         { text: "Deeds", route: "/Dashboard/DashboardDirectory/Deeds" },
       ],
@@ -68,6 +60,13 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
     },
   ];
 
+  const handleAccordionChange = (groupText: string) => {
+    setOpenAccordions((prev) =>
+      prev.includes(groupText)
+        ? prev.filter((item) => item !== groupText)
+        : [...prev, groupText]
+    );
+  };
   return (
     <div
       className="flex min-h-screen text-white"
@@ -88,7 +87,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="text-white hover:bg-[#e91e63]"
+            className="text-white hover:bg-[#e91e63] cursor-pointer"
           >
             <Layers className="h-5 w-5" />
           </Button>
@@ -119,23 +118,38 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                 </Button>
               );
             }
+            const isOpen = openAccordions.includes(group.text);
 
             return (
               <Accordion
                 type="single"
                 collapsible
-                key={group.text}
+                value={isOpen ? group.text : ""}
+                onValueChange={() => handleAccordionChange(group.text)}
                 className="w-full border-none space-y-1"
               >
                 <AccordionItem value={group.text} className="border-none">
                   <AccordionTrigger
-                    className={`flex w-full items-center text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 py-0 px-4 hover:no-underline rounded-md ${
-                      !sidebarOpen ? "justify-center px-0" : "justify-between"
+                    onClick={() => {
+                      if (!sidebarOpen) {
+                        setSidebarOpen(true);
+                      }
+                    }}
+                    className={`flex w-full items-center text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 py-0 hover:no-underline rounded-md ${
+                      !sidebarOpen
+                        ? "justify-center px-0"
+                        : "justify-between px-4"
                     } [&[data-state=open]>svg]:rotate-90`}
+                    //@ts-expect-error forced prop
+                    showIcon={sidebarOpen}
                   >
-                    <div className="flex items-center">
+                    <div
+                      className={`flex items-center ${
+                        !sidebarOpen ? "justify-center" : ""
+                      }`}
+                    >
                       <Icon
-                        className={`h-5 w-5 ${sidebarOpen ? "mr-3" : ""}`}
+                        className={`h-4 w-4 ${sidebarOpen ? "mr-3" : "mr-0"}`}
                       />
                       {sidebarOpen && (
                         <span className="text-sm font-medium">
@@ -143,7 +157,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                         </span>
                       )}
                     </div>
-                    {!sidebarOpen && <span className="sr-only">Expand</span>}
+                    {!sidebarOpen && <span className="hidden" />}
                   </AccordionTrigger>
 
                   {sidebarOpen && (

@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import DashboardHome from "../../components/DashboardComponents/DashboardHome";
 import DashboardLayout from "../../components/DashboardComponents/DashboardLayout";
 import NewUserDashboard from "../../components/DashboardComponents/NewUserDashboard";
-import { userProfileAtom } from "../../store/atoms/userProfileAtom";
+import { userProfileAtom } from "../../src/atoms/userProfileAtom";
 import { useEffect, useState } from "react";
 
 export interface user {

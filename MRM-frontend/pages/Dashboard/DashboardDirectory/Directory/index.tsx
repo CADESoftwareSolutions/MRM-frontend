@@ -92,9 +92,7 @@ const AddressDirectory = () => {
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-purple-300" />
-              <h1 className="text-3xl font-bold text-white">
-                {directoryConfig.title}
-              </h1>
+              <h1 className="text-3xl font-bold text-white">Directory</h1>
             </div>
             {view === "list" && (
               <Button

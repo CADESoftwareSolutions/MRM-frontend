@@ -10,7 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React from "react";
-import { userProfileAtom } from "../../store/atoms/userProfileAtom";
+import { userProfileAtom } from "../../src/atoms/userProfileAtom";
 import { useAtom } from "jotai";
 
 type DashboardHomeProps = {};
