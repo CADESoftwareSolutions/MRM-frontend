@@ -9,6 +9,7 @@ import {
   House,
   Layers,
   Settings,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
@@ -50,6 +51,11 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Reports",
       icon: BarChart3,
       route: "/Dashboard/DashboardDirectory/Reports",
+    },
+    {
+      text: "Directory",
+      icon: Users,
+      route: "/Dashboard/DashboardDirectory/Directory",
     },
     {
       text: "Settings",

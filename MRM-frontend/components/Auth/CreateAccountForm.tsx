@@ -111,7 +111,6 @@ const CreateAccountForm: React.FC = () => {
             />
           </div>
 
-          {/* Error Message */}
           {error && (
             <Alert variant="destructive" className="border-red-200 bg-red-50">
               <AlertDescription className="text-sm text-red-800">
@@ -120,7 +119,6 @@ const CreateAccountForm: React.FC = () => {
             </Alert>
           )}
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl"
@@ -129,7 +127,6 @@ const CreateAccountForm: React.FC = () => {
             {loading ? "Creating Account..." : "Create Account"}
           </Button>
 
-          {/* Sign In Link */}
           <div className="text-center">
             <span className="text-sm text-gray-600">
               Already have an account?{" "}
