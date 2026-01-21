@@ -212,7 +212,7 @@ const STATES = [
 
 export const directoryConfig: ModuleConfig = {
   name: "directory",
-  title: "Directory",
+  title: "Contact",
   tabs: [
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },

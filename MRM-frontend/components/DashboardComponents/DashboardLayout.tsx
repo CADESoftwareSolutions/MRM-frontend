@@ -15,6 +15,13 @@ import { useState } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
 import { useRouter } from "next/router";
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
 const fullWidth = 240;
 const collapsedWidth = 60;
 const appBarHeight = 64;
@@ -26,47 +33,40 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   const menuItems = [
-    { text: "Home", icon: House, route: "/Dashboard" },
+    { type: "link", text: "Home", icon: House, route: "/Dashboard" },
     {
-      text: "Checks",
-      icon: CheckSquare,
-      route: "/Dashboard/DashboardDirectory/Checks",
+      type: "group",
+      text: "Land",
+      icon: Layers,
+      items: [
+        { text: "Leases", route: "/Dashboard/DashboardDirectory/Lease" },
+        { text: "Wells", route: "/Dashboard/DashboardDirectory/Well" },
+        { text: "Deeds", route: "/Dashboard/DashboardDirectory/Deeds" },
+      ],
     },
     {
-      text: "Documents",
+      type: "group",
+      text: "Accounting",
       icon: FileText,
-      route: "/Dashboard/DashboardDirectory/Documents",
+      items: [
+        { text: "Documents", route: "/Dashboard/DashboardDirectory/Documents" },
+        { text: "Checks", route: "/Dashboard/DashboardDirectory/Checks" },
+        { text: "Reports", route: "/Dashboard/DashboardDirectory/Reports" },
+      ],
     },
     {
-      text: "Payments",
-      icon: CreditCard,
-      route: "/Dashboard/DashboardDirectory/Payments",
-    },
-    {
-      text: "Leases",
-      icon: FileSpreadsheet,
-      route: "/Dashboard/DashboardDirectory/Leases",
-    },
-    {
-      text: "Reports",
-      icon: BarChart3,
-      route: "/Dashboard/DashboardDirectory/Reports",
-    },
-    {
+      type: "link",
       text: "Directory",
       icon: Users,
       route: "/Dashboard/DashboardDirectory/Directory",
     },
     {
+      type: "link",
       text: "Settings",
       icon: Settings,
-      route: "/Dashboard/DashboardDirectory/Settings",
+      route: "/Dashboard/Settings",
     },
   ];
-
-  const handleNavigation = (route: string) => {
-    router.push(route);
-  };
 
   return (
     <div
@@ -77,56 +77,95 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       }}
     >
       <aside
-        className="fixed flex h-screen flex-col bg-black/90 backdrop-blur-sm transition-all duration-300 ease-in-out"
-        style={{
-          width: `${sidebarWidth}px`,
-          zIndex: 1300,
-        }}
+        className="fixed flex h-screen flex-col bg-black/90 border-r border-white/10 backdrop-blur-sm transition-all duration-300 ease-in-out z-[1300]"
+        style={{ width: `${sidebarWidth}px` }}
       >
         <div
           className="flex items-center px-4"
-          style={{
-            height: `${appBarHeight}px`,
-          }}
+          style={{ height: `${appBarHeight}px` }}
         >
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="text-white hover:bg-[#e91e63] cursor-pointer"
+            className="text-white hover:bg-[#e91e63]"
           >
             <Layers className="h-5 w-5" />
           </Button>
         </div>
 
-        <nav className="flex-1 space-y-1 px-2">
-          {menuItems.map((item) => {
-            const isActive = router.pathname === item.route;
-            const Icon = item.icon;
-            return (
-              <Button
-                key={item.text}
-                variant="ghost"
-                onClick={() => handleNavigation(item.route)}
-                className={`w-full text-white transition-colors hover:bg-[#e91e63] cursor-pointer ${
-                  isActive ? "bg-[#e91e63]" : ""
-                }`}
-                style={{
-                  padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
-                  justifyContent: sidebarOpen ? "flex-start" : "center",
-                }}
-              >
-                <div
-                  className="flex items-center justify-center"
+        <nav className="flex-1 px-2 space-y-1">
+          {menuItems.map((group) => {
+            const Icon = group.icon;
+            const isActive =
+              group.type === "link" && router.pathname === group.route;
+
+            if (group.type === "link") {
+              return (
+                <Button
+                  key={group.text}
+                  variant="ghost"
+                  onClick={() => router.push(group.route!)}
+                  className={`w-full justify-start text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 ${
+                    isActive ? "bg-[#e91e63]" : ""
+                  }`}
                   style={{
-                    minWidth: "20px",
-                    marginRight: sidebarOpen ? "0.5rem" : "0",
+                    padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
+                    justifyContent: sidebarOpen ? "flex-start" : "center",
                   }}
                 >
-                  <Icon className="h-5 w-5" />
-                </div>
-                {sidebarOpen && <span>{item.text}</span>}
-              </Button>
+                  <Icon className={`h-5 w-5 ${sidebarOpen ? "mr-3" : ""}`} />
+                  {sidebarOpen && <span>{group.text}</span>}
+                </Button>
+              );
+            }
+
+            return (
+              <Accordion
+                type="single"
+                collapsible
+                key={group.text}
+                className="w-full border-none space-y-1"
+              >
+                <AccordionItem value={group.text} className="border-none">
+                  <AccordionTrigger
+                    className={`flex w-full items-center text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 py-0 px-4 hover:no-underline rounded-md ${
+                      !sidebarOpen ? "justify-center px-0" : "justify-between"
+                    } [&[data-state=open]>svg]:rotate-90`}
+                  >
+                    <div className="flex items-center">
+                      <Icon
+                        className={`h-5 w-5 ${sidebarOpen ? "mr-3" : ""}`}
+                      />
+                      {sidebarOpen && (
+                        <span className="text-sm font-medium">
+                          {group.text}
+                        </span>
+                      )}
+                    </div>
+                    {!sidebarOpen && <span className="sr-only">Expand</span>}
+                  </AccordionTrigger>
+
+                  {sidebarOpen && (
+                    <AccordionContent className="pb-1 pt-1 ml-4 space-y-1">
+                      {group.items?.map((subItem) => (
+                        <Button
+                          key={subItem.text}
+                          variant="ghost"
+                          onClick={() => router.push(subItem.route)}
+                          className={`w-full justify-start h-9 text-sm text-gray-300 hover:text-white hover:bg-[#e91e63] cursor-pointer px-4 ${
+                            router.pathname === subItem.route
+                              ? "bg-[#e91e63]/20 text-white"
+                              : ""
+                          }`}
+                        >
+                          {subItem.text}
+                        </Button>
+                      ))}
+                    </AccordionContent>
+                  )}
+                </AccordionItem>
+              </Accordion>
             );
           })}
         </nav>

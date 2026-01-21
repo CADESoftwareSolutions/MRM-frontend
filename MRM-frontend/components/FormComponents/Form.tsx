@@ -57,7 +57,7 @@ export const Form: React.FC<FormProps> = ({
   const shouldShowField = (field: FieldConfig): boolean => {
     console.log(field);
     if (!field.dependsOn) return true;
-    const dependentValue = formData[field.dependsOn];
+    const dependentValue = formData?.[field.dependsOn];
     if (Array.isArray(dependentValue)) {
       console.log(dependentValue, field.dependsOnValue);
       return dependentValue.includes(field.dependsOnValue);
@@ -69,7 +69,7 @@ export const Form: React.FC<FormProps> = ({
   const renderField = (field: FieldConfig) => {
     if (!shouldShowField(field)) return null;
 
-    const value = formData[field.id];
+    const value = formData?.[field.id];
     const commonClasses = "bg-white/5 border-purple-300/30 text-white h-10  ";
     return (
       <div

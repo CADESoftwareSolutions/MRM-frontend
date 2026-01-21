@@ -96,13 +96,15 @@ const AddressDirectory = () => {
                 {directoryConfig.title}
               </h1>
             </div>
-            <Button
-              onClick={handleAdd}
-              className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 mr-2 " />
-              Add New Contact
-            </Button>
+            {view === "list" && (
+              <Button
+                onClick={handleAdd}
+                className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mr-2 " />
+                Add New Contact
+              </Button>
+            )}
           </div>
 
           {view === "list" && (
