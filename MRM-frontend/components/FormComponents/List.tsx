@@ -1,18 +1,8 @@
-// components/List.tsx - Fully Reusable List Component
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Building2,
-  Edit,
-  Search,
-  Trash2,
-  FileText,
-  Calendar,
-  DollarSign,
-  MapPin,
-} from "lucide-react";
+import { Building2, Edit, FileText, Search, Trash2 } from "lucide-react";
 import { ModuleConfig } from "../../pages/Dashboard/DashboardDirectory/Directory/directoryConfig";
 
 interface ListProps {
@@ -32,7 +22,6 @@ export const List: React.FC<ListProps> = ({
   onEdit,
   onDelete,
 }) => {
-  // Get the icon based on module type
   const getModuleIcon = () => {
     switch (config.name) {
       case "directory":
@@ -46,13 +35,11 @@ export const List: React.FC<ListProps> = ({
     }
   };
 
-  // Get the primary display field (first in listFields)
   const getPrimaryField = (item: any) => {
     const primaryFieldId = config.listFields[0];
     return item[primaryFieldId] || "N/A";
   };
 
-  // Get the secondary ID field (usually has 'Id' in the name)
   const getSecondaryId = (item: any) => {
     const idField = config.listFields.find(
       (field) => field.toLowerCase().includes("id") && field !== "id"
@@ -60,18 +47,6 @@ export const List: React.FC<ListProps> = ({
     return idField ? item[idField] : null;
   };
 
-  // Format date fields nicely
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Render badges for array fields (like classifications, provisions)
   const renderArrayBadges = (item: any) => {
     const arrayFields = config.listFields.filter(
       (fieldId) => Array.isArray(item[fieldId]) && item[fieldId].length > 0
@@ -108,76 +83,6 @@ export const List: React.FC<ListProps> = ({
     );
   };
 
-  // Render detail fields based on module type
-  const renderDetails = (item: any) => {
-    // Get non-primary, non-array fields to display
-    const primaryField = config.listFields[0];
-    const detailFields = config.listFields
-      .slice(1, 5)
-      .filter(
-        (fieldId) =>
-          !Array.isArray(item[fieldId]) &&
-          fieldId !== "status" &&
-          fieldId !== primaryField &&
-          item[fieldId]
-      );
-
-    return (
-      <div className="flex items-center gap-4 text-sm text-purple-200 ml-9">
-        {detailFields.map((fieldId, index) => {
-          const value = item[fieldId];
-
-          // Date fields
-          if (fieldId.toLowerCase().includes("date")) {
-            return (
-              <div key={fieldId} className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>{formatDate(value)}</span>
-              </div>
-            );
-          }
-
-          // Location fields (city, county, state)
-          if (
-            fieldId.toLowerCase().includes("city") ||
-            fieldId.toLowerCase().includes("county") ||
-            fieldId.toLowerCase().includes("state")
-          ) {
-            return (
-              <div key={fieldId} className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5" />
-                <span>{value}</span>
-              </div>
-            );
-          }
-
-          // Money fields
-          if (
-            fieldId.toLowerCase().includes("rate") ||
-            fieldId.toLowerCase().includes("bonus") ||
-            fieldId.toLowerCase().includes("price")
-          ) {
-            return (
-              <div key={fieldId} className="flex items-center gap-1.5">
-                <DollarSign className="w-3.5 h-3.5" />
-                <span>
-                  {typeof value === "number" ? value.toFixed(2) : value}
-                </span>
-              </div>
-            );
-          }
-
-          // Default - just show the value
-          return (
-            <span key={fieldId} className="truncate max-w-[200px]">
-              {value}
-            </span>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <Card className="bg-white/10 backdrop-blur-md border-purple-300/30">
       <CardHeader>
@@ -207,7 +112,6 @@ export const List: React.FC<ListProps> = ({
                 key={item.id}
                 className="rounded-lg bg-white/5 border border-purple-300/20 hover:bg-white/10 transition-all"
               >
-                {/* Main row with primary info and actions */}
                 <div className="flex items-center justify-between gap-4 p-4">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
                     {getModuleIcon()}
@@ -216,7 +120,6 @@ export const List: React.FC<ListProps> = ({
                       <h3 className="text-lg font-semibold text-white truncate">
                         {getPrimaryField(item)}
                       </h3>
-
                       {getSecondaryId(item) && (
                         <Badge
                           variant="outline"
@@ -225,7 +128,6 @@ export const List: React.FC<ListProps> = ({
                           {getSecondaryId(item)}
                         </Badge>
                       )}
-
                       {renderArrayBadges(item)}
                     </div>
                   </div>
@@ -278,9 +180,6 @@ export const List: React.FC<ListProps> = ({
                     </div>
                   </div>
                 </div>
-
-                {/* Detail row with secondary info */}
-                {renderDetails(item)}
               </div>
             ))
           )}

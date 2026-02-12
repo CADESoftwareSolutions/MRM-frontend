@@ -32,7 +32,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       icon: Layers,
       items: [
         { text: "Leases", route: "/Dashboard/DashboardDirectory/Leases" },
-        { text: "Wells", route: "/Dashboard/DashboardDirectory/Well" },
+        { text: "Wells", route: "/Dashboard/DashboardDirectory/Wells" },
         { text: "Deeds", route: "/Dashboard/DashboardDirectory/Deeds" },
       ],
     },
@@ -72,11 +72,11 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       className="flex min-h-screen text-white"
       style={{
         background:
-          "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
+          "linear-gradient(135deg, #2d1b4e 0%, #1e1e3f 50%, #2d1b4e 100%)",
       }}
     >
       <aside
-        className="fixed flex h-screen flex-col bg-black/90 border-r border-white/10 backdrop-blur-sm transition-all duration-300 ease-in-out z-[1300]"
+        className="fixed flex h-screen flex-col bg-white/5 border-white/10 backdrop-blur-lg border-r border-white/10 backdrop-blur-sm transition-all duration-300 ease-in-out z-[1300]"
         style={{ width: `${sidebarWidth}px` }}
       >
         <div
@@ -152,7 +152,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                         className={`h-4 w-4 ${sidebarOpen ? "mr-3" : "mr-0"}`}
                       />
                       {sidebarOpen && (
-                        <span className="text-sm font-medium">
+                        <span className="text-sm font-medium ml-2">
                           {group.text}
                         </span>
                       )}

@@ -35,7 +35,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
   };
   return (
     <header
-      className="fixed z-[1100] flex items-center justify-end bg-black/30 px-6 backdrop-blur-sm shadow-lg "
+      className="fixed z-[1100] flex items-center justify-end  "
       style={{
         width: `calc(100% - ${sidebarWidth}px)`,
         left: `${sidebarWidth}px`,

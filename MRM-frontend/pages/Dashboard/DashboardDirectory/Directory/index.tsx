@@ -81,13 +81,7 @@ const AddressDirectory = () => {
 
   return (
     <DashboardLayout>
-      <div
-        className="min-h-screen p-6 my-15"
-        style={{
-          background:
-            "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
-        }}
-      >
+      <div className="min-h-screen p-6 my-15">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">

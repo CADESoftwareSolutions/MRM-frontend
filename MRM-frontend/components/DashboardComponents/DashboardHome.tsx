@@ -78,7 +78,7 @@ const quickActions = [
 ];
 
 const DashboardHome: React.FC<DashboardHomeProps> = () => {
-  const [userProfile, setUserProfile] = useAtom(userProfileAtom);
+  const [userProfile] = useAtom(userProfileAtom);
 
   return (
     <div className="p-6" style={{ marginTop: `64px` }}>
