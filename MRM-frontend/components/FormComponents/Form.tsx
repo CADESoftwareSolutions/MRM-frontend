@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,54 +28,48 @@ interface FormProps {
   mode?: "add" | "edit";
 }
 
+const INPUT_TYPES: Record<string, string> = {
+  text: "text",
+  email: "email",
+  phone: "tel",
+  number: "number",
+};
+
 export const Form: React.FC<FormProps> = ({
   config,
-  initialData = {},
+  initialData,
   onSave,
   onCancel,
   mode = "add",
 }) => {
-  const [formData, setFormData] = useState(initialData);
+  const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
+    if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
+    return acc;
+  }, {});
 
-  const handleChange = (fieldId: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
-  };
+  const { control, handleSubmit, watch } = useForm({
+    defaultValues: { ...configDefaults, ...(initialData || {}) },
+  });
 
-  const toggleArrayValue = (array: any[], value: any) => {
-    if (array.includes(value)) {
-      return array.filter((v) => v !== value);
-    }
-    return [...array, value];
-  };
-
-  const handleMultiSelect = (fieldId: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [fieldId]: toggleArrayValue(prev[fieldId] || [], value),
-    }));
-  };
+  const watchedValues = watch();
 
   const shouldShowField = (field: FieldConfig): boolean => {
-    console.log(field);
     if (!field.dependsOn) return true;
-    const dependentValue = formData?.[field.dependsOn];
-    if (Array.isArray(dependentValue)) {
-      console.log(dependentValue, field.dependsOnValue);
-      return dependentValue.includes(field.dependsOnValue);
-    }
-
-    return dependentValue === field.dependsOnValue;
+    const val = watchedValues[field.dependsOn];
+    return Array.isArray(val)
+      ? val.includes(field.dependsOnValue)
+      : val === field.dependsOnValue;
   };
+
+  const commonClasses = "bg-white/5 border-purple-300/30 text-white h-10";
 
   const renderField = (field: FieldConfig) => {
     if (!shouldShowField(field)) return null;
 
-    const value = formData?.[field.id];
-    const commonClasses = "bg-white/5 border-purple-300/30 text-white h-10  ";
     return (
       <div
         key={field.id}
-        className={`${field.gridColumn === "span 2" ? "col-span-2" : ""}`}
+        className={field.gridColumn === "span 2" ? "col-span-2" : ""}
       >
         <Label className="text-purple-100 font-semibold flex items-center gap-1 mb-2.5 text-sm">
           {field.label}
@@ -86,116 +81,118 @@ export const Form: React.FC<FormProps> = ({
           <p className="text-xs text-purple-300/70 mb-2">{field.helpText}</p>
         )}
 
-        {field.type === "text" && (
-          <Input
-            value={value || ""}
-            onChange={(e) => handleChange(field.id, e.target.value)}
-            placeholder={field.placeholder}
-            className={commonClasses}
+        {INPUT_TYPES[field.type] !== undefined && (
+          <Controller
+            name={field.id}
+            control={control}
+            render={({ field: f }) => (
+              <Input
+                type={INPUT_TYPES[field.type]}
+                value={f.value ?? ""}
+                onChange={f.onChange}
+                onBlur={f.onBlur}
+                placeholder={field.placeholder}
+                className={commonClasses}
+              />
+            )}
           />
         )}
 
-        {field.type === "email" && (
-          <Input
-            type="email"
-            value={value || ""}
-            onChange={(e) => handleChange(field.id, e.target.value)}
-            placeholder={field.placeholder}
-            className={commonClasses}
-          />
-        )}
-
-        {field.type === "phone" && (
-          <Input
-            type="tel"
-            value={value || ""}
-            onChange={(e) => handleChange(field.id, e.target.value)}
-            placeholder={field.placeholder}
-            className={commonClasses}
-          />
-        )}
-
-        {field.type === "number" && (
-          <Input
-            type="number"
-            value={value || ""}
-            onChange={(e) => handleChange(field.id, e.target.value)}
-            placeholder={field.placeholder}
-            className={commonClasses}
+        {field.type === "textarea" && (
+          <Controller
+            name={field.id}
+            control={control}
+            render={({ field: f }) => (
+              <Textarea
+                value={f.value ?? ""}
+                onChange={f.onChange}
+                rows={field.rows || 4}
+                placeholder={field.placeholder}
+                className="bg-white/5 border-purple-300/30 text-white min-h-[100px]"
+              />
+            )}
           />
         )}
 
         {field.type === "select" && (
-          <Select
-            value={value || ""}
-            onValueChange={(val) => handleChange(field.id, val)}
-          >
-            <SelectTrigger
-              className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70`}
-            >
-              <SelectValue
-                placeholder={
-                  field.placeholder || `Select ${field.label.toLowerCase()}`
-                }
-              />
-            </SelectTrigger>
-            <SelectContent
-              className="bg-[#1a1a2e] border-purple-300/30 text-black max-h-[300px] overflow-y-auto z-50 "
-              position="popper"
-              sideOffset={4}
-            >
-              {field.options?.map((option) => {
-                const optionValue =
-                  typeof option === "string" ? option : option.value;
-                const optionLabel =
-                  typeof option === "string" ? option : option.label;
-                return (
-                  <SelectItem
-                    key={optionValue}
-                    value={optionValue}
-                    className="hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer text-white"
-                  >
-                    {optionLabel}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+          <Controller
+            name={field.id}
+            control={control}
+            render={({ field: f }) => (
+              <Select value={f.value || undefined} onValueChange={f.onChange}>
+                <SelectTrigger
+                  className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70`}
+                >
+                  <SelectValue
+                    placeholder={
+                      field.placeholder || `Select ${field.label.toLowerCase()}`
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent
+                  className="bg-[#1a1a2e] border-purple-300/30 text-black max-h-[300px] overflow-y-auto z-50"
+                  position="popper"
+                  sideOffset={4}
+                >
+                  {field.options?.map((option) => {
+                    const val =
+                      typeof option === "string" ? option : option.value;
+                    const label =
+                      typeof option === "string" ? option : option.label;
+                    return (
+                      <SelectItem
+                        key={val}
+                        value={val}
+                        className="hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer text-white"
+                      >
+                        {label}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
+          />
         )}
 
         {field.type === "multi-badge" && (
-          <div className="flex flex-wrap gap-2">
-            {field.options?.map((option) => {
-              const optionValue =
-                typeof option === "string" ? option : option.value;
-              const optionLabel =
-                typeof option === "string" ? option : option.label;
-              const isSelected = (value || []).includes(optionValue);
-
-              return (
-                <Badge
-                  key={optionValue}
-                  onClick={() => handleMultiSelect(field.id, optionValue)}
-                  className={`cursor-pointer transition-all ${
-                    isSelected
-                      ? "bg-purple-600 text-white hover:bg-purple-700"
-                      : "bg-white/10 text-purple-200 hover:bg-white/20"
-                  }`}
-                >
-                  {optionLabel}
-                </Badge>
-              );
-            })}
-          </div>
-        )}
-
-        {field.type === "textarea" && (
-          <Textarea
-            value={value || ""}
-            onChange={(e) => handleChange(field.id, e.target.value)}
-            rows={field.rows || 4}
-            placeholder={field.placeholder}
-            className="bg-white/5 border-purple-300/30 text-white min-h-[100px]"
+          <Controller
+            name={field.id}
+            control={control}
+            defaultValue={field.defaultValue || []}
+            render={({ field: f }) => (
+              <div className="flex flex-wrap gap-2">
+                {field.options?.map((option) => {
+                  const val =
+                    typeof option === "string" ? option : option.value;
+                  const label =
+                    typeof option === "string" ? option : option.label;
+                  const isSelected = (f.value || []).includes(val);
+                  return (
+                    <Badge
+                      key={val}
+                      onClick={() => {
+                        if (field.singleSelect) {
+                          if (!isSelected) f.onChange([val]);
+                        } else {
+                          const next = isSelected
+                            ? f.value.filter((v: any) => v !== val)
+                            : [...(f.value || []), val];
+                          f.onChange(next);
+                        }
+                      }}
+                      className={`cursor-pointer transition-all ${
+                        isSelected
+                          ? "bg-purple-600 text-white hover:bg-purple-700"
+                          : "bg-white/10 text-purple-200 hover:bg-white/20"
+                      }`}
+                    >
+                      {label}
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
           />
         )}
       </div>
@@ -203,16 +200,12 @@ export const Form: React.FC<FormProps> = ({
   };
 
   const groupFieldsBySection = (fields: FieldConfig[]) => {
-    const sections: { [key: string]: FieldConfig[] } = {};
-
+    const sections: Record<string, FieldConfig[]> = {};
     fields.forEach((field) => {
       const section = field.section || "default";
-      if (!sections[section]) {
-        sections[section] = [];
-      }
+      if (!sections[section]) sections[section] = [];
       sections[section].push(field);
     });
-
     return sections;
   };
 
@@ -244,19 +237,6 @@ export const Form: React.FC<FormProps> = ({
     );
   };
 
-  const handleSubmit = () => {
-    const missingFields = config.fields
-      .filter((f) => f.required && !formData[f.id])
-      .map((f) => f.label);
-
-    if (missingFields.length > 0) {
-      alert(`Please fill in required fields: ${missingFields.join(", ")}`);
-      return;
-    }
-
-    onSave(formData);
-  };
-
   return (
     <Card className="bg-white/10 backdrop-blur-md border-purple-300/30">
       <CardHeader>
@@ -278,7 +258,7 @@ export const Form: React.FC<FormProps> = ({
       </CardHeader>
       <CardContent>
         <Tabs defaultValue={config.tabs[0].id} className="w-full">
-          <TabsList className={`flex w-full bg-purple-900/30`}>
+          <TabsList className="flex w-full bg-purple-900/30">
             {config.tabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
@@ -309,7 +289,7 @@ export const Form: React.FC<FormProps> = ({
         <div className="flex gap-3 mt-8 pt-6 border-t border-purple-300/30">
           <Button
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
-            onClick={handleSubmit}
+            onClick={handleSubmit(onSave)}
           >
             {mode === "add" ? `Add ${config.title}` : "Save Changes"}
           </Button>

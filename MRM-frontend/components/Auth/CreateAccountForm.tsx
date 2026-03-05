@@ -37,7 +37,6 @@ const CreateAccountForm: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Account created successfully!", data);
         router.push("/Dashboard");
       } else {
         setError(data.message || "Unable to create account.");

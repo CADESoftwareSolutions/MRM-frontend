@@ -1,29 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import { useState } from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { directoryConfig } from "./directoryConfig";
-import { useFormData } from "@/hooks/useFormData";
+import { useDirectory } from "@/hooks/useDirectory";
+import { useEffect } from "react";
+import { useAtom } from "jotai";
+import { userProfileAtom } from "@/atoms/userProfileAtom";
 
 const AddressDirectory = () => {
-  const MOCK_CONTACTS = [
-    {
-      id: 1,
-      nameId: "AUTO-001",
-      name: "Acme Corporation",
-      classifications: ["VENDOR"],
-      email: "contact@acme.com",
-      phone: "555-0100",
-      city: "Dallas",
-      state: "TX",
-      status: "Active",
-    },
-  ];
-
+  const [userProfile] = useAtom(userProfileAtom);
   const {
     view,
+    loading,
     searchTerm,
     selectedItem,
     filteredData,
@@ -33,51 +23,14 @@ const AddressDirectory = () => {
     handleSave,
     handleDelete,
     handleCancel,
-  } = useFormData(directoryConfig, MOCK_CONTACTS);
+  } = useDirectory({
+    config: directoryConfig,
+    accountId: 1,
+  });
 
-  const resetForm = () => {
-    setFormData({
-      nameIdType: "auto",
-      nameId: "",
-      classifications: [],
-      name: "",
-      nameLine2: "",
-      addressTypes: [],
-      address: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      zip: "",
-      phoneTypes: [],
-      phoneNumber: "",
-      email: "",
-      contactPerson: "",
-      contactAddressTypes: [],
-      contactAddress: "",
-      contactAddressLine2: "",
-      contactCity: "",
-      contactState: "",
-      contactZip: "",
-      contactPhone: "",
-      contactEmail: "",
-      status: "Active",
-      comments: "",
-      taxClassification: "",
-      taxId: "",
-      internalInHouse: "",
-      federalTaxWithheld: "",
-      nonEmployeeComp: "",
-      send1099: "",
-      w9OnFile: "",
-      backupWithholding: "",
-      severanceTaxExempt: "",
-      otherExempt: "",
-      minPaymentAmount: "",
-      pay: "",
-      duplicateInvoiceValidation: "",
-    });
-    setSelectedContact(null);
-  };
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [view]);
 
   return (
     <DashboardLayout>
@@ -102,10 +55,10 @@ const AddressDirectory = () => {
           {view === "list" && (
             <List
               config={directoryConfig}
-              data={MOCK_CONTACTS}
+              data={filteredData}
+              loading={loading}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              filteredContacts={filteredData}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

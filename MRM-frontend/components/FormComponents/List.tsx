@@ -8,6 +8,7 @@ import { ModuleConfig } from "../../pages/Dashboard/DashboardDirectory/Directory
 interface ListProps {
   config: ModuleConfig;
   data: any[];
+  loading?: boolean;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onEdit: (item: any) => void;
@@ -17,6 +18,7 @@ interface ListProps {
 export const List: React.FC<ListProps> = ({
   config,
   data,
+  loading = false,
   searchTerm,
   setSearchTerm,
   onEdit,
@@ -100,7 +102,12 @@ export const List: React.FC<ListProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {data?.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-10 h-10 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
+              <p className="text-purple-300/70 text-sm">Loading...</p>
+            </div>
+          ) : data?.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-purple-300">
                 No {config.title.toLowerCase()} found
@@ -110,7 +117,8 @@ export const List: React.FC<ListProps> = ({
             data?.map((item) => (
               <div
                 key={item.id}
-                className="rounded-lg bg-white/5 border border-purple-300/20 hover:bg-white/10 transition-all"
+                onClick={() => onEdit(item)}
+                className="rounded-lg bg-white/5 border border-purple-300/20 hover:bg-white/10 transition-all cursor-pointer"
               >
                 <div className="flex items-center justify-between gap-4 p-4">
                   <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -159,7 +167,10 @@ export const List: React.FC<ListProps> = ({
                       </Badge>
                     )}
 
-                    <div className="flex rounded-md overflow-hidden border border-purple-300/20">
+                    <div
+                      className="flex rounded-md overflow-hidden border border-purple-300/20"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         size="sm"
                         variant="ghost"

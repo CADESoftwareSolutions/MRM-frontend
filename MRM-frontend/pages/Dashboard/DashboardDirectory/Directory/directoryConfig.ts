@@ -24,6 +24,12 @@ export interface FieldConfig {
   dependsOn?: string; // Show field only if another field has certain value
   dependsOnValue?: any;
   helpText?: string;
+  /** GraphQL variable name. When set, this field's value is included in the mutation payload. */
+  graphqlKey?: string;
+  /** Transform the form value before sending to GraphQL. */
+  toGraphQL?: (value: any) => any;
+  /** For multi-badge: clicking a badge replaces the selection instead of toggling. */
+  singleSelect?: boolean;
 }
 
 export interface TabConfig {
@@ -232,6 +238,7 @@ export const directoryConfig: ModuleConfig = {
     field.select("nameIdType", "Name ID Type", ["auto", "custom"], {
       required: true,
       section: "identification",
+      defaultValue: "auto",
     }),
 
     field.text("nameId", "Name ID", {
@@ -248,12 +255,16 @@ export const directoryConfig: ModuleConfig = {
         required: true,
         section: "identification",
         gridColumn: "span 2",
+        graphqlKey: "partyType",
+        toGraphQL: (v: string[]) => v?.[0],
+        singleSelect: true,
       }
     ),
 
     field.text("name", "Name", {
       required: true,
       section: "basic-info",
+      graphqlKey: "nameFull",
     }),
 
     field.text("nameLine2", "Name Line 2", {
@@ -277,28 +288,35 @@ export const directoryConfig: ModuleConfig = {
         section: "address",
         gridColumn: "span 2",
         defaultValue: ["ALL"],
+        graphqlKey: "addressType",
+        toGraphQL: (v: string[]) => v?.[0],
       }
     ),
 
     field.text("address", "Address", {
       section: "address",
+      graphqlKey: "line1",
     }),
 
     field.text("addressLine2", "Address Line 2", {
       section: "address",
+      graphqlKey: "line2",
     }),
 
     field.text("city", "City", {
       section: "address",
+      graphqlKey: "city",
     }),
 
     field.select("state", "State", STATES, {
       section: "address",
+      graphqlKey: "stateCode",
     }),
 
     field.text("zip", "Zip", {
       section: "address",
       placeholder: "12345 or 12345-6789",
+      graphqlKey: "postalCode",
     }),
 
     field.multiBadge(
@@ -312,11 +330,13 @@ export const directoryConfig: ModuleConfig = {
 
     field.phone("phoneNumber", "Phone Number", {
       section: "contact",
+      graphqlKey: "phone",
     }),
 
     field.email("email", "Email Address", {
       section: "contact",
       gridColumn: "span 2",
+      graphqlKey: "email",
     }),
 
     field.text("contactPerson", "Contact Person", {
@@ -366,6 +386,8 @@ export const directoryConfig: ModuleConfig = {
     field.select("status", "Active Status", ["Active", "Inactive"], {
       section: "status",
       defaultValue: "Active",
+      graphqlKey: "isActive",
+      toGraphQL: (v: string) => v === "Active",
     }),
 
     field.textarea("comments", "Comments/Notes", {
@@ -398,6 +420,7 @@ export const directoryConfig: ModuleConfig = {
       section: "tax-basic",
       placeholder: "SSN or TIN format",
       helpText: "Format auto-created based on Owner Tax Classification",
+      graphqlKey: "taxId",
     }),
 
     field.select("internalInHouse", "Internal/In House", ["Yes", "No"], {

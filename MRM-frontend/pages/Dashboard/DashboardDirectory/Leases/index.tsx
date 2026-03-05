@@ -1,6 +1,6 @@
 import React from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
-import { useFormData } from "@/hooks/useFormData";
+import { useFormData } from "@/hooks/useDirectory";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import leasesConfig, { MOCK_LEASES } from "./leasesConfig";
@@ -90,7 +90,7 @@ const Leases: React.FC<LeasesProps> = () => {
                 className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-2 " />
-                Add New Contact
+                Add New Lease
               </Button>
             )}
           </div>

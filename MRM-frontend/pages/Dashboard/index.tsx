@@ -23,9 +23,7 @@ const DashboardPage = () => {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
-
       const data = await response.json();
-      console.log(data);
 
       if (response.ok) {
         setUserProfile(data);
