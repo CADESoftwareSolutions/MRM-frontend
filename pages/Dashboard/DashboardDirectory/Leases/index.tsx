@@ -1,6 +1,5 @@
 import React from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
-import { useFormData } from "@/hooks/useDirectory";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import leasesConfig, { MOCK_LEASES } from "./leasesConfig";
@@ -10,63 +9,6 @@ import { List } from "../../../../components/FormComponents/List";
 type LeasesProps = {};
 
 const Leases: React.FC<LeasesProps> = () => {
-  const {
-    view,
-    searchTerm,
-    selectedItem,
-    filteredData,
-    setSearchTerm,
-    handleAdd,
-    handleEdit,
-    handleSave,
-    handleDelete,
-    handleCancel,
-  } = useFormData(leasesConfig, MOCK_LEASES);
-
-  const resetForm = () => {
-    setFormData({
-      nameIdType: "auto",
-      nameId: "",
-      classifications: [],
-      name: "",
-      nameLine2: "",
-      addressTypes: [],
-      address: "",
-      addressLine2: "",
-      city: "",
-      state: "",
-      zip: "",
-      phoneTypes: [],
-      phoneNumber: "",
-      email: "",
-      contactPerson: "",
-      contactAddressTypes: [],
-      contactAddress: "",
-      contactAddressLine2: "",
-      contactCity: "",
-      contactState: "",
-      contactZip: "",
-      contactPhone: "",
-      contactEmail: "",
-      status: "Active",
-      comments: "",
-      taxClassification: "",
-      taxId: "",
-      internalInHouse: "",
-      federalTaxWithheld: "",
-      nonEmployeeComp: "",
-      send1099: "",
-      w9OnFile: "",
-      backupWithholding: "",
-      severanceTaxExempt: "",
-      otherExempt: "",
-      minPaymentAmount: "",
-      pay: "",
-      duplicateInvoiceValidation: "",
-    });
-    setSelectedContact(null);
-  };
-
   return (
     <DashboardLayout>
       <div
@@ -84,38 +26,7 @@ const Leases: React.FC<LeasesProps> = () => {
                 {leasesConfig.title}
               </h1>
             </div>
-            {view === "list" && (
-              <Button
-                onClick={handleAdd}
-                className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
-              >
-                <Plus className="w-4 h-4 mr-2 " />
-                Add New Lease
-              </Button>
-            )}
           </div>
-
-          {view === "list" && (
-            <List
-              config={leasesConfig}
-              data={MOCK_LEASES}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              filteredContacts={filteredData}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          )}
-
-          {(view === "add" || view === "edit") && (
-            <Form
-              config={leasesConfig}
-              initialData={selectedItem}
-              onSave={handleSave}
-              onCancel={handleCancel}
-              mode={view}
-            />
-          )}
         </div>
       </div>
     </DashboardLayout>
