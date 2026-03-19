@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { API_URL } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,7 +34,7 @@ const LoginForm: React.FC = () => {
     setLoading(true);
     // router.push("/Dashboard");
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -44,7 +45,7 @@ const LoginForm: React.FC = () => {
 
       if (response.ok) {
         console.log("Login successful!", data);
-        router.push("/Dashboard");
+        window.location.href = process.env.NEXT_PUBLIC_DASHBOARD_URL || "https://dashboard.cade.solutions";
       } else {
         setError(data.message || "Invalid username or password.");
       }

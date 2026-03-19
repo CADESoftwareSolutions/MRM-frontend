@@ -3,6 +3,7 @@ import DashboardHome from "../../components/DashboardComponents/DashboardHome";
 import DashboardLayout from "../../components/DashboardComponents/DashboardLayout";
 import NewUserDashboard from "../../components/DashboardComponents/NewUserDashboard";
 import { userProfileAtom } from "../../src/atoms/userProfileAtom";
+import { API_URL } from "../../src/lib/api";
 import { useEffect, useState } from "react";
 
 export interface user {
@@ -18,7 +19,7 @@ const DashboardPage = () => {
   const fetchUser = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/profile", {
+      const response = await fetch(`${API_URL}/profile`, {
         method: "GET",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

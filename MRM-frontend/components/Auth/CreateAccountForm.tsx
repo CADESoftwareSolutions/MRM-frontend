@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { API_URL } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@ const CreateAccountForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/signup", {
+      const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -36,8 +37,8 @@ const CreateAccountForm: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        router.push("/Dashboard");
+if (response.ok) {
+      window.location.href = (process.env.NEXT_PUBLIC_WWW_URL || "https://www.cade.solutions") + "/Login/Login";
       } else {
         setError(data.message || "Unable to create account.");
       }
