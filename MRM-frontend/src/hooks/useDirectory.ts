@@ -9,8 +9,9 @@ import {
   UPDATE_ADDRESS_MUTATION,
   CREATE_PARTY_ADDRESS_MUTATION,
 } from "../graphql/Directory";
+import { API_URL } from "../lib/api";
 
-const GRAPHQL_ENDPOINT = "http://localhost:5000/graphql"; // Your GraphQL endpoint
+const GRAPHQL_ENDPOINT = `${API_URL}/graphql`;
 
 interface UseDirectoryDataProps {
   config: ModuleConfig;

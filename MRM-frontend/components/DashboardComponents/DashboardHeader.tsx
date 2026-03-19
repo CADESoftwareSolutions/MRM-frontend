@@ -8,6 +8,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User } from "lucide-react";
 import { useRouter } from "next/router";
+import { API_URL } from "@/lib/api";
 type DashboardHeaderProps = {
   sidebarWidth: number;
 };
@@ -16,7 +17,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
   const router = useRouter();
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/logout", {
+      const response = await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,6 +28,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
       if (response.ok) {
         console.log("Logout Successful!", data);
+        window.location.href = process.env.NEXT_PUBLIC_WWW_URL || "https://www.cade.solutions";
+        return;
       }
     } catch {
       router.push("/");
