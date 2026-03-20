@@ -13,7 +13,7 @@ import Layout from "../../components/Layout/Layout";
 import { ourFeatures } from "../../public/Documents/companyInfo";
 
 const ServicePage: React.FC = () => {
-  const [expandedSections, setExpandedSections] = useState<any>([]);
+  const [expandedSections, setExpandedSections] = useState<number[]>([]);
   const router = useRouter();
   const { slug } = router.query;
 
@@ -23,7 +23,7 @@ const ServicePage: React.FC = () => {
 
   if (!service) return null;
 
-  const toggleSection = (idx) => {
+  const toggleSection = (idx: number) => {
     setExpandedSections((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );

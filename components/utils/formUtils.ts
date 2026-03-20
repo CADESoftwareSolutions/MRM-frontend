@@ -1,4 +1,4 @@
-import { ModuleConfig } from "../../pages/Dashboard/DashboardDirectory/Directory/directoryConfig";
+import { ModuleConfig } from "../../src/config/directoryConfig";
 
 export const createEmptyFormData = (config: ModuleConfig) => {
   const formData: any = {};

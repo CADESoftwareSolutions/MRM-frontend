@@ -2,7 +2,7 @@ import React from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import leasesConfig, { MOCK_LEASES } from "./leasesConfig";
+import leasesConfig, { MOCK_LEASES } from "@/config/leasesConfig";
 import Form from "../../../../components/FormComponents/Form";
 import { List } from "../../../../components/FormComponents/List";
 

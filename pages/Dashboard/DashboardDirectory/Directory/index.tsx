@@ -3,7 +3,7 @@ import { Plus, Users } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
-import { directoryConfig } from "./directoryConfig";
+import { directoryConfig } from "@/config/directoryConfig";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useEffect } from "react";
 import { useAtom } from "jotai";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ModuleConfig } from "../../pages/Dashboard/DashboardDirectory/Directory/directoryConfig";
+import { ModuleConfig } from "../config/directoryConfig";
 import {
   FETCH_PARTIES,
   CREATE_PARTY_MUTATION,
@@ -18,11 +18,11 @@ interface UseDirectoryDataProps {
 }
 
 export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Record<string, any>[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
 
   const executeGraphQL = async (query: string, variables: any = {}) => {
     try {
@@ -60,7 +60,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       const result = await executeGraphQL(FETCH_PARTIES, { accountId });
 
       // Transform GraphQL data to match frontend format
-      const transformedData = result.parties.map((party) => ({
+      const transformedData = result.parties.map((party: any) => ({
         id: party.id,
         nameIdType: "auto", // TODO: read from backend when custom name ID is supported
         nameId: `PARTY-${party.id}`,
@@ -123,7 +123,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       setSelectedItem(null);
     } catch (error) {
       console.error("Failed to save party:", error);
-      alert(`Failed to save: ${error!.message}`);
+      alert(`Failed to save: ${(error as Error).message}`);
     }
   };
 
@@ -138,7 +138,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       await fetchData();
     } catch (error) {
       console.error("Failed to delete party:", error);
-      alert(`Failed to delete: ${error.message}`);
+      alert(`Failed to delete: ${(error as Error).message}`);
     }
   };
 
@@ -175,7 +175,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       setSelectedItem(null);
       setView("add");
     },
-    handleEdit: (item) => {
+    handleEdit: (item: Record<string, any>) => {
       setSelectedItem(item);
       setView("edit");
     },

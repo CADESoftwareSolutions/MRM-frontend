@@ -18,7 +18,7 @@ import { AlertCircle, FileText } from "lucide-react";
 import {
   FieldConfig,
   ModuleConfig,
-} from "../../pages/Dashboard/DashboardDirectory/Directory/directoryConfig";
+} from "../../src/config/directoryConfig";
 
 interface FormProps {
   config: ModuleConfig;

@@ -1,5 +1,5 @@
 // configs/leasesConfig.ts
-import { field, ModuleConfig, STATES } from "../Directory/directoryConfig";
+import { field, ModuleConfig, STATES } from "./directoryConfig";
 
 export const leasesConfig: ModuleConfig = {
   name: "leases",

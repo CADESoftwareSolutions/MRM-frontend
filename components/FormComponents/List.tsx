@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Building2, Edit, FileText, Search, Trash2 } from "lucide-react";
-import { ModuleConfig } from "../../pages/Dashboard/DashboardDirectory/Directory/directoryConfig";
+import { ModuleConfig } from "../../src/config/directoryConfig";
 
 interface ListProps {
   config: ModuleConfig;

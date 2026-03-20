@@ -13,7 +13,7 @@ const DashboardPage = () => {
   const [, setUserProfile] = useAtom(userProfileAtom);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const mockData: [] = ["test"];
+  const mockData: string[] = ["test"];
 
   const fetchUser = async () => {
     setLoading(true);
