@@ -4,22 +4,22 @@ import React from "react";
 const homeImages = [
   {
     title: "Accounting & Revenue Management",
-    image: "/images/homePage/homePageImage1.jpg",
+    image: "/images/HomePage/homePageImage1.jpg",
     offset: "-20px",
   },
   {
     title: "Land & Mineral Management",
-    image: "/images/homePage/homePageImage2.png",
+    image: "/images/HomePage/homePageImage2.png",
     offset: "20px",
   },
   {
     title: "Document Management",
-    image: "/images/homePage/homePageImage3.png",
+    image: "/images/HomePage/homePageImage3.png",
     offset: "20px",
   },
   {
     title: "Reports Management",
-    image: "/images/homePage/homePageImage4.jpg",
+    image: "/images/HomePage/homePageImage4.jpg",
     offset: "-20px",
   },
 ];
