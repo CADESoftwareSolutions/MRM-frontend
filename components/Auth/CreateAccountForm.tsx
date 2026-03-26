@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_URL } from "../../src/lib/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +29,7 @@ const CreateAccountForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/signup", {
+      const response = await fetch(`${API_URL}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

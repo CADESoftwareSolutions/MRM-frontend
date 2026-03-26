@@ -1,4 +1,5 @@
 import React from "react";
+import { API_URL } from "../../src/lib/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
   const router = useRouter();
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:5000/logout", {
+      const response = await fetch(`${API_URL}/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

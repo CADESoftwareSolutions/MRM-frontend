@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_URL } from "../../src/lib/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,7 @@ const LoginForm: React.FC = () => {
     setLoading(true);
     // router.push("/Dashboard");
     try {
-      const response = await fetch("http://localhost:5000/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
