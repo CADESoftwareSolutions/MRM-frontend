@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, FileText } from "lucide-react";
+import { AlertCircle, FileText, X } from "lucide-react";
 import {
   FieldConfig,
   ModuleConfig,
@@ -26,6 +26,8 @@ interface FormProps {
   onSave: (data: any) => void;
   onCancel: () => void;
   mode?: "add" | "edit";
+  saveError?: string | null;
+  onClearSaveError?: () => void;
 }
 
 const INPUT_TYPES: Record<string, string> = {
@@ -41,13 +43,15 @@ export const Form: React.FC<FormProps> = ({
   onSave,
   onCancel,
   mode = "add",
+  saveError,
+  onClearSaveError,
 }) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
     return acc;
   }, {});
 
-  const { control, handleSubmit, watch } = useForm({
+  const { control, handleSubmit, watch, formState: { errors, isSubmitted } } = useForm({
     defaultValues: { ...configDefaults, ...(initialData || {}) },
   });
 
@@ -61,7 +65,15 @@ export const Form: React.FC<FormProps> = ({
       : val === field.dependsOnValue;
   };
 
-  const commonClasses = "bg-white/5 border-purple-300/30 text-white h-10";
+  const getFieldRules = (f: FieldConfig) => {
+    if (!f.required) return {};
+    if (f.type === "multi-badge") {
+      return { validate: (v: string[]) => (v && v.length > 0) || `${f.label} is required` };
+    }
+    return { required: `${f.label} is required` };
+  };
+
+  const commonClasses = "bg-white/5 border-purple-300/30 text-white h-9";
 
   const renderField = (field: FieldConfig) => {
     if (!shouldShowField(field)) return null;
@@ -85,6 +97,7 @@ export const Form: React.FC<FormProps> = ({
           <Controller
             name={field.id}
             control={control}
+            rules={getFieldRules(field)}
             render={({ field: f }) => (
               <Input
                 type={INPUT_TYPES[field.type]}
@@ -92,7 +105,7 @@ export const Form: React.FC<FormProps> = ({
                 onChange={f.onChange}
                 onBlur={f.onBlur}
                 placeholder={field.placeholder}
-                className={commonClasses}
+                className={`${commonClasses} ${errors[field.id] ? "border-red-500" : ""}`}
               />
             )}
           />
@@ -102,6 +115,7 @@ export const Form: React.FC<FormProps> = ({
           <Controller
             name={field.id}
             control={control}
+            rules={getFieldRules(field)}
             render={({ field: f }) => (
               <Textarea
                 value={f.value ?? ""}
@@ -118,10 +132,11 @@ export const Form: React.FC<FormProps> = ({
           <Controller
             name={field.id}
             control={control}
+            rules={getFieldRules(field)}
             render={({ field: f }) => (
               <Select value={f.value || undefined} onValueChange={f.onChange}>
                 <SelectTrigger
-                  className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70`}
+                  className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70 ${errors[field.id] ? "border-red-500" : ""}`}
                 >
                   <SelectValue
                     placeholder={
@@ -159,6 +174,7 @@ export const Form: React.FC<FormProps> = ({
           <Controller
             name={field.id}
             control={control}
+            rules={getFieldRules(field)}
             defaultValue={field.defaultValue || []}
             render={({ field: f }) => (
               <div className="flex flex-wrap gap-2">
@@ -194,6 +210,12 @@ export const Form: React.FC<FormProps> = ({
               </div>
             )}
           />
+        )}
+
+        {errors[field.id] && (
+          <p className="text-red-400 text-xs mt-1">
+            {errors[field.id]?.message as string}
+          </p>
         )}
       </div>
     );
@@ -285,6 +307,29 @@ export const Form: React.FC<FormProps> = ({
             </TabsContent>
           ))}
         </Tabs>
+
+        {saveError && (
+          <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
+            <p className="text-sm text-red-300">{saveError}</p>
+            <button onClick={onClearSaveError} className="text-red-400 hover:text-red-200 ml-4">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {isSubmitted && Object.keys(errors).length > 0 && (
+          <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm text-red-300 font-medium">Please fill in the required fields:</p>
+              <ul className="mt-1 space-y-0.5">
+                {Object.entries(errors).map(([, err]) => (
+                  <li key={err?.message as string} className="text-xs text-red-400">{err?.message as string}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-3 mt-8 pt-6 border-t border-purple-300/30">
           <Button

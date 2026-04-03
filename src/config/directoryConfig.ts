@@ -54,7 +54,7 @@ export const field = {
   text: (
     id: string,
     label: string,
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -67,7 +67,7 @@ export const field = {
   email: (
     id: string,
     label: string,
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -80,7 +80,7 @@ export const field = {
   phone: (
     id: string,
     label: string,
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -93,7 +93,7 @@ export const field = {
   number: (
     id: string,
     label: string,
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -107,7 +107,7 @@ export const field = {
     id: string,
     label: string,
     options: string[],
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -122,7 +122,7 @@ export const field = {
     id: string,
     label: string,
     options: string[],
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -137,7 +137,7 @@ export const field = {
     id: string,
     label: string,
     options: string[],
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -151,7 +151,7 @@ export const field = {
   textarea: (
     id: string,
     label: string,
-    opts: Partial<FieldConfig> = {}
+    opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,
     label,
@@ -218,7 +218,7 @@ export const STATES = [
 
 export const directoryConfig: ModuleConfig = {
   name: "directory",
-  title: "Contact",
+  title: "Contacts",
   tabs: [
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
@@ -257,8 +257,7 @@ export const directoryConfig: ModuleConfig = {
         gridColumn: "span 2",
         graphqlKey: "partyType",
         toGraphQL: (v: string[]) => v?.[0],
-        singleSelect: true,
-      }
+      },
     ),
 
     field.text("name", "Name", {
@@ -275,7 +274,6 @@ export const directoryConfig: ModuleConfig = {
       "addressTypes",
       "Address Type",
       [
-        "ALL",
         "Physical",
         "Mailing",
         "1099",
@@ -285,15 +283,17 @@ export const directoryConfig: ModuleConfig = {
         "Correspondence",
       ],
       {
+        required: true,
         section: "address",
         gridColumn: "span 2",
-        defaultValue: ["ALL"],
+        defaultValue: ["Physical"],
         graphqlKey: "addressType",
         toGraphQL: (v: string[]) => v?.[0],
-      }
+      },
     ),
 
     field.text("address", "Address", {
+      required: true,
       section: "address",
       graphqlKey: "line1",
     }),
@@ -304,12 +304,14 @@ export const directoryConfig: ModuleConfig = {
     }),
 
     field.text("city", "City", {
+      required: true,
       section: "address",
       graphqlKey: "city",
     }),
 
     field.select("state", "State", STATES, {
       section: "address",
+      required: true,
       graphqlKey: "stateCode",
     }),
 
@@ -325,7 +327,7 @@ export const directoryConfig: ModuleConfig = {
       ["Home", "Business", "Cell"],
       {
         section: "contact",
-      }
+      },
     ),
 
     field.phone("phoneNumber", "Phone Number", {
@@ -352,7 +354,7 @@ export const directoryConfig: ModuleConfig = {
         section: "contact-person",
         gridColumn: "span 2",
         defaultValue: ["All"],
-      }
+      },
     ),
 
     field.text("contactAddress", "Contact Person Address", {
@@ -412,7 +414,7 @@ export const directoryConfig: ModuleConfig = {
       {
         tab: "tax",
         section: "tax-basic",
-      }
+      },
     ),
 
     field.text("taxId", "Tax ID", {
@@ -440,7 +442,7 @@ export const directoryConfig: ModuleConfig = {
       {
         tab: "tax",
         section: "tax-options",
-      }
+      },
     ),
 
     field.select("send1099", "Send 1099", ["Yes", "No"], {
@@ -495,7 +497,7 @@ export const directoryConfig: ModuleConfig = {
         section: "vendor-options",
         dependsOnValue: "VENDOR",
         dependsOn: "classifications",
-      }
+      },
     ),
   ],
 };

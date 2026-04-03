@@ -5,6 +5,7 @@ import DashboardLayout from "../../components/DashboardComponents/DashboardLayou
 import NewUserDashboard from "../../components/DashboardComponents/NewUserDashboard";
 import { userProfileAtom } from "../../src/atoms/userProfileAtom";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 export interface user {
   username: string;
@@ -15,6 +16,7 @@ const DashboardPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const mockData: string[] = ["test"];
+  const router = useRouter();
 
   const fetchUser = async () => {
     setLoading(true);
@@ -24,6 +26,12 @@ const DashboardPage = () => {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
+
+      if (response.status === 401) {
+        router.push("/Login");
+        return;
+      }
+
       const data = await response.json();
 
       if (response.ok) {

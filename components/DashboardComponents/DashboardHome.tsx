@@ -84,7 +84,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = () => {
     <div className="p-6" style={{ marginTop: `64px` }}>
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">
-          Welcome back {userProfile?.username}!
+          Welcome back {userProfile?.user?.username}!
         </h1>
         <p className="text-lg text-white/70">
           Here's what's happening with your business today

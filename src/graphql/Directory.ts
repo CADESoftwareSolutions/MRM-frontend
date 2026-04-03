@@ -41,12 +41,6 @@ export const CREATE_PARTY_MUTATION = `
     $email: String
     $phone: String
     $isActive: Boolean
-    $line1: String
-    $line2: String
-    $city: String
-    $stateCode: String
-    $postalCode: String
-    $addressType: String
   ) {
     createParty(
       accountId: $accountId
@@ -59,12 +53,6 @@ export const CREATE_PARTY_MUTATION = `
       email: $email
       phone: $phone
       isActive: $isActive
-      line1: $line1
-      line2: $line2
-      city: $city
-      stateCode: $stateCode
-      postalCode: $postalCode
-      addressType: $addressType
     ) {
       party {
         id
@@ -90,12 +78,6 @@ export const UPDATE_PARTY_MUTATION = `
     $email: String
     $phone: String
     $isActive: Boolean
-    $line1: String
-    $line2: String
-    $city: String
-    $stateCode: String
-    $postalCode: String
-    $addressType: String
   ) {
     updateParty(
       id: $id
@@ -108,12 +90,6 @@ export const UPDATE_PARTY_MUTATION = `
       email: $email
       phone: $phone
       isActive: $isActive
-      line1: $line1
-      line2: $line2
-      city: $city
-      stateCode: $stateCode
-      postalCode: $postalCode
-      addressType: $addressType
     ) {
       party {
         id

@@ -3,6 +3,7 @@ import { Plus, Users } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
+import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { directoryConfig } from "@/config/directoryConfig";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useEffect } from "react";
@@ -17,6 +18,11 @@ const AddressDirectory = () => {
     searchTerm,
     selectedItem,
     filteredData,
+    saveError,
+    clearSaveError,
+    pendingDeleteItem,
+    confirmDelete,
+    cancelDelete,
     setSearchTerm,
     handleAdd,
     handleEdit,
@@ -25,7 +31,7 @@ const AddressDirectory = () => {
     handleCancel,
   } = useDirectory({
     config: directoryConfig,
-    accountId: 1,
+    accountId: userProfile?.account?.id ?? 0,
   });
 
   useEffect(() => {
@@ -37,9 +43,14 @@ const AddressDirectory = () => {
       <div className="min-h-screen p-6 my-15">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Users className="w-8 h-8 text-purple-300" />
-              <h1 className="text-3xl font-bold text-white">Directory</h1>
+            <div className="flex items-start gap-3">
+              <Users className="w-8 h-8 text-purple-300 mt-1" />
+              <div>
+                <h1 className="text-3xl font-bold text-white leading-none">Directory</h1>
+                <p className="text-sm text-white/50 mt-1">
+                  {filteredData.length} {filteredData.length === 1 ? "contact" : "contacts"}
+                </p>
+              </div>
             </div>
             {view === "list" && (
               <Button
@@ -51,6 +62,7 @@ const AddressDirectory = () => {
               </Button>
             )}
           </div>
+          <div className="border-b border-purple-300/10 mb-8" />
 
           {view === "list" && (
             <List
@@ -71,10 +83,19 @@ const AddressDirectory = () => {
               onSave={handleSave}
               onCancel={handleCancel}
               mode={view}
+              saveError={saveError}
+              onClearSaveError={clearSaveError}
             />
           )}
         </div>
       </div>
+
+      <DeleteConfirmModal
+        isOpen={!!pendingDeleteItem}
+        itemName={pendingDeleteItem?.name || "this contact"}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </DashboardLayout>
   );
 };

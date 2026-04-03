@@ -25,6 +25,8 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const [view, setView] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<string, any> | null>(null);
 
   const executeGraphQL = async (query: string, variables: any = {}) => {
     try {
@@ -111,12 +113,31 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     try {
       const variables = transformFormDataToGraphQL(formData);
 
+      const { line1, line2, city, stateCode, postalCode, addressType, ...partyVariables } = variables;
+      const hasAddress = line1 || city || stateCode;
+
       if (view === "add") {
-        await executeGraphQL(CREATE_PARTY_MUTATION, variables);
+        const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, partyVariables);
+        const partyId = parseInt(partyResult.createParty.party.id, 10);
+
+        if (hasAddress) {
+          const addressResult = await executeGraphQL(CREATE_ADDRESS_MUTATION, {
+            line1, line2, city, stateCode, postalCode,
+          });
+          const addressId = parseInt(addressResult.createAddress.address.id, 10);
+
+          await executeGraphQL(CREATE_PARTY_ADDRESS_MUTATION, {
+            accountId,
+            partyId,
+            addressId,
+            addressType: addressType || "Physical",
+            isPrimary: true,
+          });
+        }
       } else {
         await executeGraphQL(UPDATE_PARTY_MUTATION, {
           id: parseInt(selectedItem?.id, 10),
-          ...variables,
+          ...partyVariables,
         });
       }
 
@@ -125,24 +146,30 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       setSelectedItem(null);
     } catch (error) {
       console.error("Failed to save party:", error);
-      alert(`Failed to save: ${(error as Error).message}`);
+      setSaveError((error as Error).message);
     }
   };
 
-  const handleDelete = async (item: any) => {
-    const displayField = config.listFields[0];
-    const itemName = item[displayField] || "this item";
+  const handleDelete = (item: any) => {
+    setPendingDeleteItem(item);
+  };
 
-    if (!confirm(`Delete ${itemName}?`)) return;
-
+  const confirmDelete = async () => {
+    if (!pendingDeleteItem) return;
     try {
-      await executeGraphQL(DELETE_PARTY_MUTATION, { id: parseInt(item.id, 10) });
+      await executeGraphQL(DELETE_PARTY_MUTATION, { id: parseInt(pendingDeleteItem.id, 10) });
       await fetchData();
     } catch (error) {
       console.error("Failed to delete party:", error);
-      alert(`Failed to delete: ${(error as Error).message}`);
+      setSaveError((error as Error).message);
+    } finally {
+      setPendingDeleteItem(null);
     }
   };
+
+  const cancelDelete = () => setPendingDeleteItem(null);
+
+  const SEARCH_FIELDS = ["name", "nameId", "address", "city", "state", "zip"];
 
   // Filter data based on search term
   const filteredData = useMemo(() => {
@@ -151,7 +178,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     const searchLower = searchTerm.toLowerCase();
 
     return data.filter((item) => {
-      return config.listFields.some((fieldId) => {
+      return SEARCH_FIELDS.some((fieldId) => {
         const value = item[fieldId];
 
         if (Array.isArray(value)) {
@@ -163,7 +190,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
         return value?.toString().toLowerCase().includes(searchLower);
       });
     });
-  }, [data, searchTerm, config.listFields]);
+  }, [data, searchTerm]);
 
   return {
     data,
@@ -171,7 +198,12 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     view,
     searchTerm,
     selectedItem,
-    filteredData: data, //filter
+    saveError,
+    clearSaveError: () => setSaveError(null),
+    pendingDeleteItem,
+    confirmDelete,
+    cancelDelete,
+    filteredData,
     setSearchTerm,
     handleAdd: () => {
       setSelectedItem(null);

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FileText, House, Layers, Settings, Users } from "lucide-react";
+import { ChevronLeft, FileText, House, Layers, Settings, Users } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useState } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
@@ -15,7 +15,6 @@ import { openAccordionsAtom } from "@/atoms/NavigationAtom";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
-const appBarHeight = 64;
 
 const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [openAccordions, setOpenAccordions] = useAtom(openAccordionsAtom);
@@ -79,18 +78,17 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         className="fixed flex h-screen flex-col bg-white/5 border-white/10 backdrop-blur-lg border-r border-white/10 backdrop-blur-sm transition-all duration-300 ease-in-out z-[1300]"
         style={{ width: `${sidebarWidth}px` }}
       >
-        <div
-          className="flex items-center px-4"
-          style={{ height: `${appBarHeight}px` }}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="text-white hover:bg-[#e91e63] cursor-pointer"
-          >
-            <Layers className="h-5 w-5" />
-          </Button>
+        <div className="flex items-start justify-end px-2 pt-3">
+          {sidebarOpen && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="text-white/60 hover:text-white hover:bg-white/10 cursor-pointer"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          )}
         </div>
 
         <nav className="flex-1 px-2 space-y-1">
@@ -104,7 +102,10 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                 <Button
                   key={group.text}
                   variant="ghost"
-                  onClick={() => router.push(group.route!)}
+                  onClick={() => {
+                    if (!sidebarOpen) setSidebarOpen(true);
+                    router.push(group.route!);
+                  }}
                   className={`w-full justify-start text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 ${
                     isActive ? "bg-[#e91e63]" : ""
                   }`}
@@ -122,6 +123,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
             return (
               <Accordion
+                key={group.text}
                 type="single"
                 collapsible
                 value={isOpen ? group.text : ""}

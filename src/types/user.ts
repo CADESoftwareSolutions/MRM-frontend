@@ -1,5 +1,11 @@
 export interface User {
-  id: number;
-  username: string;
-  email?: string; // optional for now
+  authenticated: boolean;
+  user?: {
+    id: number;
+    username: string;
+  };
+  account?: {
+    id: number;
+    name: string;
+  } | null;
 }
