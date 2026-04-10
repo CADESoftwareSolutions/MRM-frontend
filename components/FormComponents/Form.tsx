@@ -19,6 +19,7 @@ import {
   FieldConfig,
   ModuleConfig,
 } from "../../src/config/directoryConfig";
+import { ContactsTab, Contact } from "./ContactsTab";
 
 interface FormProps {
   config: ModuleConfig;
@@ -28,6 +29,11 @@ interface FormProps {
   mode?: "add" | "edit";
   saveError?: string | null;
   onClearSaveError?: () => void;
+  partyId?: number;
+  contacts?: Contact[];
+  onAddContact?: (contact: Omit<Contact, "id">) => Promise<void>;
+  onUpdateContact?: (id: number, contact: Omit<Contact, "id">) => Promise<void>;
+  onDeleteContact?: (id: number) => Promise<void>;
 }
 
 const INPUT_TYPES: Record<string, string> = {
@@ -45,6 +51,11 @@ export const Form: React.FC<FormProps> = ({
   mode = "add",
   saveError,
   onClearSaveError,
+  partyId,
+  contacts = [],
+  onAddContact,
+  onUpdateContact,
+  onDeleteContact,
 }) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
@@ -86,11 +97,11 @@ export const Form: React.FC<FormProps> = ({
         <Label className="text-purple-100 font-semibold flex items-center gap-1 mb-2.5 text-sm">
           {field.label}
           {field.required && (
-            <span className="text-red-500 text-base font-bold">*</span>
+            <span className="text-red-500 text-sm font-bold">*</span>
           )}
         </Label>
         {field.helpText && (
-          <p className="text-xs text-purple-300/70 mb-2">{field.helpText}</p>
+          <p className="form-help-text text-xs mb-2">{field.helpText}</p>
         )}
 
         {INPUT_TYPES[field.type] !== undefined && (
@@ -145,7 +156,7 @@ export const Form: React.FC<FormProps> = ({
                   />
                 </SelectTrigger>
                 <SelectContent
-                  className="bg-[#1a1a2e] border-purple-300/30 text-black max-h-[300px] overflow-y-auto z-50"
+                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto z-50"
                   position="popper"
                   sideOffset={4}
                 >
@@ -285,7 +296,7 @@ export const Form: React.FC<FormProps> = ({
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex-1 data-[state=active]:bg-purple-600 text-purple-100 cursor-pointer"
+                className="flex-1 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 cursor-pointer"
               >
                 {tab.label}
               </TabsTrigger>
@@ -303,7 +314,17 @@ export const Form: React.FC<FormProps> = ({
                   </p>
                 </div>
               )}
-              {renderTabContent(tab.id)}
+              {tab.id === "contacts" ? (
+                <ContactsTab
+                  partyId={partyId}
+                  contacts={contacts}
+                  onAdd={onAddContact ?? (() => Promise.resolve())}
+                  onUpdate={onUpdateContact ?? (() => Promise.resolve())}
+                  onDelete={onDeleteContact ?? (() => Promise.resolve())}
+                />
+              ) : (
+                renderTabContent(tab.id)
+              )}
             </TabsContent>
           ))}
         </Tabs>

@@ -23,6 +23,10 @@ const AddressDirectory = () => {
     pendingDeleteItem,
     confirmDelete,
     cancelDelete,
+    contacts,
+    handleAddContact,
+    handleUpdateContact,
+    handleDeleteContact,
     setSearchTerm,
     handleAdd,
     handleEdit,
@@ -85,6 +89,11 @@ const AddressDirectory = () => {
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
+              partyId={selectedItem?.id ? parseInt(selectedItem.id, 10) : undefined}
+              contacts={contacts}
+              onAddContact={handleAddContact}
+              onUpdateContact={handleUpdateContact}
+              onDeleteContact={handleDeleteContact}
             />
           )}
         </div>

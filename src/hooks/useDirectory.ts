@@ -6,9 +6,12 @@ import {
   UPDATE_PARTY_MUTATION,
   DELETE_PARTY_MUTATION,
   CREATE_ADDRESS_MUTATION,
-  UPDATE_ADDRESS_MUTATION,
   CREATE_PARTY_ADDRESS_MUTATION,
+  CREATE_CONTACT_MUTATION,
+  UPDATE_CONTACT_MUTATION,
+  DELETE_CONTACT_MUTATION,
 } from "../graphql/Directory";
+import { Contact } from "../../components/FormComponents/ContactsTab";
 
 import { API_URL } from "../lib/api";
 
@@ -27,6 +30,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<string, any> | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const executeGraphQL = async (query: string, variables: any = {}) => {
     try {
@@ -55,6 +59,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   };
 
   useEffect(() => {
+    if (!accountId) return;
     fetchData();
   }, [accountId]);
 
@@ -169,6 +174,27 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
 
   const cancelDelete = () => setPendingDeleteItem(null);
 
+  const handleAddContact = async (contact: Omit<Contact, "id">) => {
+    if (!selectedItem?.id) return;
+    await executeGraphQL(CREATE_CONTACT_MUTATION, {
+      partyId: parseInt(selectedItem.id, 10),
+      ...contact,
+    });
+    const updated = await executeGraphQL(FETCH_PARTIES, { accountId });
+    const party = updated.parties.find((p: any) => p.id === selectedItem.id);
+    setContacts((party?.contacts || []) as Contact[]);
+  };
+
+  const handleUpdateContact = async (id: number, contact: Omit<Contact, "id">) => {
+    await executeGraphQL(UPDATE_CONTACT_MUTATION, { id, ...contact });
+    setContacts((prev) => prev.map((c) => (c.id === id ? { id, ...contact } : c)));
+  };
+
+  const handleDeleteContact = async (id: number) => {
+    await executeGraphQL(DELETE_CONTACT_MUTATION, { id });
+    setContacts((prev) => prev.filter((c) => c.id !== id));
+  };
+
   const SEARCH_FIELDS = ["name", "nameId", "address", "city", "state", "zip"];
 
   // Filter data based on search term
@@ -211,8 +237,13 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     },
     handleEdit: (item: Record<string, any>) => {
       setSelectedItem(item);
+      setContacts(item.contacts || []);
       setView("edit");
     },
+    contacts,
+    handleAddContact,
+    handleUpdateContact,
+    handleDeleteContact,
     handleSave,
     handleDelete,
     handleCancel: () => {

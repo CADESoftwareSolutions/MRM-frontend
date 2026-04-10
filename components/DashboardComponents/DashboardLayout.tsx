@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, FileText, House, Layers, Settings, Users } from "lucide-react";
 import { useRouter } from "next/router";
-import React, { PropsWithChildren, useState } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
 
 import {
@@ -11,15 +11,21 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAtom } from "jotai";
-import { openAccordionsAtom } from "@/atoms/NavigationAtom";
+import { openAccordionsAtom, sidebarOpenAtom, themeAtom } from "@/atoms/NavigationAtom";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
 
 const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [openAccordions, setOpenAccordions] = useAtom(openAccordionsAtom);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
+  const [theme] = useAtom(themeAtom);
+  const isLight = theme === "light";
   const router = useRouter();
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = isLight ? "light" : "dark";
+  }, [isLight]);
   const sidebarWidth = sidebarOpen ? fullWidth : collapsedWidth;
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
@@ -68,15 +74,16 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   };
   return (
     <div
-      className="flex min-h-screen text-white"
+      className={`flex min-h-screen ${isLight ? "text-gray-900" : "text-white"}`}
       style={{
-        background:
-          "linear-gradient(135deg, #2d1b4e 0%, #1e1e3f 50%, #2d1b4e 100%)",
+        background: isLight
+          ? "linear-gradient(135deg, #e8e0f5 0%, #ede8f7 50%, #e8e0f5 100%)"
+          : "linear-gradient(135deg, #2d1b4e 0%, #1e1e3f 50%, #2d1b4e 100%)",
       }}
     >
       <aside
-        className="fixed flex h-screen flex-col bg-white/5 border-white/10 backdrop-blur-lg border-r border-white/10 backdrop-blur-sm transition-all duration-300 ease-in-out z-[1300]"
-        style={{ width: `${sidebarWidth}px` }}
+        className="fixed flex h-screen flex-col border-white/10 backdrop-blur-lg border-r transition-all duration-300 ease-in-out z-[1300]"
+        style={{ width: `${sidebarWidth}px`, background: "linear-gradient(180deg, #2d1b4e 0%, #1e1e3f 100%)" }}
       >
         <div className="flex items-start justify-end px-2 pt-3">
           {sidebarOpen && (
@@ -97,18 +104,19 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
             const isActive =
               group.type === "link" && router.pathname === group.route;
 
+            const navText = "text-white";
+            const navHover = "hover:bg-purple-600 hover:text-white";
+            const navActive = "bg-purple-600";
+            const subText = "text-gray-300";
+            const subActive = "bg-purple-600/20 text-white";
+
             if (group.type === "link") {
               return (
                 <Button
                   key={group.text}
                   variant="ghost"
-                  onClick={() => {
-                    if (!sidebarOpen) setSidebarOpen(true);
-                    router.push(group.route!);
-                  }}
-                  className={`w-full justify-start text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 ${
-                    isActive ? "bg-[#e91e63]" : ""
-                  }`}
+                  onClick={() => router.push(group.route!)}
+                  className={`w-full justify-start transition-colors cursor-pointer h-10 ${navText} ${navHover} ${isActive ? navActive : ""}`}
                   style={{
                     padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
                     justifyContent: sidebarOpen ? "flex-start" : "center",
@@ -137,7 +145,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                         setSidebarOpen(true);
                       }
                     }}
-                    className={`flex w-full items-center text-white transition-colors hover:bg-[#e91e63] cursor-pointer h-10 py-0 hover:no-underline rounded-md ${
+                    className={`flex w-full items-center transition-colors cursor-pointer h-10 py-0 hover:no-underline rounded-md ${navText} ${navHover} ${
                       !sidebarOpen
                         ? "justify-center px-0"
                         : "justify-between px-4"
@@ -169,10 +177,8 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                           key={subItem.text}
                           variant="ghost"
                           onClick={() => router.push(subItem.route)}
-                          className={`w-full justify-start h-9 text-sm text-gray-300 hover:text-white hover:bg-[#e91e63] cursor-pointer px-4 ${
-                            router.pathname === subItem.route
-                              ? "bg-[#e91e63]/20 text-white"
-                              : ""
+                          className={`w-full justify-start h-9 text-sm cursor-pointer px-4 ${subText} ${navHover} ${
+                            router.pathname === subItem.route ? subActive : ""
                           }`}
                         >
                           {subItem.text}
@@ -194,7 +200,9 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         }}
       >
         <DashboardHeader sidebarWidth={sidebarWidth} />
-        {children}
+        <div className={isLight ? "light-theme" : ""}>
+          {children}
+        </div>
       </main>
     </div>
   );

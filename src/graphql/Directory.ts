@@ -157,6 +157,74 @@ export const UPDATE_ADDRESS_MUTATION = `
   }
 `;
 
+export const CREATE_CONTACT_MUTATION = `
+  mutation CreateContact(
+    $partyId: Int!
+    $name: String!
+    $phone: String
+    $email: String
+    $addressType: [String]
+    $address: String
+    $addressLine2: String
+    $city: String
+    $state: String
+    $zip: String
+  ) {
+    createContact(
+      partyId: $partyId
+      name: $name
+      phone: $phone
+      email: $email
+      addressType: $addressType
+      address: $address
+      addressLine2: $addressLine2
+      city: $city
+      state: $state
+      zip: $zip
+    ) {
+      contact { id name phone email addressType address addressLine2 city state zip }
+    }
+  }
+`;
+
+export const UPDATE_CONTACT_MUTATION = `
+  mutation UpdateContact(
+    $id: Int!
+    $name: String
+    $phone: String
+    $email: String
+    $addressType: [String]
+    $address: String
+    $addressLine2: String
+    $city: String
+    $state: String
+    $zip: String
+  ) {
+    updateContact(
+      id: $id
+      name: $name
+      phone: $phone
+      email: $email
+      addressType: $addressType
+      address: $address
+      addressLine2: $addressLine2
+      city: $city
+      state: $state
+      zip: $zip
+    ) {
+      contact { id name phone email addressType address addressLine2 city state zip }
+    }
+  }
+`;
+
+export const DELETE_CONTACT_MUTATION = `
+  mutation DeleteContact($id: Int!) {
+    deleteContact(id: $id) {
+      success
+    }
+  }
+`;
+
 export const CREATE_PARTY_ADDRESS_MUTATION = `
   mutation CreatePartyAddress(
     $accountId: Int!

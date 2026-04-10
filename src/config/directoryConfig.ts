@@ -223,6 +223,7 @@ export const directoryConfig: ModuleConfig = {
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
     { id: "vendor", label: "A/P Vendor Info" },
+    { id: "contacts", label: "Contacts" },
   ],
   listFields: [
     "nameId",
@@ -339,50 +340,6 @@ export const directoryConfig: ModuleConfig = {
       section: "contact",
       gridColumn: "span 2",
       graphqlKey: "email",
-    }),
-
-    field.text("contactPerson", "Contact Person", {
-      section: "contact-person",
-      gridColumn: "span 2",
-    }),
-
-    field.multiBadge(
-      "contactAddressTypes",
-      "Contact Person Address Type",
-      ["All", "Physical", "Mailing", "Correspondence"],
-      {
-        section: "contact-person",
-        gridColumn: "span 2",
-        defaultValue: ["All"],
-      },
-    ),
-
-    field.text("contactAddress", "Contact Person Address", {
-      section: "contact-person",
-    }),
-
-    field.text("contactAddressLine2", "Contact Person Address Line 2", {
-      section: "contact-person",
-    }),
-
-    field.text("contactCity", "Contact Person City", {
-      section: "contact-person",
-    }),
-
-    field.select("contactState", "Contact Person State", STATES, {
-      section: "contact-person",
-    }),
-
-    field.text("contactZip", "Contact Person Zip", {
-      section: "contact-person",
-    }),
-
-    field.phone("contactPhone", "Contact Person Phone Number", {
-      section: "contact-person",
-    }),
-
-    field.email("contactEmail", "Contact Person Email", {
-      section: "contact-person",
     }),
 
     field.select("status", "Active Status", ["Active", "Inactive"], {

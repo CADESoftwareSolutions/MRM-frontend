@@ -47,14 +47,7 @@ const UserSettings = () => {
 
   return (
     <DashboardLayout>
-      <div
-        className="min-h-screen p-6"
-        style={{
-          background:
-            "linear-gradient(135deg, #2d1b4e 0%, #1e1e3f 50%, #2d1b4e 100%)",
-          marginTop: `64px`,
-        }}
-      >
+      <div className="min-h-screen p-6" style={{ marginTop: `64px` }}>
         <div className="max-w-5xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -70,21 +63,21 @@ const UserSettings = () => {
             <TabsList className="grid w-full grid-cols-3 bg-purple-900/30 mb-6">
               <TabsTrigger
                 value="profile"
-                className="data-[state=active]:bg-purple-600 text-purple-100 cursor-pointer"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 cursor-pointer"
               >
                 <User className="w-4 h-4 mr-2" />
                 Profile
               </TabsTrigger>
               <TabsTrigger
                 value="security"
-                className="data-[state=active]:bg-purple-600 text-purple-100 cursor-pointer"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 cursor-pointer"
               >
                 <Lock className="w-4 h-4 mr-2" />
                 Security
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
-                className="data-[state=active]:bg-purple-600 text-purple-100 cursor-pointer"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 cursor-pointer"
               >
                 <Bell className="w-4 h-4 mr-2" />
                 Notifications

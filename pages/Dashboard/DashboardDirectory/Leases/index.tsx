@@ -13,10 +13,6 @@ const Leases: React.FC<LeasesProps> = () => {
     <DashboardLayout>
       <div
         className="min-h-screen p-6 my-15"
-        style={{
-          background:
-            "linear-gradient(135deg, #2d1b4e 0%, #1e1e3f 50%, #2d1b4e 100%)",
-        }}
       >
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
