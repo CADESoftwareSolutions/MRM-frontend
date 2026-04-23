@@ -40,22 +40,25 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
   return (
     <header
-      className="fixed z-[1100] flex items-center justify-end px-6 backdrop-blur-lg border-b border-purple-400/30"
+      className="fixed z-[1100] flex items-center justify-end px-6 backdrop-blur-lg border-b"
       style={{
         width: `calc(100% - ${sidebarWidth}px)`,
         left: `${sidebarWidth}px`,
         height: 64,
         top: 0,
-        background: "linear-gradient(90deg, #2d1b4e 0%, #1e1e3f 100%)",
+        background: isLight
+          ? "linear-gradient(90deg, #e8e0f5 0%, #ede8f7 100%)"
+          : "linear-gradient(90deg, #2d1b4e 0%, #1e1e3f 100%)",
+        borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.3)",
         boxShadow: isLight
-          ? "0 2px 12px 0 rgb(139 92 246 / 0.35)"
+          ? "0 2px 12px 0 rgb(139 92 246 / 0.12)"
           : undefined,
       }}
     >
       <div className="flex items-center gap-4">
         <button
           onClick={() => setTheme(isLight ? "dark" : "light")}
-          className="p-2 rounded-md transition-colors cursor-pointer text-white/50 hover:text-white hover:bg-white/10"
+          className={`p-2 rounded-md transition-colors cursor-pointer ${isLight ? "text-purple-700/60 hover:text-purple-900 hover:bg-purple-200/50" : "text-white/50 hover:text-white hover:bg-white/10"}`}
         >
           {isLight ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </button>
@@ -63,7 +66,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <div className="cursor-pointer flex items-center gap-2.5">
-              <span className="text-sm hidden sm:block text-white/80">
+              <span className={`text-sm hidden sm:block ${isLight ? "text-purple-900/70" : "text-white/80"}`}>
                 {userProfile?.user?.username}
               </span>
               <Avatar className="h-9 w-9">

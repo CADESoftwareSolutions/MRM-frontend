@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" fill="none">
+  <!-- Geological strata layers -->
+  <rect x="3" y="25" width="30" height="7" rx="2" fill="#7c3aed" opacity="0.25"/>
+  <rect x="5" y="17" width="26" height="7" rx="2" fill="#6d28d9" opacity="0.55"/>
+  <rect x="8" y="9" width="20" height="7" rx="2" fill="#4c1d95"/>
+  <!-- Well marker stem -->
+  <line x1="18" y1="2" x2="18" y2="9" stroke="#3b0764" stroke-width="2" stroke-linecap="round"/>
+  <!-- Well head cap -->
+  <rect x="14" y="1" width="8" height="3" rx="1.5" fill="#3b0764"/>
+</svg>

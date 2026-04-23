@@ -41,6 +41,7 @@ const INPUT_TYPES: Record<string, string> = {
   email: "email",
   phone: "tel",
   number: "number",
+  date: "date",
 };
 
 export const Form: React.FC<FormProps> = ({

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, FileText, House, Layers, Settings, Users } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
@@ -82,33 +83,54 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       }}
     >
       <aside
-        className="fixed flex h-screen flex-col border-white/10 backdrop-blur-lg border-r transition-all duration-300 ease-in-out z-[1300]"
-        style={{ width: `${sidebarWidth}px`, background: "linear-gradient(180deg, #2d1b4e 0%, #1e1e3f 100%)" }}
+        className="fixed flex h-screen flex-col backdrop-blur-lg border-r transition-all duration-300 ease-in-out z-[1300]"
+        style={{
+          width: `${sidebarWidth}px`,
+          background: isLight
+            ? "linear-gradient(180deg, #e8e0f5 0%, #ede8f7 100%)"
+            : "linear-gradient(180deg, #2d1b4e 0%, #1e1e3f 100%)",
+          borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(255 255 255 / 0.1)",
+        }}
       >
-        <div className="flex items-start justify-end px-2 pt-3">
+        {/* Logo + company name — height matches header (64px) */}
+        <div className="flex items-center justify-between px-3 border-b shrink-0" style={{ height: 64, borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.3)" }}>
+          <div className={`flex items-center gap-2 min-w-0 ${!sidebarOpen ? "justify-center w-full" : ""}`}>
+            <Image
+              src={isLight ? "/images/logo-light.svg" : "/images/logo-dark.svg"}
+              alt="CADE Logo"
+              width={32}
+              height={32}
+              className="shrink-0"
+            />
+            {sidebarOpen && (
+              <span className={`text-base font-bold tracking-widest truncate ${isLight ? "text-purple-900" : "text-white"}`}>
+                CADE
+              </span>
+            )}
+          </div>
           {sidebarOpen && (
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleSidebar}
-              className="text-white/60 hover:text-white hover:bg-white/10 cursor-pointer"
+              className={`cursor-pointer shrink-0 ${isLight ? "text-purple-700/60 hover:text-purple-900 hover:bg-purple-200/50" : "text-white/60 hover:text-white hover:bg-white/10"}`}
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
           )}
         </div>
 
-        <nav className="flex-1 px-2 space-y-1">
+        <nav className="flex-1 px-2 space-y-1 pt-3">
           {menuItems.map((group) => {
             const Icon = group.icon;
             const isActive =
               group.type === "link" && router.pathname === group.route;
 
-            const navText = "text-white";
-            const navHover = "hover:bg-purple-600 hover:text-white";
-            const navActive = "bg-purple-600";
-            const subText = "text-gray-300";
-            const subActive = "bg-purple-600/20 text-white";
+            const navText = isLight ? "text-purple-900" : "text-white";
+            const navHover = isLight ? "hover:bg-purple-300/40 hover:text-purple-900" : "hover:bg-purple-600 hover:text-white";
+            const navActive = isLight ? "bg-purple-400/40 text-purple-900" : "bg-purple-600";
+            const subText = isLight ? "text-purple-800/70" : "text-gray-300";
+            const subActive = isLight ? "bg-purple-300/40 text-purple-900" : "bg-purple-600/20 text-white";
 
             if (group.type === "link") {
               return (
