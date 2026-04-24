@@ -7,7 +7,8 @@ export type FieldType =
   | "number"
   | "email"
   | "phone"
-  | "date";
+  | "date"
+  | "custom";
 
 export interface FieldConfig {
   id: string;
@@ -41,6 +42,7 @@ export interface TabConfig {
 export interface ModuleConfig {
   name: string;
   title: string;
+  itemName?: string; // Singular label used in save button, e.g. "Contact" vs title "Contacts"
   tabs: TabConfig[];
   fields: FieldConfig[];
   listFields: string[]; // Fields to show in list view
@@ -219,6 +221,7 @@ export const STATES = [
 export const directoryConfig: ModuleConfig = {
   name: "directory",
   title: "Contacts",
+  itemName: "Contact",
   tabs: [
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
@@ -229,10 +232,9 @@ export const directoryConfig: ModuleConfig = {
     "nameId",
     "name",
     "classifications",
-    "email",
     "phone",
-    "city",
-    "state",
+    "email",
+    "fullAddress",
     "status",
   ],
   fields: [
@@ -271,70 +273,23 @@ export const directoryConfig: ModuleConfig = {
       section: "basic-info",
     }),
 
-    field.multiBadge(
-      "addressTypes",
-      "Address Type",
-      [
-        "Physical",
-        "Mailing",
-        "1099",
-        "JIB",
-        "Revenue",
-        "Payment",
-        "Correspondence",
-      ],
-      {
-        required: true,
-        section: "address",
-        gridColumn: "span 2",
-        defaultValue: ["Physical"],
-        graphqlKey: "addressType",
-        toGraphQL: (v: string[]) => v?.[0],
-      },
-    ),
-
-    field.text("address", "Address", {
-      required: true,
+    {
+      id: "addresses",
+      label: "Addresses",
+      type: "custom",
+      tab: "basic",
       section: "address",
-      graphqlKey: "line1",
-    }),
+      gridColumn: "span 2",
+    },
 
-    field.text("addressLine2", "Address Line 2", {
-      section: "address",
-      graphqlKey: "line2",
-    }),
-
-    field.text("city", "City", {
-      required: true,
-      section: "address",
-      graphqlKey: "city",
-    }),
-
-    field.select("state", "State", STATES, {
-      section: "address",
-      required: true,
-      graphqlKey: "stateCode",
-    }),
-
-    field.text("zip", "Zip", {
-      section: "address",
-      placeholder: "12345 or 12345-6789",
-      graphqlKey: "postalCode",
-    }),
-
-    field.multiBadge(
-      "phoneTypes",
-      "Phone Number Type",
-      ["Home", "Business", "Cell"],
-      {
-        section: "contact",
-      },
-    ),
-
-    field.phone("phoneNumber", "Phone Number", {
+    {
+      id: "phones",
+      label: "Phone Numbers",
+      type: "custom",
+      tab: "basic",
       section: "contact",
-      graphqlKey: "phone",
-    }),
+      gridColumn: "span 2",
+    },
 
     field.email("email", "Email Address", {
       section: "contact",

@@ -6,11 +6,14 @@ import {
   UPDATE_PARTY_MUTATION,
   DELETE_PARTY_MUTATION,
   CREATE_ADDRESS_MUTATION,
+  UPDATE_ADDRESS_MUTATION,
   CREATE_PARTY_ADDRESS_MUTATION,
   CREATE_CONTACT_MUTATION,
   UPDATE_CONTACT_MUTATION,
   DELETE_CONTACT_MUTATION,
 } from "../graphql/Directory";
+import { AddressEntry } from "../../components/FormComponents/MultiAddressField";
+import { PhoneEntry } from "../../components/FormComponents/MultiPhoneField";
 import { Contact } from "../../components/FormComponents/ContactsTab";
 
 import { API_URL } from "../lib/api";
@@ -114,36 +117,65 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     return result;
   };
 
-  const handleSave = async (formData: any) => {
+  const saveAddresses = async (partyId: number, addresses: AddressEntry[], isNew: boolean) => {
+    for (const addr of addresses) {
+      if (!addr.address && !addr.city) continue;
+      if (!isNew && addr._addressId) {
+        await executeGraphQL(UPDATE_ADDRESS_MUTATION, {
+          id: addr._addressId,
+          line1: addr.address || undefined,
+          line2: addr.addressLine2 || undefined,
+          city: addr.city || undefined,
+          stateCode: addr.state || undefined,
+          postalCode: addr.zip || undefined,
+        });
+      } else {
+        const addressResult = await executeGraphQL(CREATE_ADDRESS_MUTATION, {
+          line1: addr.address,
+          line2: addr.addressLine2 || undefined,
+          city: addr.city,
+          stateCode: addr.state,
+          postalCode: addr.zip || undefined,
+        });
+        const addressId = parseInt(addressResult.createAddress.address.id, 10);
+        await executeGraphQL(CREATE_PARTY_ADDRESS_MUTATION, {
+          accountId,
+          partyId,
+          addressId,
+          addressType: addr.type,
+          isPrimary: addr.type === "Physical",
+        });
+      }
+    }
+  };
+
+  const handleSave = async (
+    formData: any,
+    addresses: AddressEntry[],
+    phones: PhoneEntry[]
+  ) => {
     try {
       const variables = transformFormDataToGraphQL(formData);
-
       const { line1, line2, city, stateCode, postalCode, addressType, ...partyVariables } = variables;
-      const hasAddress = line1 || city || stateCode;
+
+      // Use first phone number for the party record (backend supports one phone)
+      const primaryPhone = phones[0]?.number || undefined;
 
       if (view === "add") {
-        const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, partyVariables);
-        const partyId = parseInt(partyResult.createParty.party.id, 10);
-
-        if (hasAddress) {
-          const addressResult = await executeGraphQL(CREATE_ADDRESS_MUTATION, {
-            line1, line2, city, stateCode, postalCode,
-          });
-          const addressId = parseInt(addressResult.createAddress.address.id, 10);
-
-          await executeGraphQL(CREATE_PARTY_ADDRESS_MUTATION, {
-            accountId,
-            partyId,
-            addressId,
-            addressType: addressType || "Physical",
-            isPrimary: true,
-          });
-        }
-      } else {
-        await executeGraphQL(UPDATE_PARTY_MUTATION, {
-          id: parseInt(selectedItem?.id, 10),
+        const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, {
           ...partyVariables,
+          ...(primaryPhone ? { phone: primaryPhone } : {}),
         });
+        const partyId = parseInt(partyResult.createParty.party.id, 10);
+        await saveAddresses(partyId, addresses, true);
+      } else {
+        const partyId = parseInt(selectedItem?.id, 10);
+        await executeGraphQL(UPDATE_PARTY_MUTATION, {
+          id: partyId,
+          ...partyVariables,
+          ...(primaryPhone !== undefined ? { phone: primaryPhone } : {}),
+        });
+        await saveAddresses(partyId, addresses, false);
       }
 
       await fetchData();

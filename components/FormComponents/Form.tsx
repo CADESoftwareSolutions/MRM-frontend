@@ -21,6 +21,7 @@ import {
 } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 
+
 interface FormProps {
   config: ModuleConfig;
   initialData?: any;
@@ -34,6 +35,10 @@ interface FormProps {
   onAddContact?: (contact: Omit<Contact, "id">) => Promise<void>;
   onUpdateContact?: (id: number, contact: Omit<Contact, "id">) => Promise<void>;
   onDeleteContact?: (id: number) => Promise<void>;
+  /** Custom React nodes injected by field id — rendered in place of fields with type "custom" */
+  customContent?: Record<string, React.ReactNode>;
+  /** When true, renders without the Card wrapper (for use inside a SideSheet) */
+  bare?: boolean;
 }
 
 const INPUT_TYPES: Record<string, string> = {
@@ -57,6 +62,8 @@ export const Form: React.FC<FormProps> = ({
   onAddContact,
   onUpdateContact,
   onDeleteContact,
+  customContent = {},
+  bare = false,
 }) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
@@ -89,6 +96,15 @@ export const Form: React.FC<FormProps> = ({
 
   const renderField = (field: FieldConfig) => {
     if (!shouldShowField(field)) return null;
+
+    // Custom content injected from parent
+    if (field.type === "custom") {
+      return (
+        <div key={field.id} className={field.gridColumn === "span 2" ? "col-span-2" : ""}>
+          {customContent[field.id] ?? null}
+        </div>
+      );
+    }
 
     return (
       <div
@@ -271,6 +287,92 @@ export const Form: React.FC<FormProps> = ({
     );
   };
 
+  const formBody = (
+    <>
+      <Tabs defaultValue={config.tabs[0].id} className="w-full">
+        <TabsList className="flex w-full bg-transparent border-b border-purple-300/20 rounded-none gap-0 h-auto p-0">
+          {config.tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-300/60 hover:text-purple-200 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {config.tabs.map((tab) => (
+          <TabsContent key={tab.id} value={tab.id} className="mt-6">
+            {tab.id === "vendor" && (
+              <div className="flex items-center gap-2 mb-6 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
+                <AlertCircle className="w-5 h-5 text-blue-300" />
+                <p className="text-sm text-blue-200">
+                  A/P Vendor information only appears for contacts with VENDOR
+                  classification
+                </p>
+              </div>
+            )}
+            {tab.id === "contacts" ? (
+              <ContactsTab
+                partyId={partyId}
+                contacts={contacts}
+                onAdd={onAddContact ?? (() => Promise.resolve())}
+                onUpdate={onUpdateContact ?? (() => Promise.resolve())}
+                onDelete={onDeleteContact ?? (() => Promise.resolve())}
+              />
+            ) : (
+              renderTabContent(tab.id)
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
+
+      {saveError && (
+        <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
+          <p className="text-sm text-red-300">{saveError}</p>
+          <button onClick={onClearSaveError} className="text-red-400 hover:text-red-200 ml-4">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {isSubmitted && Object.keys(errors).length > 0 && (
+        <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm text-red-300 font-medium">Please fill in the required fields:</p>
+            <ul className="mt-1 space-y-0.5">
+              {Object.entries(errors).map(([, err]) => (
+                <li key={err?.message as string} className="text-xs text-red-400">{err?.message as string}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-3 mt-8 pt-6 border-t border-purple-300/30">
+        <Button
+          className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
+          onClick={handleSubmit(onSave)}
+        >
+          {mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes"}
+        </Button>
+        <Button
+          variant="outline"
+          className="flex-1 border-purple-300/30 text-purple-300 hover:bg-purple-500/20 cursor-pointer"
+          onClick={onCancel}
+        >
+          Cancel
+        </Button>
+      </div>
+    </>
+  );
+
+  if (bare) {
+    return formBody;
+  }
+
   return (
     <Card className="bg-white/10 backdrop-blur-md border-purple-300/30">
       <CardHeader>
@@ -290,85 +392,7 @@ export const Form: React.FC<FormProps> = ({
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue={config.tabs[0].id} className="w-full">
-          <TabsList className="flex w-full bg-purple-900/30">
-            {config.tabs.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="flex-1 data-[state=active]:bg-purple-600 data-[state=active]:text-white text-purple-200 cursor-pointer"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {config.tabs.map((tab) => (
-            <TabsContent key={tab.id} value={tab.id} className="mt-6">
-              {tab.id === "vendor" && (
-                <div className="flex items-center gap-2 mb-6 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-blue-300" />
-                  <p className="text-sm text-blue-200">
-                    A/P Vendor information only appears for contacts with VENDOR
-                    classification
-                  </p>
-                </div>
-              )}
-              {tab.id === "contacts" ? (
-                <ContactsTab
-                  partyId={partyId}
-                  contacts={contacts}
-                  onAdd={onAddContact ?? (() => Promise.resolve())}
-                  onUpdate={onUpdateContact ?? (() => Promise.resolve())}
-                  onDelete={onDeleteContact ?? (() => Promise.resolve())}
-                />
-              ) : (
-                renderTabContent(tab.id)
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
-
-        {saveError && (
-          <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
-            <p className="text-sm text-red-300">{saveError}</p>
-            <button onClick={onClearSaveError} className="text-red-400 hover:text-red-200 ml-4">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {isSubmitted && Object.keys(errors).length > 0 && (
-          <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm text-red-300 font-medium">Please fill in the required fields:</p>
-              <ul className="mt-1 space-y-0.5">
-                {Object.entries(errors).map(([, err]) => (
-                  <li key={err?.message as string} className="text-xs text-red-400">{err?.message as string}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-3 mt-8 pt-6 border-t border-purple-300/30">
-          <Button
-            className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
-            onClick={handleSubmit(onSave)}
-          >
-            {mode === "add" ? `Add ${config.title}` : "Save Changes"}
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 border-purple-300/30 text-purple-900 hover:bg-purple-500/20 cursor-pointer"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-        </div>
-      </CardContent>
+      <CardContent>{formBody}</CardContent>
     </Card>
   );
 };

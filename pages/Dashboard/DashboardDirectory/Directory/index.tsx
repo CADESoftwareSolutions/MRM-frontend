@@ -4,14 +4,53 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
+import { MultiAddressField, AddressEntry } from "../../../../components/FormComponents/MultiAddressField";
+import { MultiPhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
 import { directoryConfig } from "@/config/directoryConfig";
 import { useDirectory } from "@/hooks/useDirectory";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
+import { themeAtom } from "@/atoms/NavigationAtom";
+
+const DEFAULT_ADDRESSES: AddressEntry[] = [
+  { type: "Physical", address: "", addressLine2: "", city: "", state: "", zip: "" },
+];
+
+const addressesFromItem = (item: any): AddressEntry[] => {
+  const raw = item?._rawData?.addresses;
+  if (!raw?.length) return DEFAULT_ADDRESSES;
+  const mapped: AddressEntry[] = raw.map((a: any) => ({
+    type: a.addressType || "Physical",
+    address: a.address?.line1 || "",
+    addressLine2: a.address?.line2 || "",
+    city: a.address?.city || "",
+    state: a.address?.stateCode || "",
+    zip: a.address?.postalCode || "",
+    _addressId: a.address?.id ? parseInt(a.address.id, 10) : undefined,
+  }));
+  const physical = mapped.find((a) => a.type === "Physical");
+  const others = mapped.filter((a) => a.type !== "Physical");
+  return physical ? [physical, ...others] : [DEFAULT_ADDRESSES[0], ...mapped];
+};
+
+const phonesFromItem = (item: any): PhoneEntry[] => {
+  if (!item?.phone) return [];
+  return [{ type: "Business", number: item.phone }];
+};
 
 const AddressDirectory = () => {
   const [userProfile] = useAtom(userProfileAtom);
+  const [theme] = useAtom(themeAtom);
+  const isLight = theme === "light";
+  const [addresses, setAddresses] = useState<AddressEntry[]>(DEFAULT_ADDRESSES);
+  const [phones, setPhones] = useState<PhoneEntry[]>([]);
+  const [showAddressValidation, setShowAddressValidation] = useState(false);
+  const addressesRef = useRef(addresses);
+  const phonesRef = useRef(phones);
+  addressesRef.current = addresses;
+  phonesRef.current = phones;
+
   const {
     view,
     loading,
@@ -28,8 +67,8 @@ const AddressDirectory = () => {
     handleUpdateContact,
     handleDeleteContact,
     setSearchTerm,
-    handleAdd,
-    handleEdit,
+    handleAdd: _handleAdd,
+    handleEdit: _handleEdit,
     handleSave,
     handleDelete,
     handleCancel,
@@ -42,16 +81,40 @@ const AddressDirectory = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [view]);
 
+  const handleAdd = () => {
+    setAddresses(DEFAULT_ADDRESSES);
+    setPhones([]);
+    setShowAddressValidation(false);
+    _handleAdd();
+  };
+
+  const handleEdit = (item: any) => {
+    setAddresses(addressesFromItem(item));
+    setPhones(phonesFromItem(item));
+    setShowAddressValidation(false);
+    _handleEdit(item);
+  };
+
+  const onSave = (formData: any) => {
+    const physical = addressesRef.current.find((a) => a.type === "Physical");
+    if (!physical?.address || !physical?.city || !physical?.state) {
+      setShowAddressValidation(true);
+      return;
+    }
+    setShowAddressValidation(false);
+    handleSave(formData, addressesRef.current, phonesRef.current);
+  };
+
   return (
     <DashboardLayout>
       <div className="min-h-screen p-6 my-15">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-start gap-3">
-              <Users className="w-8 h-8 text-purple-300 mt-1" />
+              <Users className={`w-8 h-8 mt-1 ${isLight ? "text-purple-500" : "text-purple-300"}`} />
               <div>
-                <h1 className="text-3xl font-bold text-white leading-none">Directory</h1>
-                <p className="text-sm text-white/50 mt-1">
+                <h1 className={`text-3xl font-bold leading-none ${isLight ? "text-gray-900" : "text-white"}`}>Directory</h1>
+                <p className={`text-sm mt-1 ${isLight ? "text-gray-400" : "text-white/50"}`}>
                   {filteredData.length} {filteredData.length === 1 ? "contact" : "contacts"}
                 </p>
               </div>
@@ -61,7 +124,7 @@ const AddressDirectory = () => {
                 onClick={handleAdd}
                 className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
               >
-                <Plus className="w-4 h-4 mr-2 " />
+                <Plus className="w-4 h-4 mr-2" />
                 Add New Contact
               </Button>
             )}
@@ -84,7 +147,7 @@ const AddressDirectory = () => {
             <Form
               config={directoryConfig}
               initialData={selectedItem}
-              onSave={handleSave}
+              onSave={onSave}
               onCancel={handleCancel}
               mode={view}
               saveError={saveError}
@@ -94,6 +157,21 @@ const AddressDirectory = () => {
               onAddContact={handleAddContact}
               onUpdateContact={handleUpdateContact}
               onDeleteContact={handleDeleteContact}
+              customContent={{
+                addresses: (
+                  <MultiAddressField
+                    value={addresses}
+                    onChange={setAddresses}
+                    showValidation={showAddressValidation}
+                  />
+                ),
+                phones: (
+                  <MultiPhoneField
+                    value={phones}
+                    onChange={setPhones}
+                  />
+                ),
+              }}
             />
           )}
         </div>

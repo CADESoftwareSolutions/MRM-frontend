@@ -1,9 +1,10 @@
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Building2, Edit, FileText, Search, Trash2 } from "lucide-react";
+import { Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { ModuleConfig } from "../../src/config/directoryConfig";
+import { useAtom } from "jotai";
+import { themeAtom } from "@/atoms/NavigationAtom";
 
 interface ListProps {
   config: ModuleConfig;
@@ -15,6 +16,55 @@ interface ListProps {
   onDelete: (item: any) => void;
 }
 
+const CLASSIFICATION_COLORS_DARK: Record<string, string> = {
+  REV: "bg-green-500/20 text-green-300 border-green-400/30",
+  JIB: "bg-blue-500/20 text-blue-300 border-blue-400/30",
+  OPERATOR: "bg-violet-500/20 text-violet-300 border-violet-400/30",
+  PURCHASER: "bg-orange-500/20 text-orange-300 border-orange-400/30",
+  VENDOR: "bg-yellow-500/20 text-yellow-300 border-yellow-400/30",
+  EMPLOYEE: "bg-pink-500/20 text-pink-300 border-pink-400/30",
+  PARTNER: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",
+};
+
+const CLASSIFICATION_COLORS_LIGHT: Record<string, string> = {
+  REV: "bg-green-100 text-green-700 border-green-300",
+  JIB: "bg-blue-100 text-blue-700 border-blue-300",
+  OPERATOR: "bg-violet-100 text-violet-700 border-violet-300",
+  PURCHASER: "bg-orange-100 text-orange-700 border-orange-300",
+  VENDOR: "bg-yellow-100 text-yellow-700 border-yellow-300",
+  EMPLOYEE: "bg-pink-100 text-pink-700 border-pink-300",
+  PARTNER: "bg-cyan-100 text-cyan-700 border-cyan-300",
+};
+
+const STATUS_COLORS_DARK: Record<string, string> = {
+  Active: "bg-green-500/20 text-green-300 border-green-400/30",
+  Inactive: "bg-gray-500/20 text-gray-300 border-gray-400/30",
+  HBP: "bg-blue-500/20 text-blue-300 border-blue-400/30",
+  Expired: "bg-gray-500/20 text-gray-300 border-gray-400/30",
+  Released: "bg-orange-500/20 text-orange-300 border-orange-400/30",
+};
+
+const STATUS_COLORS_LIGHT: Record<string, string> = {
+  Active: "bg-green-100 text-green-700 border-green-300",
+  Inactive: "bg-gray-100 text-gray-500 border-gray-300",
+  HBP: "bg-blue-100 text-blue-700 border-blue-300",
+  Expired: "bg-gray-100 text-gray-500 border-gray-300",
+  Released: "bg-orange-100 text-orange-700 border-orange-300",
+};
+
+const toLabel = (id: string) => {
+  if (id === "fullAddress") return "Address";
+  if (id === "leaseStatus") return "Status";
+  return id.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()).trim();
+};
+
+const isLockedColumn = (col: string, firstField: string) =>
+  col === firstField ||
+  col === "name" ||
+  col === "lessor" ||
+  col === "status" ||
+  col === "leaseStatus";
+
 export const List: React.FC<ListProps> = ({
   config,
   data,
@@ -24,179 +74,290 @@ export const List: React.FC<ListProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const getModuleIcon = () => {
-    switch (config.name) {
-      case "directory":
-        return <Building2 className="w-5 h-5 text-purple-300 shrink-0" />;
-      case "leases":
-        return <FileText className="w-5 h-5 text-purple-300 shrink-0" />;
-      case "deeds":
-        return <FileText className="w-5 h-5 text-purple-300 shrink-0" />;
-      default:
-        return <FileText className="w-5 h-5 text-purple-300 shrink-0" />;
+  const [theme] = useAtom(themeAtom);
+  const isLight = theme === "light";
+
+  const storageKey = `mrm-columns-${config.name}`;
+  const firstField = config.listFields[0];
+
+  const [visibleCols, setVisibleCols] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed: string[] = JSON.parse(saved);
+        // Always include locked columns even if missing from saved state
+        const locked = config.listFields.filter((c) => isLockedColumn(c, firstField));
+        const merged = [...new Set([...locked, ...parsed.filter((c) => config.listFields.includes(c))])];
+        return config.listFields.filter((c) => merged.includes(c));
+      }
+    } catch {}
+    return [...config.listFields];
+  });
+
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(visibleCols));
+  }, [visibleCols, storageKey]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const toggleCol = (col: string) => {
+    if (isLockedColumn(col, firstField)) return;
+    setVisibleCols((prev) =>
+      prev.includes(col)
+        ? prev.filter((c) => c !== col)
+        : config.listFields.filter((c) => [...prev, col].includes(c))
+    );
+  };
+
+  const columns = config.listFields.filter((c) => visibleCols.includes(c));
+
+  const classColors = isLight ? CLASSIFICATION_COLORS_LIGHT : CLASSIFICATION_COLORS_DARK;
+  const statusColors = isLight ? STATUS_COLORS_LIGHT : STATUS_COLORS_DARK;
+  const fallbackBadge = isLight
+    ? "bg-purple-100 text-purple-700 border-purple-300"
+    : "bg-purple-500/20 text-purple-300 border-purple-400/30";
+
+  const renderCell = (fieldId: string, value: any, item: any) => {
+    if (fieldId === "fullAddress") {
+      const parts: string[] = [];
+      if (item.address) parts.push(item.address);
+      const cityState = [item.city, item.state].filter(Boolean).join(", ");
+      if (cityState) parts.push(cityState);
+      if (item.zip) parts.push(item.zip);
+      if (!parts.length) return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
+      return <span className={`text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}>{parts.join(", ")}</span>;
     }
-  };
 
-  const getPrimaryField = (item: any) => {
-    const primaryFieldId = config.listFields[0];
-    return item[primaryFieldId] || "N/A";
-  };
+    if (value == null || value === "") {
+      return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
+    }
 
-  const getSecondaryId = (item: any) => {
-    const idField = config.listFields.find(
-      (field) => field.toLowerCase().includes("id") && field !== "id"
-    );
-    return idField ? item[idField] : null;
-  };
+    if (Array.isArray(value)) {
+      if (value.length === 0) return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
+      return (
+        <div className="flex flex-wrap gap-1">
+          {value.map((v: string) => (
+            <Badge
+              key={v}
+              variant="outline"
+              className={`text-xs font-medium ${classColors[v] ?? fallbackBadge}`}
+            >
+              {v}
+            </Badge>
+          ))}
+        </div>
+      );
+    }
 
-  const renderArrayBadges = (item: any) => {
-    const arrayFields = config.listFields.filter(
-      (fieldId) => Array.isArray(item[fieldId]) && item[fieldId].length > 0
-    );
-
-    if (arrayFields.length === 0) return null;
+    if (fieldId === "status" || fieldId === "leaseStatus") {
+      const cls = statusColors[value] ?? fallbackBadge;
+      return (
+        <Badge variant="outline" className={`text-xs font-medium ${cls}`}>
+          {value}
+        </Badge>
+      );
+    }
 
     return (
-      <>
-        {arrayFields.map((fieldId) =>
-          item[fieldId].slice(0, 3).map((value: string) => (
-            <Badge
-              key={`${fieldId}-${value}`}
-              variant="outline"
-              className="bg-blue-500/20 text-white/80 border-blue-300/30"
-            >
-              {value}
-            </Badge>
-          ))
-        )}
-        {arrayFields.some((fieldId) => item[fieldId].length > 3) && (
-          <Badge
-            variant="outline"
-            className="bg-blue-500/20 text-white/80 border-blue-300/30"
-          >
-            +
-            {arrayFields.reduce(
-              (sum, fieldId) => sum + item[fieldId].length,
-              0
-            ) - 3}
-          </Badge>
-        )}
-      </>
+      <span className={`text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}>
+        {String(value)}
+      </span>
     );
   };
 
+  const borderColor = isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.2)";
+  const dividerColor = isLight ? "rgb(167 139 250 / 0.2)" : "rgb(167 139 250 / 0.15)";
+
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-purple-300/30">
-      <CardHeader>
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300 w-4 h-4" />
-            <Input
-              placeholder={`Search ${config?.title.toLowerCase()}...`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/5 border-purple-300/30 text-white placeholder:text-purple-300/50"
-            />
-          </div>
+    <div
+      className="rounded-xl border overflow-hidden"
+      style={{
+        background: isLight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.06)",
+        borderColor,
+      }}
+    >
+      {/* Search + column picker */}
+      <div
+        className="flex items-center gap-3 px-5 py-4 border-b"
+        style={{ borderColor: dividerColor }}
+      >
+        <div className="relative flex-1">
+          <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isLight ? "text-gray-400" : "text-purple-300/60"}`} />
+          <Input
+            placeholder={`Search ${config.title.toLowerCase()}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className={`pl-9 h-9 border ${
+              isLight
+                ? "bg-white border-purple-200 text-gray-800 placeholder:text-gray-400"
+                : "bg-white/5 border-purple-300/30 text-white placeholder:text-purple-300/40"
+            }`}
+          />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-10 h-10 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
-              <p className="text-purple-300/70 text-sm">Loading...</p>
-            </div>
-          ) : data?.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-purple-300">
-                No {config.title.toLowerCase()} found
+
+        {/* Column picker */}
+        <div className="relative shrink-0" ref={pickerRef}>
+          <button
+            type="button"
+            onClick={() => setShowPicker((s) => !s)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+              isLight
+                ? "border-purple-200 text-gray-500 hover:bg-purple-50 hover:text-purple-700"
+                : "border-purple-300/30 text-purple-300/70 hover:bg-purple-500/20 hover:text-purple-200"
+            } ${showPicker ? (isLight ? "bg-purple-50 text-purple-700" : "bg-purple-500/20 text-purple-200") : ""}`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Columns
+          </button>
+
+          {showPicker && (
+            <div
+              className={`absolute right-0 top-full mt-2 w-52 rounded-xl border shadow-xl z-50 py-2 ${
+                isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"
+              }`}
+            >
+              <p className={`px-4 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-400" : "text-purple-300/50"}`}>
+                Visible columns
               </p>
-            </div>
-          ) : (
-            data?.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => onEdit(item)}
-                className="rounded-lg bg-white/5 border border-purple-300/20 hover:bg-white/10 transition-all cursor-pointer"
-              >
-                <div className="flex items-center justify-between gap-4 p-4">
-                  <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {getModuleIcon()}
-
-                    <div className="flex items-center gap-3 min-w-0">
-                      <h3 className="text-lg font-semibold text-white truncate">
-                        {getPrimaryField(item)}
-                      </h3>
-                      {getSecondaryId(item) && (
-                        <Badge
-                          variant="outline"
-                          className="bg-purple-500/20 text-white/90 border-purple-300/30 shrink-0"
-                        >
-                          {getSecondaryId(item)}
-                        </Badge>
-                      )}
-                      {renderArrayBadges(item)}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1 shrink-0">
-                    {item.status === "Active" && (
-                      <Badge className="bg-green-500/20 text-white/90 border-green-300/30 mr-2">
-                        Active
-                      </Badge>
-                    )}
-                    {item.leaseStatus === "Active" && (
-                      <Badge className="bg-green-500/20 text-white/90 border-green-300/30 mr-2">
-                        Active
-                      </Badge>
-                    )}
-                    {item.leaseStatus === "HBP" && (
-                      <Badge className="bg-blue-500/20 text-white/90 border-blue-300/30 mr-2">
-                        HBP
-                      </Badge>
-                    )}
-                    {item.leaseStatus === "Expired" && (
-                      <Badge className="bg-gray-500/20 text-white/90 border-gray-300/30 mr-2">
-                        Expired
-                      </Badge>
-                    )}
-                    {item.leaseStatus === "Released" && (
-                      <Badge className="bg-orange-500/20 text-white/90 border-orange-300/30 mr-2">
-                        Released
-                      </Badge>
-                    )}
-
-                    <div
-                      className="flex rounded-md overflow-hidden border border-purple-300/20"
-                      onClick={(e) => e.stopPropagation()}
+              {config.listFields.map((col) => {
+                const locked = isLockedColumn(col, firstField);
+                const checked = visibleCols.includes(col);
+                return (
+                  <button
+                    key={col}
+                    type="button"
+                    onClick={() => toggleCol(col)}
+                    className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors ${
+                      locked ? "cursor-default opacity-60" : "cursor-pointer"
+                    } ${
+                      isLight
+                        ? "text-gray-700 hover:bg-purple-50"
+                        : "text-white hover:bg-purple-500/20"
+                    } ${locked && isLight ? "hover:bg-transparent" : ""} ${locked && !isLight ? "hover:bg-transparent" : ""}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {locked && <Lock className="w-3 h-3 opacity-50" />}
+                      {toLabel(col)}
+                    </span>
+                    <span
+                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                        checked
+                          ? "bg-purple-600 border-purple-600"
+                          : isLight
+                          ? "border-gray-300"
+                          : "border-purple-300/40"
+                      }`}
                     >
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="px-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 cursor-pointer"
-                        onClick={() => onEdit(item)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="px-2 text-red-300 hover:text-red-100 hover:bg-red-500/20 cursor-pointer"
-                        onClick={() => onDelete(item)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
+                      {checked && (
+                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
+                          <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b" style={{ borderColor: dividerColor }}>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  className={`text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${
+                    isLight ? "text-gray-500" : "text-purple-300/60"
+                  }`}
+                >
+                  {toLabel(col)}
+                </th>
+              ))}
+              <th className="px-5 py-3 w-20" />
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="text-center py-16">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
+                    <span className={`text-sm ${isLight ? "text-gray-400" : "text-purple-300/60"}`}>Loading...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : data.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length + 1} className="text-center py-16">
+                  <p className={isLight ? "text-gray-400" : "text-purple-300/50"}>
+                    No {config.title.toLowerCase()} found
+                  </p>
+                </td>
+              </tr>
+            ) : (
+              data.map((item, idx) => (
+                <tr
+                  key={item.id ?? idx}
+                  onClick={() => onEdit(item)}
+                  className={`border-b last:border-0 transition-colors cursor-pointer group ${
+                    isLight
+                      ? "border-purple-100 hover:bg-purple-50/60"
+                      : "border-purple-300/10 hover:bg-purple-500/10"
+                  }`}
+                >
+                  {columns.map((col) => (
+                    <td key={col} className="px-5 py-3.5 whitespace-nowrap max-w-[240px] truncate">
+                      {renderCell(col, item[col], item)}
+                    </td>
+                  ))}
+                  <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(item)}
+                        className={`p-1.5 rounded transition-colors cursor-pointer ${
+                          isLight
+                            ? "text-gray-400 hover:text-purple-600 hover:bg-purple-50"
+                            : "text-purple-300/50 hover:text-purple-200 hover:bg-purple-500/20"
+                        }`}
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(item)}
+                        className={`p-1.5 rounded transition-colors cursor-pointer ${
+                          isLight
+                            ? "text-red-400 hover:text-red-600 hover:bg-red-50"
+                            : "text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
+                        }`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
