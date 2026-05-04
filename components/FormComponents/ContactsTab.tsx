@@ -15,7 +15,9 @@ import { STATES } from "@/config/directoryConfig";
 
 export interface Contact {
   id: number;
-  name: string;
+  nameFirst: string;
+  nameMiddle?: string;
+  nameLast: string;
   phone?: string;
   email?: string;
   addressType?: string[];
@@ -37,7 +39,8 @@ interface ContactsTabProps {
 const ADDRESS_TYPES = ["Physical", "Mailing", "Correspondence"];
 
 const emptyForm = {
-  name: "", phone: "", email: "",
+  nameFirst: "", nameMiddle: "", nameLast: "",
+  phone: "", email: "",
   addressType: [] as string[],
   address: "", addressLine2: "", city: "", state: "", zip: "",
 };
@@ -63,7 +66,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
   }
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) return;
+    if (!form.nameFirst.trim()) return;
     setSaving(true);
     try {
       if (editingId !== null) {
@@ -82,7 +85,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
   const startEdit = (contact: Contact) => {
     setEditingId(contact.id);
     setForm({
-      name: contact.name,
+      nameFirst: contact.nameFirst,
+      nameMiddle: contact.nameMiddle || "",
+      nameLast: contact.nameLast,
       phone: contact.phone || "",
       email: contact.email || "",
       addressType: contact.addressType || [],
@@ -121,7 +126,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               <User className="w-4 h-4 text-purple-300" />
             </div>
             <div>
-              <p className="text-white font-medium text-sm">{contact.name}</p>
+              <p className="text-white font-medium text-sm">
+                {[contact.nameFirst, contact.nameMiddle, contact.nameLast].filter(Boolean).join(" ")}
+              </p>
               {(contact.phone || contact.email) && (
                 <p className="text-purple-300 text-xs mt-0.5">
                   {[contact.phone, contact.email].filter(Boolean).join(" · ")}
@@ -154,14 +161,34 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
         <div className="p-4 rounded-lg border border-purple-300/30 bg-white/5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
-            <div className="col-span-2">
+            <div>
               <Label className="text-purple-100 font-semibold text-sm mb-2 block">
-                Name <span className="text-red-500 text-sm font-bold">*</span>
+                First Name <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
               <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Full name"
+                value={form.nameFirst}
+                onChange={(e) => setForm({ ...form, nameFirst: e.target.value })}
+                placeholder="First name"
+                className={commonInput}
+              />
+            </div>
+            <div>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Middle Name</Label>
+              <Input
+                value={form.nameMiddle}
+                onChange={(e) => setForm({ ...form, nameMiddle: e.target.value })}
+                placeholder="Middle name"
+                className={commonInput}
+              />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Last Name <span className="text-red-500 text-sm font-bold">*</span>
+              </Label>
+              <Input
+                value={form.nameLast}
+                onChange={(e) => setForm({ ...form, nameLast: e.target.value })}
+                placeholder="Last name"
                 className={commonInput}
               />
             </div>
@@ -284,7 +311,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
             <Button
               size="sm"
               onClick={handleSubmit}
-              disabled={!form.name.trim() || saving}
+              disabled={!form.nameFirst.trim() || saving}
               className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
             >
               <Save className="w-4 h-4 mr-1" />

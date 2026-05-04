@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { themeAtom } from "@/atoms/NavigationAtom";
+import { useQueryClient } from "@tanstack/react-query";
 
 type DashboardHeaderProps = {
   sidebarWidth: number;
@@ -19,22 +20,21 @@ type DashboardHeaderProps = {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
   const router = useRouter();
-  const [userProfile] = useAtom(userProfileAtom);
+  const queryClient = useQueryClient();
+  const [userProfile, setUserProfile] = useAtom(userProfileAtom);
   const [theme, setTheme] = useAtom(themeAtom);
   const isLight = theme === "light";
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${API_URL}/logout`, {
-        method: "POST",
+      await fetch(`${API_URL}/logout`, {
+        method: "GET",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
       });
-      if (response.ok) {
-        router.push("/Login");
-      }
-    } catch {
-      router.push("/Login");
+    } finally {
+      queryClient.clear();
+      setUserProfile(null);
+      router.push("/");
     }
   };
 
@@ -49,10 +49,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         background: isLight
           ? "linear-gradient(90deg, #e8e0f5 0%, #ede8f7 100%)"
           : "linear-gradient(90deg, #2d1b4e 0%, #1e1e3f 100%)",
-        borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.3)",
-        boxShadow: isLight
-          ? "0 2px 12px 0 rgb(139 92 246 / 0.12)"
-          : undefined,
+        borderColor: isLight
+          ? "rgb(167 139 250 / 0.25)"
+          : "rgb(167 139 250 / 0.3)",
+        boxShadow: isLight ? "0 2px 12px 0 rgb(139 92 246 / 0.12)" : undefined,
       }}
     >
       <div className="flex items-center gap-4">
@@ -66,7 +66,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <div className="cursor-pointer flex items-center gap-2.5">
-              <span className={`text-sm hidden sm:block ${isLight ? "text-purple-900/70" : "text-white/80"}`}>
+              <span
+                className={`text-sm hidden sm:block ${isLight ? "text-purple-900/70" : "text-white/80"}`}
+              >
                 {userProfile?.user?.username}
               </span>
               <Avatar className="h-9 w-9">

@@ -225,6 +225,14 @@ export const DELETE_CONTACT_MUTATION = `
   }
 `;
 
+export const DELETE_PARTY_ADDRESS_MUTATION = `
+  mutation DeletePartyAddress($id: Int!) {
+    deletePartyAddress(id: $id) {
+      success
+    }
+  }
+`;
+
 export const CREATE_PARTY_ADDRESS_MUTATION = `
   mutation CreatePartyAddress(
     $accountId: Int!

@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/accordion";
 import { useAtom } from "jotai";
 import { openAccordionsAtom, sidebarOpenAtom, themeAtom } from "@/atoms/NavigationAtom";
+import { useQuery } from "@tanstack/react-query";
+import { userProfileAtom } from "@/atoms/userProfileAtom";
+import { API_URL } from "@/lib/api";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
@@ -21,8 +24,32 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [openAccordions, setOpenAccordions] = useAtom(openAccordionsAtom);
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
   const [theme] = useAtom(themeAtom);
+  const [, setUserProfile] = useAtom(userProfileAtom);
   const isLight = theme === "light";
   const router = useRouter();
+
+  const { data: profileData, error: profileError } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/profile`, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.status === 401) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+      if (!res.ok) throw new Error("Profile fetch failed");
+      return res.json();
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (profileData) setUserProfile(profileData);
+  }, [profileData]);
+
+  useEffect(() => {
+    if ((profileError as any)?.status === 401) router.push("/Login");
+  }, [profileError]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = isLight ? "light" : "dark";

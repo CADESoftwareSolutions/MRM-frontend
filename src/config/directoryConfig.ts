@@ -229,7 +229,6 @@ export const directoryConfig: ModuleConfig = {
     { id: "contacts", label: "Contacts" },
   ],
   listFields: [
-    "nameId",
     "name",
     "classifications",
     "phone",
@@ -238,18 +237,6 @@ export const directoryConfig: ModuleConfig = {
     "status",
   ],
   fields: [
-    field.select("nameIdType", "Name ID Type", ["auto", "custom"], {
-      required: true,
-      section: "identification",
-      defaultValue: "auto",
-    }),
-
-    field.text("nameId", "Name ID", {
-      section: "identification",
-      dependsOn: "nameIdType",
-      dependsOnValue: "custom",
-    }),
-
     field.multiBadge(
       "classifications",
       "Name Classification",
@@ -263,14 +250,21 @@ export const directoryConfig: ModuleConfig = {
       },
     ),
 
-    field.text("name", "Name", {
+    field.text("nameFirst", "First Name", {
       required: true,
       section: "basic-info",
-      graphqlKey: "nameFull",
+      graphqlKey: "nameFirst",
     }),
 
-    field.text("nameLine2", "Name Line 2", {
+    field.text("nameMiddle", "Middle Name", {
       section: "basic-info",
+      graphqlKey: "nameMiddle",
+    }),
+
+    field.text("nameLast", "Last Name", {
+      required: true,
+      section: "basic-info",
+      graphqlKey: "nameLast",
     }),
 
     {

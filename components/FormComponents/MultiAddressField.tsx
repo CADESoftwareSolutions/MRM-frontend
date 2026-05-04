@@ -29,6 +29,7 @@ export interface AddressEntry {
   state: string;
   zip: string;
   _addressId?: number;
+  _partyAddressId?: number;
 }
 
 interface MultiAddressFieldProps {
@@ -205,13 +206,13 @@ export const MultiAddressField = ({
                   {isPhysical && <span className="text-red-400 ml-1">*</span>}
                 </Label>
                 <Select
-                  value={activeEntry.state}
+                  value={activeEntry.state || undefined}
                   onValueChange={(v) => update("state", v)}
                 >
                   <SelectTrigger
                     className={`bg-white/5 border-purple-300/30 text-white h-9 cursor-pointer data-[placeholder]:text-white/30 ${physicalInvalid && !activeEntry.state ? "border-red-500" : ""}`}
                   >
-                    <SelectValue placeholder="ST" />
+                    <SelectValue placeholder="" />
                   </SelectTrigger>
                   <SelectContent
                     className="bg-[#1a1a2e] border-purple-300/30 max-h-[260px] overflow-y-auto z-50"

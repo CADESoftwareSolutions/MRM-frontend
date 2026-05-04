@@ -28,6 +28,7 @@ const addressesFromItem = (item: any): AddressEntry[] => {
     state: a.address?.stateCode || "",
     zip: a.address?.postalCode || "",
     _addressId: a.address?.id ? parseInt(a.address.id, 10) : undefined,
+    _partyAddressId: a.id ? parseInt(a.id, 10) : undefined,
   }));
   const physical = mapped.find((a) => a.type === "Physical");
   const others = mapped.filter((a) => a.type !== "Physical");

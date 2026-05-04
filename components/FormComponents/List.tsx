@@ -65,6 +65,41 @@ const isLockedColumn = (col: string, firstField: string) =>
   col === "status" ||
   col === "leaseStatus";
 
+/** Truncated text cell that shows full value in a styled tooltip on hover */
+const TruncatedCell = ({
+  text,
+  isLight,
+}: {
+  text: string;
+  isLight: boolean;
+}) => (
+  <div className="relative group/tip max-w-[220px]">
+    <span
+      className={`block truncate text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}
+    >
+      {text}
+    </span>
+    {/* Tooltip */}
+    <div className="pointer-events-none absolute bottom-full left-0 mb-2 z-[100] hidden group-hover/tip:block">
+      <div
+        className={`rounded-lg px-3 py-2 text-xs shadow-2xl whitespace-normal max-w-xs leading-relaxed border ${
+          isLight
+            ? "bg-white text-gray-800 border-purple-200 shadow-purple-100/60"
+            : "bg-[#1e1b3a] text-white border-purple-300/30 shadow-black/60"
+        }`}
+      >
+        {text}
+      </div>
+      {/* Arrow */}
+      <div
+        className={`w-2.5 h-2.5 rotate-45 ml-4 -mt-[5px] border-b border-r ${
+          isLight ? "bg-white border-purple-200" : "bg-[#1e1b3a] border-purple-300/30"
+        }`}
+      />
+    </div>
+  </div>
+);
+
 export const List: React.FC<ListProps> = ({
   config,
   data,
@@ -80,19 +115,19 @@ export const List: React.FC<ListProps> = ({
   const storageKey = `mrm-columns-${config.name}`;
   const firstField = config.listFields[0];
 
-  const [visibleCols, setVisibleCols] = useState<string[]>(() => {
+  const [visibleCols, setVisibleCols] = useState<string[]>([...config.listFields]);
+
+  useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed: string[] = JSON.parse(saved);
-        // Always include locked columns even if missing from saved state
         const locked = config.listFields.filter((c) => isLockedColumn(c, firstField));
         const merged = [...new Set([...locked, ...parsed.filter((c) => config.listFields.includes(c))])];
-        return config.listFields.filter((c) => merged.includes(c));
+        setVisibleCols(config.listFields.filter((c) => merged.includes(c)));
       }
     } catch {}
-    return [...config.listFields];
-  });
+  }, []);
 
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -127,6 +162,7 @@ export const List: React.FC<ListProps> = ({
   const fallbackBadge = isLight
     ? "bg-purple-100 text-purple-700 border-purple-300"
     : "bg-purple-500/20 text-purple-300 border-purple-400/30";
+  const emptyText = isLight ? "text-gray-300" : "text-white/30";
 
   const renderCell = (fieldId: string, value: any, item: any) => {
     if (fieldId === "fullAddress") {
@@ -135,24 +171,19 @@ export const List: React.FC<ListProps> = ({
       const cityState = [item.city, item.state].filter(Boolean).join(", ");
       if (cityState) parts.push(cityState);
       if (item.zip) parts.push(item.zip);
-      if (!parts.length) return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
-      return <span className={`text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}>{parts.join(", ")}</span>;
+      if (!parts.length) return <span className={emptyText}>—</span>;
+      const full = parts.join(", ");
+      return <TruncatedCell text={full} isLight={isLight} />;
     }
 
-    if (value == null || value === "") {
-      return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
-    }
+    if (value == null || value === "") return <span className={emptyText}>—</span>;
 
     if (Array.isArray(value)) {
-      if (value.length === 0) return <span className={isLight ? "text-gray-300" : "text-white/30"}>—</span>;
+      if (value.length === 0) return <span className={emptyText}>—</span>;
       return (
         <div className="flex flex-wrap gap-1">
           {value.map((v: string) => (
-            <Badge
-              key={v}
-              variant="outline"
-              className={`text-xs font-medium ${classColors[v] ?? fallbackBadge}`}
-            >
+            <Badge key={v} variant="outline" className={`text-xs font-medium ${classColors[v] ?? fallbackBadge}`}>
               {v}
             </Badge>
           ))}
@@ -161,9 +192,8 @@ export const List: React.FC<ListProps> = ({
     }
 
     if (fieldId === "status" || fieldId === "leaseStatus") {
-      const cls = statusColors[value] ?? fallbackBadge;
       return (
-        <Badge variant="outline" className={`text-xs font-medium ${cls}`}>
+        <Badge variant="outline" className={`text-xs font-medium ${statusColors[value] ?? fallbackBadge}`}>
           {value}
         </Badge>
       );
@@ -178,19 +208,16 @@ export const List: React.FC<ListProps> = ({
 
   const borderColor = isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.2)";
   const dividerColor = isLight ? "rgb(167 139 250 / 0.2)" : "rgb(167 139 250 / 0.15)";
+  const containerBg = isLight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.06)";
 
   return (
-    <div
-      className="rounded-xl border overflow-hidden"
-      style={{
-        background: isLight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.06)",
-        borderColor,
-      }}
-    >
-      {/* Search + column picker */}
+    // Outer wrapper: NO overflow-hidden so the column-picker dropdown can escape
+    <div className="rounded-xl border" style={{ borderColor, background: containerBg }}>
+
+      {/* Search + column picker — sits above the table, z-index lets dropdown float over it */}
       <div
-        className="flex items-center gap-3 px-5 py-4 border-b"
-        style={{ borderColor: dividerColor }}
+        className="flex items-center gap-3 px-5 py-4 border-b rounded-t-xl relative z-20"
+        style={{ borderColor: dividerColor, background: containerBg }}
       >
         <div className="relative flex-1">
           <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isLight ? "text-gray-400" : "text-purple-300/60"}`} />
@@ -241,17 +268,19 @@ export const List: React.FC<ListProps> = ({
                     className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors ${
                       locked ? "cursor-default opacity-60" : "cursor-pointer"
                     } ${
-                      isLight
-                        ? "text-gray-700 hover:bg-purple-50"
-                        : "text-white hover:bg-purple-500/20"
-                    } ${locked && isLight ? "hover:bg-transparent" : ""} ${locked && !isLight ? "hover:bg-transparent" : ""}`}
+                      locked
+                        ? ""
+                        : isLight
+                        ? "hover:bg-purple-50"
+                        : "hover:bg-purple-500/20"
+                    } ${isLight ? "text-gray-700" : "text-white"}`}
                   >
                     <span className="flex items-center gap-2">
                       {locked && <Lock className="w-3 h-3 opacity-50" />}
                       {toLabel(col)}
                     </span>
                     <span
-                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors ${
+                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                         checked
                           ? "bg-purple-600 border-purple-600"
                           : isLight
@@ -273,8 +302,8 @@ export const List: React.FC<ListProps> = ({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Table — overflow-hidden here clips the table corners at the bottom */}
+      <div className="overflow-x-auto overflow-y-visible rounded-b-xl">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b" style={{ borderColor: dividerColor }}>
@@ -314,14 +343,14 @@ export const List: React.FC<ListProps> = ({
                 <tr
                   key={item.id ?? idx}
                   onClick={() => onEdit(item)}
-                  className={`border-b last:border-0 transition-colors cursor-pointer group ${
+                  className={`border-b last:border-0 transition-colors cursor-pointer ${
                     isLight
-                      ? "border-purple-100 hover:bg-purple-50/60"
-                      : "border-purple-300/10 hover:bg-purple-500/10"
+                      ? "border-purple-100 hover:bg-purple-100/70"
+                      : "border-purple-300/10 hover:bg-purple-500/[0.18]"
                   }`}
                 >
                   {columns.map((col) => (
-                    <td key={col} className="px-5 py-3.5 whitespace-nowrap max-w-[240px] truncate">
+                    <td key={col} className="px-5 py-3.5">
                       {renderCell(col, item[col], item)}
                     </td>
                   ))}
@@ -332,7 +361,7 @@ export const List: React.FC<ListProps> = ({
                         onClick={() => onEdit(item)}
                         className={`p-1.5 rounded transition-colors cursor-pointer ${
                           isLight
-                            ? "text-gray-400 hover:text-purple-600 hover:bg-purple-50"
+                            ? "text-gray-400 hover:text-purple-600 hover:bg-purple-100"
                             : "text-purple-300/50 hover:text-purple-200 hover:bg-purple-500/20"
                         }`}
                       >

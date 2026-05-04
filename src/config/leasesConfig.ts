@@ -10,6 +10,7 @@ export const leasesConfig: ModuleConfig = {
     { id: "terms", label: "Terms & Payments" },
     { id: "provisions", label: "Provisions" },
     { id: "recordation", label: "Recordation & References" },
+    { id: "documents", label: "Documents" },
   ],
   listFields: [
     "leaseId",
@@ -646,6 +647,16 @@ export const leasesConfig: ModuleConfig = {
       rows: 8,
       helpText: "Free form - no more than 3 pages",
     }),
+
+    // ========== DOCUMENTS TAB ==========
+    {
+      id: "attachments",
+      label: "Attachments",
+      type: "custom" as const,
+      tab: "documents",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
   ],
 };
 

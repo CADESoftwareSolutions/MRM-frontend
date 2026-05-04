@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ModuleConfig } from "../config/directoryConfig";
 import {
   FETCH_PARTIES,
@@ -8,6 +9,7 @@ import {
   CREATE_ADDRESS_MUTATION,
   UPDATE_ADDRESS_MUTATION,
   CREATE_PARTY_ADDRESS_MUTATION,
+  DELETE_PARTY_ADDRESS_MUTATION,
   CREATE_CONTACT_MUTATION,
   UPDATE_CONTACT_MUTATION,
   DELETE_CONTACT_MUTATION,
@@ -25,9 +27,44 @@ interface UseDirectoryDataProps {
   accountId: number;
 }
 
+const executeGraphQL = async (query: string, variables: any = {}) => {
+  const response = await fetch(GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  });
+  const result = await response.json();
+  if (result.errors) throw new Error(result.errors[0].message);
+  return result.data;
+};
+
+const transformParties = (parties: any[]) =>
+  parties.map((party: any) => ({
+    id: party.id,
+    name: party.nameFull,
+    nameFirst: party.nameFirst || "",
+    nameMiddle: party.nameMiddle || "",
+    nameLast: party.nameLast || "",
+    classifications: [party.partyType],
+    email: party.email,
+    phone: party.phone,
+    phoneNumber: party.phone,
+    city: party.addresses?.[0]?.address?.city || "",
+    state: party.addresses?.[0]?.address?.stateCode || "",
+    status: party.isActive ? "Active" : "Inactive",
+    address: party.addresses?.[0]?.address?.line1 || "",
+    addressLine2: party.addresses?.[0]?.address?.line2 || "",
+    zip: party.addresses?.[0]?.address?.postalCode || "",
+    addressTypes: party.addresses?.[0]?.addressType
+      ? [party.addresses[0].addressType]
+      : [],
+    _rawData: party,
+  }));
+
 export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
-  const [data, setData] = useState<Record<string, any>[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const queryKey = ["parties", accountId];
+
   const [view, setView] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
@@ -35,75 +72,17 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<string, any> | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
-  const executeGraphQL = async (query: string, variables: any = {}) => {
-    try {
-      const response = await fetch(GRAPHQL_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query,
-          variables,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.errors) {
-        throw new Error(result.errors[0].message);
-      }
-
-      return result.data;
-    } catch (error) {
-      console.error("GraphQL Error:", error);
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    if (!accountId) return;
-    fetchData();
-  }, [accountId]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
+  const { data = [], isLoading: loading } = useQuery({
+    queryKey,
+    queryFn: async () => {
       const result = await executeGraphQL(FETCH_PARTIES, { accountId });
+      return transformParties(result.parties);
+    },
+    enabled: !!accountId,
+  });
 
-      // Transform GraphQL data to match frontend format
-      const transformedData = result.parties.map((party: any) => ({
-        id: party.id,
-        nameIdType: "auto", // TODO: read from backend when custom name ID is supported
-        nameId: `PARTY-${party.id}`,
-        name: party.nameFull,
-        classifications: [party.partyType], // Convert single type to array for consistency
-        email: party.email,
-        phone: party.phone,       // for list display
-        phoneNumber: party.phone, // for form field
-        city: party.addresses?.[0]?.address?.city || "",
-        state: party.addresses?.[0]?.address?.stateCode || "",
-        status: party.isActive ? "Active" : "Inactive",
-        // Address fields for form pre-fill on edit
-        address: party.addresses?.[0]?.address?.line1 || "",
-        addressLine2: party.addresses?.[0]?.address?.line2 || "",
-        zip: party.addresses?.[0]?.address?.postalCode || "",
-        addressTypes: party.addresses?.[0]?.addressType
-          ? [party.addresses[0].addressType]
-          : [],
-        // Include full data for editing
-        _rawData: party,
-      }));
+  const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
-      setData(transformedData);
-    } catch (error) {
-      console.error("Failed to fetch parties:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Build GraphQL variables from form data using field config mappings
   const transformFormDataToGraphQL = (formData: any) => {
     const result: any = { accountId };
     config.fields.forEach((f) => {
@@ -118,6 +97,19 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   };
 
   const saveAddresses = async (partyId: number, addresses: AddressEntry[], isNew: boolean) => {
+    if (!isNew) {
+      const currentPartyAddressIds = new Set(
+        addresses.map((a) => a._partyAddressId).filter(Boolean)
+      );
+      const initialRaw: any[] = (selectedItem as any)?._rawData?.addresses || [];
+      for (const rawAddr of initialRaw) {
+        const paId = rawAddr.id ? parseInt(rawAddr.id, 10) : null;
+        if (paId && !currentPartyAddressIds.has(paId)) {
+          await executeGraphQL(DELETE_PARTY_ADDRESS_MUTATION, { id: paId });
+        }
+      }
+    }
+
     for (const addr of addresses) {
       if (!addr.address && !addr.city) continue;
       if (!isNew && addr._addressId) {
@@ -157,13 +149,16 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     try {
       const variables = transformFormDataToGraphQL(formData);
       const { line1, line2, city, stateCode, postalCode, addressType, ...partyVariables } = variables;
-
-      // Use first phone number for the party record (backend supports one phone)
       const primaryPhone = phones[0]?.number || undefined;
+
+      const nameFull = [partyVariables.nameFirst, partyVariables.nameMiddle, partyVariables.nameLast]
+        .filter(Boolean)
+        .join(" ");
 
       if (view === "add") {
         const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, {
           ...partyVariables,
+          nameFull,
           ...(primaryPhone ? { phone: primaryPhone } : {}),
         });
         const partyId = parseInt(partyResult.createParty.party.id, 10);
@@ -173,12 +168,13 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
         await executeGraphQL(UPDATE_PARTY_MUTATION, {
           id: partyId,
           ...partyVariables,
+          nameFull,
           ...(primaryPhone !== undefined ? { phone: primaryPhone } : {}),
         });
         await saveAddresses(partyId, addresses, false);
       }
 
-      await fetchData();
+      await invalidate();
       setView("list");
       setSelectedItem(null);
     } catch (error) {
@@ -187,15 +183,13 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     }
   };
 
-  const handleDelete = (item: any) => {
-    setPendingDeleteItem(item);
-  };
+  const handleDelete = (item: any) => setPendingDeleteItem(item);
 
   const confirmDelete = async () => {
     if (!pendingDeleteItem) return;
     try {
       await executeGraphQL(DELETE_PARTY_MUTATION, { id: parseInt(pendingDeleteItem.id, 10) });
-      await fetchData();
+      await invalidate();
     } catch (error) {
       console.error("Failed to delete party:", error);
       setSaveError((error as Error).message);
@@ -206,11 +200,16 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
 
   const cancelDelete = () => setPendingDeleteItem(null);
 
+  const buildContactName = (c: Omit<Contact, "id">) =>
+    [c.nameFirst, c.nameMiddle, c.nameLast].filter(Boolean).join(" ");
+
   const handleAddContact = async (contact: Omit<Contact, "id">) => {
     if (!selectedItem?.id) return;
+    const { nameFirst, nameMiddle, nameLast, ...rest } = contact;
     await executeGraphQL(CREATE_CONTACT_MUTATION, {
       partyId: parseInt(selectedItem.id, 10),
-      ...contact,
+      name: buildContactName(contact),
+      ...rest,
     });
     const updated = await executeGraphQL(FETCH_PARTIES, { accountId });
     const party = updated.parties.find((p: any) => p.id === selectedItem.id);
@@ -218,7 +217,12 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   };
 
   const handleUpdateContact = async (id: number, contact: Omit<Contact, "id">) => {
-    await executeGraphQL(UPDATE_CONTACT_MUTATION, { id, ...contact });
+    const { nameFirst, nameMiddle, nameLast, ...rest } = contact;
+    await executeGraphQL(UPDATE_CONTACT_MUTATION, {
+      id,
+      name: buildContactName(contact),
+      ...rest,
+    });
     setContacts((prev) => prev.map((c) => (c.id === id ? { id, ...contact } : c)));
   };
 
@@ -229,25 +233,18 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
 
   const SEARCH_FIELDS = ["name", "nameId", "address", "city", "state", "zip"];
 
-  // Filter data based on search term
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
-
     const searchLower = searchTerm.toLowerCase();
-
-    return data.filter((item) => {
-      return SEARCH_FIELDS.some((fieldId) => {
-        const value = item[fieldId];
-
+    return data.filter((item) =>
+      SEARCH_FIELDS.some((fieldId) => {
+        const value = (item as Record<string, any>)[fieldId];
         if (Array.isArray(value)) {
-          return value.some((v) =>
-            v?.toString().toLowerCase().includes(searchLower),
-          );
+          return value.some((v) => v?.toString().toLowerCase().includes(searchLower));
         }
-
         return value?.toString().toLowerCase().includes(searchLower);
-      });
-    });
+      })
+    );
   }, [data, searchTerm]);
 
   return {

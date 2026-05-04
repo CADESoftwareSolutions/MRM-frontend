@@ -12,6 +12,7 @@ import {
 import React from "react";
 import { userProfileAtom } from "../../src/atoms/userProfileAtom";
 import { useAtom } from "jotai";
+import { useRouter } from "next/router";
 
 type DashboardHomeProps = {};
 
@@ -71,14 +72,15 @@ const recentActivity = [
 ];
 
 const quickActions = [
-  { icon: CheckSquare, label: "Process Check" },
-  { icon: FileText, label: "Upload Document" },
-  { icon: CreditCard, label: "Make Payment" },
-  { icon: BarChart3, label: "View Reports" },
+  { icon: CheckSquare, label: "Process Check", route: "/Dashboard/DashboardDirectory/Checks" },
+  { icon: FileText, label: "Leases", route: "/Dashboard/DashboardDirectory/Leases" },
+  { icon: CreditCard, label: "Make Payment", route: "/Dashboard/DashboardDirectory/Checks" },
+  { icon: BarChart3, label: "View Reports", route: "/Dashboard/DashboardDirectory/Reports" },
 ];
 
 const DashboardHome: React.FC<DashboardHomeProps> = () => {
   const [userProfile] = useAtom(userProfileAtom);
+  const router = useRouter();
 
   return (
     <div className="p-6" style={{ marginTop: `64px` }}>
@@ -197,9 +199,10 @@ const DashboardHome: React.FC<DashboardHomeProps> = () => {
                 <Button
                   key={index}
                   variant="ghost"
-                  className="h-auto flex-col gap-3 py-6 bg-white/5 hover:bg-[#e91e63]/30 border border-white/10 hover:scale-105 transition-all duration-200"
+                  onClick={() => router.push(action.route)}
+                  className="h-auto flex-col gap-3 py-6 bg-white/5 hover:bg-purple-500/20 border border-white/10 hover:scale-105 transition-all duration-200 cursor-pointer"
                 >
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-pink-500/20 text-pink-500">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-500/20 text-purple-300">
                     <Icon className="h-6 w-6" />
                   </div>
                   <span className="font-medium text-white">{action.label}</span>

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { FileText, Plus, Upload } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { UploadLeasesModal } from "../../../../components/modals/UploadLeasesModal";
+import { LeaseAttachmentsTab, LeaseAttachment } from "../../../../components/FormComponents/LeaseAttachmentsTab";
 import leasesConfig from "@/config/leasesConfig";
 import { useLeases } from "@/hooks/useLeases";
 import { useAtom } from "jotai";
@@ -16,7 +16,7 @@ const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
-  const [showUpload, setShowUpload] = useState(false);
+  const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
 
   const {
     view,
@@ -30,12 +30,11 @@ const Leases = () => {
     confirmDelete,
     cancelDelete,
     setSearchTerm,
-    handleAdd,
-    handleEdit,
+    handleAdd: _handleAdd,
+    handleEdit: _handleEdit,
     handleSave,
     handleDelete,
     handleCancel,
-    bulkImport,
   } = useLeases({
     config: leasesConfig,
     accountId: userProfile?.account?.id ?? 0,
@@ -44,6 +43,16 @@ const Leases = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [view]);
+
+  const handleAdd = () => {
+    setAttachments([]);
+    _handleAdd();
+  };
+
+  const handleEdit = (item: any) => {
+    setAttachments(item._attachments || []);
+    _handleEdit(item);
+  };
 
   return (
     <DashboardLayout>
@@ -61,23 +70,13 @@ const Leases = () => {
               </div>
             </div>
             {view === "list" && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowUpload(true)}
-                  className="border-purple-300/30 text-purple-200 hover:bg-purple-500/20 cursor-pointer"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
-                </Button>
-                <Button
-                  onClick={handleAdd}
-                  className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Lease
-                </Button>
-              </div>
+              <Button
+                onClick={handleAdd}
+                className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Lease
+              </Button>
             )}
           </div>
           <div className="border-b border-purple-300/10 mb-8" />
@@ -103,6 +102,14 @@ const Leases = () => {
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
+              customContent={{
+                attachments: (
+                  <LeaseAttachmentsTab
+                    value={attachments}
+                    onChange={setAttachments}
+                  />
+                ),
+              }}
             />
           )}
         </div>
@@ -118,16 +125,6 @@ const Leases = () => {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
-
-      {showUpload && (
-        <UploadLeasesModal
-          onClose={() => setShowUpload(false)}
-          onImport={(rows) => {
-            bulkImport(rows);
-            setShowUpload(false);
-          }}
-        />
-      )}
     </DashboardLayout>
   );
 };

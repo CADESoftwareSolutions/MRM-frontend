@@ -111,7 +111,7 @@ export const Form: React.FC<FormProps> = ({
         key={field.id}
         className={field.gridColumn === "span 2" ? "col-span-2" : ""}
       >
-        <Label className="text-purple-100 font-semibold flex items-center gap-1 mb-2.5 text-sm">
+        <Label className="text-purple-100 font-semibold flex items-center gap-1 mb-1.5 text-sm">
           {field.label}
           {field.required && (
             <span className="text-red-500 text-sm font-bold">*</span>
@@ -263,22 +263,22 @@ export const Form: React.FC<FormProps> = ({
     const tabFields = config.fields.filter((field) => field.tab === tabId);
     const sections = groupFieldsBySection(tabFields);
     return (
-      <div className="space-y-10">
+      <div className="space-y-5">
         {Object.entries(sections).map(([sectionId, fields]) => (
           <div
             key={sectionId}
             className={
               sectionId !== "default"
-                ? "border-t border-purple-300/30 pt-8"
+                ? "border-t border-purple-300/30 pt-4"
                 : ""
             }
           >
             {sectionId !== "default" && (
-              <h3 className="text-lg font-semibold text-purple-100 mb-6 capitalize">
+              <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wider mb-3">
                 {sectionId.replace(/-/g, " ")}
               </h3>
             )}
-            <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
               {fields.map((field) => renderField(field))}
             </div>
           </div>
@@ -303,7 +303,7 @@ export const Form: React.FC<FormProps> = ({
         </TabsList>
 
         {config.tabs.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="mt-6">
+          <TabsContent key={tab.id} value={tab.id} className="mt-4">
             {tab.id === "vendor" && (
               <div className="flex items-center gap-2 mb-6 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-blue-300" />
@@ -351,7 +351,7 @@ export const Form: React.FC<FormProps> = ({
         </div>
       )}
 
-      <div className="flex gap-3 mt-8 pt-6 border-t border-purple-300/30">
+      <div className="flex gap-3 mt-5 pt-4 border-t border-purple-300/30">
         <Button
           className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
           onClick={handleSubmit(onSave)}
