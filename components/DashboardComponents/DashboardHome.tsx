@@ -72,10 +72,10 @@ const recentActivity = [
 ];
 
 const quickActions = [
-  { icon: CheckSquare, label: "Process Check", route: "/Dashboard/DashboardDirectory/Checks" },
-  { icon: FileText, label: "Leases", route: "/Dashboard/DashboardDirectory/Leases" },
-  { icon: CreditCard, label: "Make Payment", route: "/Dashboard/DashboardDirectory/Checks" },
-  { icon: BarChart3, label: "View Reports", route: "/Dashboard/DashboardDirectory/Reports" },
+  { icon: CheckSquare, label: "Process Check", route: "/Dashboard/checks" },
+  { icon: FileText,    label: "Leases",         route: "/Dashboard/leases" },
+  { icon: CreditCard,  label: "Make Payment",   route: "/Dashboard/checks" },
+  { icon: BarChart3,   label: "View Reports",   route: "/Dashboard/reports" },
 ];
 
 const DashboardHome: React.FC<DashboardHomeProps> = () => {

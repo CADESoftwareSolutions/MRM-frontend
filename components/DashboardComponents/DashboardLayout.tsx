@@ -48,7 +48,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   }, [profileData]);
 
   useEffect(() => {
-    if ((profileError as any)?.status === 401) router.push("/Login");
+    if ((profileError as any)?.status === 401) router.push("/login");
   }, [profileError]);
 
   useEffect(() => {
@@ -64,9 +64,9 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Land",
       icon: Layers,
       items: [
-        { text: "Leases", route: "/Dashboard/DashboardDirectory/Leases" },
-        { text: "Wells", route: "/Dashboard/DashboardDirectory/Wells" },
-        { text: "Deeds", route: "/Dashboard/DashboardDirectory/Deeds" },
+        { text: "Leases",    route: "/Dashboard/leases" },
+        { text: "Wells",     route: "/Dashboard/wells" },
+        { text: "Deeds",     route: "/Dashboard/deeds" },
       ],
     },
     {
@@ -74,22 +74,22 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Accounting",
       icon: FileText,
       items: [
-        { text: "Documents", route: "/Dashboard/DashboardDirectory/Documents" },
-        { text: "Checks", route: "/Dashboard/DashboardDirectory/Checks" },
-        { text: "Reports", route: "/Dashboard/DashboardDirectory/Reports" },
+        { text: "Documents", route: "/Dashboard/documents" },
+        { text: "Checks",    route: "/Dashboard/checks" },
+        { text: "Reports",   route: "/Dashboard/reports" },
       ],
     },
     {
       type: "link",
       text: "Directory",
       icon: Users,
-      route: "/Dashboard/DashboardDirectory/Directory",
+      route: "/Dashboard/directory",
     },
     {
       type: "link",
       text: "Settings",
       icon: Settings,
-      route: "/Dashboard/Settings",
+      route: "/Dashboard/settings",
     },
   ];
 
