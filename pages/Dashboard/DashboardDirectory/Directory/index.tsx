@@ -36,8 +36,13 @@ const addressesFromItem = (item: any): AddressEntry[] => {
 };
 
 const phonesFromItem = (item: any): PhoneEntry[] => {
-  if (!item?.phone) return [];
-  return [{ type: "Business", number: item.phone }];
+  const rawPhones: any[] = item?._rawData?.phones || [];
+  return rawPhones.map((pp: any) => ({
+    type: pp.phoneType || "Business",
+    number: pp.phone?.number || "",
+    _phoneId: pp.phone?.id ? parseInt(pp.phone.id, 10) : undefined,
+    _partyPhoneId: pp.id ? parseInt(pp.id, 10) : undefined,
+  }));
 };
 
 const AddressDirectory = () => {

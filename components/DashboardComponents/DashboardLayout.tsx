@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAtom } from "jotai";
-import { openAccordionsAtom, sidebarOpenAtom, themeAtom } from "@/atoms/NavigationAtom";
+import { openAccordionsAtom, sidebarOpenAtom, themeAtom, moduleViewAtom } from "@/atoms/NavigationAtom";
 import { useQuery } from "@tanstack/react-query";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { API_URL } from "@/lib/api";
@@ -25,6 +25,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useAtom(sidebarOpenAtom);
   const [theme] = useAtom(themeAtom);
   const [, setUserProfile] = useAtom(userProfileAtom);
+  const [, setModuleView] = useAtom(moduleViewAtom);
   const isLight = theme === "light";
   const router = useRouter();
 
@@ -164,7 +165,10 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                 <Button
                   key={group.text}
                   variant="ghost"
-                  onClick={() => router.push(group.route!)}
+                  onClick={() => {
+                    setModuleView("list");
+                    router.push(group.route!);
+                  }}
                   className={`w-full justify-start transition-colors cursor-pointer h-10 ${navText} ${navHover} ${isActive ? navActive : ""}`}
                   style={{
                     padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
@@ -225,7 +229,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                         <Button
                           key={subItem.text}
                           variant="ghost"
-                          onClick={() => router.push(subItem.route)}
+                          onClick={() => { setModuleView("list"); router.push(subItem.route); }}
                           className={`w-full justify-start h-9 text-sm cursor-pointer px-4 ${subText} ${navHover} ${
                             router.pathname === subItem.route ? subActive : ""
                           }`}

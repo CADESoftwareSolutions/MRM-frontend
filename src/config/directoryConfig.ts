@@ -37,6 +37,7 @@ export interface TabConfig {
   id: string;
   label: string;
   icon?: string;
+  noOuterSave?: boolean;
 }
 
 export interface ModuleConfig {
@@ -226,7 +227,7 @@ export const directoryConfig: ModuleConfig = {
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
     { id: "vendor", label: "A/P Vendor Info" },
-    { id: "contacts", label: "Contacts" },
+    { id: "contacts", label: "Connection", noOuterSave: true },
   ],
   listFields: [
     "name",
@@ -245,8 +246,12 @@ export const directoryConfig: ModuleConfig = {
         required: true,
         section: "identification",
         gridColumn: "span 2",
+        defaultValue: [],
         graphqlKey: "partyType",
-        toGraphQL: (v: string[]) => v?.[0],
+        toGraphQL: (v: string | string[]) => {
+          const arr = Array.isArray(v) ? v : [v];
+          return arr.filter(Boolean).join(",") || undefined;
+        },
       },
     ),
 

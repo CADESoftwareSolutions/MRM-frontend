@@ -39,10 +39,17 @@ interface ContactsTabProps {
 const ADDRESS_TYPES = ["Physical", "Mailing", "Correspondence"];
 
 const emptyForm = {
-  nameFirst: "", nameMiddle: "", nameLast: "",
-  phone: "", email: "",
+  nameFirst: "",
+  nameMiddle: "",
+  nameLast: "",
+  phone: "",
+  email: "",
   addressType: [] as string[],
-  address: "", addressLine2: "", city: "", state: "", zip: "",
+  address: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  zip: "",
 };
 
 export const ContactsTab: React.FC<ContactsTabProps> = ({
@@ -60,7 +67,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
   if (!partyId) {
     return (
       <div className="flex items-center justify-center py-16 text-purple-300/70 text-sm">
-        Save the party first to manage contacts.
+        Save this record first to add a connection.
       </div>
     );
   }
@@ -112,7 +119,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
     <div className="space-y-3">
       {contacts.length === 0 && !showForm && (
         <div className="text-center py-10 text-purple-300/70 text-sm">
-          No contacts yet. Add one below.
+          No connections added yet.
         </div>
       )}
 
@@ -127,7 +134,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
             </div>
             <div>
               <p className="text-white font-medium text-sm">
-                {[contact.nameFirst, contact.nameMiddle, contact.nameLast].filter(Boolean).join(" ")}
+                {[contact.nameFirst, contact.nameMiddle, contact.nameLast]
+                  .filter(Boolean)
+                  .join(" ")}
               </p>
               {(contact.phone || contact.email) && (
                 <p className="text-purple-300 text-xs mt-0.5">
@@ -163,27 +172,35 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
             {/* Name */}
             <div>
               <Label className="text-purple-100 font-semibold text-sm mb-2 block">
-                First Name <span className="text-red-500 text-sm font-bold">*</span>
+                First Name{" "}
+                <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
               <Input
                 value={form.nameFirst}
-                onChange={(e) => setForm({ ...form, nameFirst: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, nameFirst: e.target.value })
+                }
                 placeholder="First name"
                 className={commonInput}
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Middle Name</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Middle Name
+              </Label>
               <Input
                 value={form.nameMiddle}
-                onChange={(e) => setForm({ ...form, nameMiddle: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, nameMiddle: e.target.value })
+                }
                 placeholder="Middle name"
                 className={commonInput}
               />
             </div>
             <div className="col-span-2">
               <Label className="text-purple-100 font-semibold text-sm mb-2 block">
-                Last Name <span className="text-red-500 text-sm font-bold">*</span>
+                Last Name{" "}
+                <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
               <Input
                 value={form.nameLast}
@@ -195,7 +212,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Phone & Email */}
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Phone</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Phone
+              </Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -205,7 +224,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Email</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Email
+              </Label>
               <Input
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -217,7 +238,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address Type */}
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Address Type</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Address Type
+              </Label>
               <div className="flex flex-wrap gap-2">
                 {ADDRESS_TYPES.map((type) => {
                   const selected = form.addressType.includes(type);
@@ -245,7 +268,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address */}
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Address</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Address
+              </Label>
               <Input
                 value={form.address}
                 onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -254,10 +279,14 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Address Line 2</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Address Line 2
+              </Label>
               <Input
                 value={form.addressLine2}
-                onChange={(e) => setForm({ ...form, addressLine2: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, addressLine2: e.target.value })
+                }
                 placeholder="Apt, suite, etc."
                 className={commonInput}
               />
@@ -265,7 +294,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* City / State / Zip */}
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">City</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                City
+              </Label>
               <Input
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -274,14 +305,23 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">State</Label>
-              <Select value={form.state || undefined} onValueChange={(v) => setForm({ ...form, state: v })}>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                State
+              </Label>
+              <Select
+                value={form.state || undefined}
+                onValueChange={(v) => setForm({ ...form, state: v })}
+              >
                 <SelectTrigger className={`${commonInput} cursor-pointer`}>
                   <SelectValue placeholder="State" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a2e] border-purple-300/30 max-h-[250px] overflow-y-auto z-50">
                   {STATES.map((s) => (
-                    <SelectItem key={s} value={s} className="hover:bg-purple-400/30 focus:bg-purple-400/40 cursor-pointer text-white">
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      className="hover:bg-purple-400/30 focus:bg-purple-400/40 cursor-pointer text-white"
+                    >
                       {s}
                     </SelectItem>
                   ))}
@@ -289,7 +329,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               </Select>
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">Zip</Label>
+              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+                Zip
+              </Label>
               <Input
                 value={form.zip}
                 onChange={(e) => setForm({ ...form, zip: e.target.value })}
@@ -301,9 +343,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           <div className="flex gap-2 justify-end">
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={cancelForm}
-              className="text-purple-300 hover:text-white hover:bg-white/10 cursor-pointer"
+              className="border-purple-300/30 text-purple-300 hover:text-white hover:bg-white/10 cursor-pointer"
             >
               <X className="w-4 h-4 mr-1" />
               Cancel
@@ -315,7 +357,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
             >
               <Save className="w-4 h-4 mr-1" />
-              {editingId !== null ? "Update" : "Add"} Contact
+              {editingId !== null ? "Update" : "Save"} Person
             </Button>
           </div>
         </div>
@@ -328,7 +370,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           className="w-full border border-dashed border-purple-300/30 text-purple-300 hover:text-white hover:bg-white/5 cursor-pointer h-10"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add Contact
+          Add a connection
         </Button>
       )}
     </div>

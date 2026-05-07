@@ -14,6 +14,8 @@ const PHONE_TYPES = ["Home", "Business", "Cell", "Fax", "Other"];
 export interface PhoneEntry {
   type: string;
   number: string;
+  _phoneId?: number;
+  _partyPhoneId?: number;
 }
 
 interface MultiPhoneFieldProps {

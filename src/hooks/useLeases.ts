@@ -1,4 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useAtom } from "jotai";
+import { moduleViewAtom } from "../atoms/NavigationAtom";
 import { ModuleConfig } from "../config/directoryConfig";
 import { MOCK_LEASES } from "../config/leasesConfig";
 
@@ -46,7 +48,8 @@ export const useLeases = ({ config: _config, accountId: _accountId }: UseLeasesP
     MOCK_LEASES.map((l) => ({ ...l, id: String(l.id) }))
   );
   const [loading] = useState(false);
-  const [view, setView] = useState("list");
+  const [view, setView] = useAtom(moduleViewAtom);
+  useEffect(() => () => setView("list"), []);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);

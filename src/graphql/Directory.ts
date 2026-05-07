@@ -8,10 +8,18 @@ export const FETCH_PARTIES = `
       nameLast
       nameMiddle
       email
-      phone
       isActive
       createdAt
       updatedAt
+      phones {
+        id
+        phoneType
+        isPrimary
+        phone {
+          id
+          number
+        }
+      }
       addresses {
         id
         addressType
@@ -39,7 +47,6 @@ export const CREATE_PARTY_MUTATION = `
     $nameMiddle: String
     $taxId: String
     $email: String
-    $phone: String
     $isActive: Boolean
   ) {
     createParty(
@@ -51,7 +58,6 @@ export const CREATE_PARTY_MUTATION = `
       nameMiddle: $nameMiddle
       taxId: $taxId
       email: $email
-      phone: $phone
       isActive: $isActive
     ) {
       party {
@@ -59,7 +65,6 @@ export const CREATE_PARTY_MUTATION = `
         partyType
         nameFull
         email
-        phone
         isActive
       }
     }
@@ -76,7 +81,6 @@ export const UPDATE_PARTY_MUTATION = `
     $nameMiddle: String
     $taxId: String
     $email: String
-    $phone: String
     $isActive: Boolean
   ) {
     updateParty(
@@ -88,7 +92,6 @@ export const UPDATE_PARTY_MUTATION = `
       nameMiddle: $nameMiddle
       taxId: $taxId
       email: $email
-      phone: $phone
       isActive: $isActive
     ) {
       party {
@@ -96,7 +99,6 @@ export const UPDATE_PARTY_MUTATION = `
         partyType
         nameFull
         email
-        phone
         isActive
       }
     }
@@ -251,6 +253,50 @@ export const CREATE_PARTY_ADDRESS_MUTATION = `
       partyAddress {
         id
       }
+    }
+  }
+`;
+
+export const CREATE_PHONE_MUTATION = `
+  mutation CreatePhone($number: String!, $extension: String) {
+    createPhone(number: $number, extension: $extension) {
+      phone { id number }
+    }
+  }
+`;
+
+export const UPDATE_PHONE_MUTATION = `
+  mutation UpdatePhone($id: Int!, $number: String) {
+    updatePhone(id: $id, number: $number) {
+      phone { id number }
+    }
+  }
+`;
+
+export const CREATE_PARTY_PHONE_MUTATION = `
+  mutation CreatePartyPhone(
+    $accountId: Int!
+    $partyId: Int!
+    $phoneId: Int!
+    $phoneType: String!
+    $isPrimary: Boolean
+  ) {
+    createPartyPhone(
+      accountId: $accountId
+      partyId: $partyId
+      phoneId: $phoneId
+      phoneType: $phoneType
+      isPrimary: $isPrimary
+    ) {
+      partyPhone { id }
+    }
+  }
+`;
+
+export const DELETE_PARTY_PHONE_MUTATION = `
+  mutation DeletePartyPhone($id: Int!) {
+    deletePartyPhone(id: $id) {
+      success
     }
   }
 `;

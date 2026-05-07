@@ -21,7 +21,6 @@ import {
 } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 
-
 interface FormProps {
   config: ModuleConfig;
   initialData?: any;
@@ -69,6 +68,9 @@ export const Form: React.FC<FormProps> = ({
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
     return acc;
   }, {});
+
+  const [activeTab, setActiveTab] = React.useState(config.tabs[0].id);
+  const showOuterSave = !config.tabs.find((t) => t.id === activeTab)?.noOuterSave;
 
   const { control, handleSubmit, watch, formState: { errors, isSubmitted } } = useForm({
     defaultValues: { ...configDefaults, ...(initialData || {}) },
@@ -289,7 +291,7 @@ export const Form: React.FC<FormProps> = ({
 
   const formBody = (
     <>
-      <Tabs defaultValue={config.tabs[0].id} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex w-full bg-transparent border-b border-purple-300/20 rounded-none gap-0 h-auto p-0">
           {config.tabs.map((tab) => (
             <TabsTrigger
@@ -317,9 +319,9 @@ export const Form: React.FC<FormProps> = ({
               <ContactsTab
                 partyId={partyId}
                 contacts={contacts}
-                onAdd={onAddContact ?? (() => Promise.resolve())}
-                onUpdate={onUpdateContact ?? (() => Promise.resolve())}
-                onDelete={onDeleteContact ?? (() => Promise.resolve())}
+                onAdd={onAddContact!}
+                onUpdate={onUpdateContact!}
+                onDelete={onDeleteContact!}
               />
             ) : (
               renderTabContent(tab.id)
@@ -351,21 +353,23 @@ export const Form: React.FC<FormProps> = ({
         </div>
       )}
 
-      <div className="flex gap-3 mt-5 pt-4 border-t border-purple-300/30">
-        <Button
-          className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
-          onClick={handleSubmit(onSave)}
-        >
-          {mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes"}
-        </Button>
-        <Button
-          variant="outline"
-          className="flex-1 border-purple-300/30 text-purple-300 hover:bg-purple-500/20 cursor-pointer"
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>
-      </div>
+      {showOuterSave && (
+        <div className="flex gap-3 mt-5 pt-4 border-t border-purple-300/30">
+          <Button
+            className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
+            onClick={handleSubmit(onSave)}
+          >
+            {mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes"}
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 border-purple-300/30 text-purple-300 hover:bg-purple-500/20 cursor-pointer"
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+        </div>
+      )}
     </>
   );
 
