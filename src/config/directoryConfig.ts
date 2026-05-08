@@ -255,21 +255,17 @@ export const directoryConfig: ModuleConfig = {
       },
     ),
 
-    field.text("nameFirst", "First Name", {
+    field.text("nameLine1", "Name Line 1", {
       required: true,
       section: "basic-info",
+      gridColumn: "span 2",
       graphqlKey: "nameFirst",
     }),
 
-    field.text("nameMiddle", "Middle Name", {
+    field.text("nameLine2", "Name Line 2", {
       section: "basic-info",
+      gridColumn: "span 2",
       graphqlKey: "nameMiddle",
-    }),
-
-    field.text("nameLast", "Last Name", {
-      required: true,
-      section: "basic-info",
-      graphqlKey: "nameLast",
     }),
 
     {

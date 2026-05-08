@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Users } from "lucide-react";
+import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
@@ -11,7 +11,7 @@ import { useDirectory } from "@/hooks/useDirectory";
 import { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
-import { themeAtom } from "@/atoms/NavigationAtom";
+import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 
 const DEFAULT_ADDRESSES: AddressEntry[] = [
   { type: "Physical", address: "", addressLine2: "", city: "", state: "", zip: "" },
@@ -47,8 +47,7 @@ const phonesFromItem = (item: any): PhoneEntry[] => {
 
 const AddressDirectory = () => {
   const [userProfile] = useAtom(userProfileAtom);
-  const [theme] = useAtom(themeAtom);
-  const isLight = theme === "light";
+  const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [addresses, setAddresses] = useState<AddressEntry[]>(DEFAULT_ADDRESSES);
   const [phones, setPhones] = useState<PhoneEntry[]>([]);
   const [showAddressValidation, setShowAddressValidation] = useState(false);
@@ -87,6 +86,15 @@ const AddressDirectory = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [view]);
 
+  useEffect(() => {
+    const count = filteredData.length;
+    setPageHeader({
+      title: "Directory",
+      subtitle: `${count} ${count === 1 ? "contact" : "contacts"}`,
+    });
+    return () => setPageHeader({});
+  }, [filteredData.length]);
+
   const handleAdd = () => {
     setAddresses(DEFAULT_ADDRESSES);
     setPhones([]);
@@ -113,19 +121,10 @@ const AddressDirectory = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen p-6 my-15">
+      <div className="min-h-screen px-6 pb-6 pt-20">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-start gap-3">
-              <Users className={`w-8 h-8 mt-1 ${isLight ? "text-purple-500" : "text-purple-300"}`} />
-              <div>
-                <h1 className={`text-3xl font-bold leading-none ${isLight ? "text-gray-900" : "text-white"}`}>Directory</h1>
-                <p className={`text-sm mt-1 ${isLight ? "text-gray-400" : "text-white/50"}`}>
-                  {filteredData.length} {filteredData.length === 1 ? "contact" : "contacts"}
-                </p>
-              </div>
-            </div>
-            {view === "list" && (
+          {view === "list" && (
+            <div className="flex justify-end mb-4">
               <Button
                 onClick={handleAdd}
                 className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
@@ -133,9 +132,8 @@ const AddressDirectory = () => {
                 <Plus className="w-4 h-4 mr-2" />
                 Add New Contact
               </Button>
-            )}
-          </div>
-          <div className="border-b border-purple-300/10 mb-8" />
+            </div>
+          )}
 
           {view === "list" && (
             <List

@@ -11,7 +11,7 @@ import { LogOut, Moon, Sun, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
-import { themeAtom } from "@/atoms/NavigationAtom";
+import { themeAtom, pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { useQueryClient } from "@tanstack/react-query";
 
 type DashboardHeaderProps = {
@@ -23,6 +23,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
   const queryClient = useQueryClient();
   const [userProfile, setUserProfile] = useAtom(userProfileAtom);
   const [theme, setTheme] = useAtom(themeAtom);
+  const [pageHeader] = useAtom(pageHeaderAtom);
   const isLight = theme === "light";
 
   const handleLogout = async () => {
@@ -40,7 +41,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
   return (
     <header
-      className="fixed z-[1100] flex items-center justify-end px-6 backdrop-blur-lg border-b"
+      className="fixed z-[1100] flex items-center justify-between px-6 backdrop-blur-lg border-b"
       style={{
         width: `calc(100% - ${sidebarWidth}px)`,
         left: `${sidebarWidth}px`,
@@ -55,6 +56,25 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         boxShadow: isLight ? "0 2px 12px 0 rgb(139 92 246 / 0.12)" : undefined,
       }}
     >
+      {pageHeader.title ? (
+        <div>
+          <p
+            className={`text-lg font-semibold leading-tight ${isLight ? "text-purple-900" : "text-white"}`}
+          >
+            {pageHeader.title}
+          </p>
+          {pageHeader.subtitle && (
+            <p
+              className={`text-xs leading-tight ${isLight ? "text-purple-600/70" : "text-white/50"}`}
+            >
+              {pageHeader.subtitle}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div />
+      )}
+
       <div className="flex items-center gap-4">
         <button
           onClick={() => setTheme(isLight ? "dark" : "light")}

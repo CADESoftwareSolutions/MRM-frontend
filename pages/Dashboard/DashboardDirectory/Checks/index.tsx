@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,8 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { useAtom } from "jotai";
+import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 
 interface CheckFile {
   id: string;
@@ -30,6 +32,7 @@ interface Folder {
 type View = "folders" | "folder";
 
 const Checks: React.FC = () => {
+  const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [view, setView] = useState<View>("folders");
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
@@ -38,6 +41,24 @@ const Checks: React.FC = () => {
   const [viewingCheck, setViewingCheck] = useState<CheckFile | null>(null);
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (view === "folders") {
+      const totalChecks = folders.reduce((acc, f) => acc + f.checks.length, 0);
+      setPageHeader({
+        title: "Checks",
+        subtitle: folders.length === 0
+          ? "Organise and store check images by folder"
+          : `${folders.length} ${folders.length === 1 ? "folder" : "folders"} · ${totalChecks} checks`,
+      });
+    } else if (selectedFolder) {
+      setPageHeader({
+        title: selectedFolder.name,
+        subtitle: `${selectedFolder.checks.length} ${selectedFolder.checks.length === 1 ? "check" : "checks"}`,
+      });
+    }
+    return () => setPageHeader({});
+  }, [view, folders, selectedFolder]);
 
   const openFolder = (folder: Folder) => {
     setSelectedFolder(folder);
@@ -98,25 +119,14 @@ const Checks: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen p-6" style={{ marginTop: "64px" }}>
+      <div className="min-h-screen px-6 pb-6 pt-20">
         <div className="max-w-7xl mx-auto">
 
           {/* ── Folders view ── */}
           {view === "folders" && (
             <>
-              <div className="mb-6 flex items-center justify-between">
-                <div className="flex items-start gap-3">
-                  <FolderOpen className="w-8 h-8 text-purple-300 mt-1" />
-                  <div>
-                    <h1 className="text-3xl font-bold text-white leading-none">Checks</h1>
-                    <p className="text-sm text-white/50 mt-1">
-                      {folders.length === 0
-                        ? "Organise and store check images by folder"
-                        : `${folders.length} ${folders.length === 1 ? "folder" : "folders"} · ${folders.reduce((acc, f) => acc + f.checks.length, 0)} checks`}
-                    </p>
-                  </div>
-                </div>
-                {folders.length > 0 && (
+              {folders.length > 0 && (
+                <div className="flex justify-end mb-4">
                   <Button
                     onClick={() => setShowNewFolderModal(true)}
                     className="bg-purple-600 hover:bg-purple-700 text-white cursor-pointer"
@@ -124,9 +134,8 @@ const Checks: React.FC = () => {
                     <Plus className="w-4 h-4 mr-2" />
                     New Folder
                   </Button>
-                )}
-              </div>
-              <div className="border-b border-purple-300/10 mb-8" />
+                </div>
+              )}
 
               {folders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -179,25 +188,14 @@ const Checks: React.FC = () => {
           {/* ── Folder detail view ── */}
           {view === "folder" && selectedFolder && (
             <>
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setView("folders")}
-                    className="text-white/50 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </button>
-                  <FolderOpen className="w-7 h-7 text-purple-300" />
-                  <div>
-                    <h1 className="text-2xl font-bold text-white">
-                      {selectedFolder.name}
-                    </h1>
-                    <p className="text-sm text-white/40">
-                      {selectedFolder.checks.length}{" "}
-                      {selectedFolder.checks.length === 1 ? "check" : "checks"}
-                    </p>
-                  </div>
-                </div>
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={() => setView("folders")}
+                  className="flex items-center gap-2 text-white/50 hover:text-white transition-colors cursor-pointer text-sm"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to folders
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"

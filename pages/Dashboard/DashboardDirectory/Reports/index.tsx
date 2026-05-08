@@ -1,20 +1,23 @@
-import React from "react";
+import { useEffect } from "react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
+import { useAtom } from "jotai";
+import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 
-type ReportsProps = {};
+const Reports = () => {
+  const [, setPageHeader] = useAtom(pageHeaderAtom);
 
-const Reports: React.FC<ReportsProps> = () => (
-  <DashboardLayout>
-    {" "}
-    <div className="p-6" style={{ marginTop: `64px` }}>
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Lets look at some Reports</h1>
-        <p className="text-lg text-white/70">
-          Here's what's happening with your business today
-        </p>
+  useEffect(() => {
+    setPageHeader({ title: "Reports" });
+    return () => setPageHeader({});
+  }, []);
+
+  return (
+    <DashboardLayout>
+      <div className="min-h-screen px-6 pb-6 pt-20">
+        <div className="max-w-7xl mx-auto" />
       </div>
-    </div>
-  </DashboardLayout>
-);
+    </DashboardLayout>
+  );
+};
 
 export default Reports;

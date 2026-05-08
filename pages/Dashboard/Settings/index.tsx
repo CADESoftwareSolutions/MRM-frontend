@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -34,9 +34,17 @@ import {
   Save,
 } from "lucide-react";
 import DashboardLayout from "../../../components/DashboardComponents/DashboardLayout";
+import { useAtom } from "jotai";
+import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 
 const UserSettings = () => {
+  const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    setPageHeader({ title: "Settings" });
+    return () => setPageHeader({});
+  }, []);
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
     pushNotifications: false,
@@ -47,18 +55,8 @@ const UserSettings = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen p-6" style={{ marginTop: `64px` }}>
+      <div className="min-h-screen px-6 pb-6 pt-20">
         <div className="max-w-5xl mx-auto">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <User className="w-8 h-8 text-purple-300" />
-              <h1 className="text-3xl font-bold text-white">Settings</h1>
-            </div>
-            <Badge className="bg-purple-600/30 text-purple-200 border-purple-300/30">
-              Account Active
-            </Badge>
-          </div>
-
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-purple-900/30 mb-6">
               <TabsTrigger

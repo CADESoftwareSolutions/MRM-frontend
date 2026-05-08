@@ -54,9 +54,8 @@ const transformParties = (parties: any[]) =>
     return {
       id: party.id,
       name: party.nameFull,
-      nameFirst: party.nameFirst || "",
-      nameMiddle: party.nameMiddle || "",
-      nameLast: party.nameLast || "",
+      nameLine1: party.nameFirst || "",
+      nameLine2: party.nameMiddle || "",
       classifications: party.partyType ? String(party.partyType).split(",").filter(Boolean) : [],
       email: party.email,
       phone: primaryPhone,
