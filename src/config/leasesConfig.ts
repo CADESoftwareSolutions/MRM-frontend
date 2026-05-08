@@ -1,9 +1,9 @@
-// configs/leasesConfig.ts
 import { field, ModuleConfig, STATES } from "./directoryConfig";
 
 export const leasesConfig: ModuleConfig = {
   name: "leases",
   title: "Leases",
+  itemName: "Lease",
   tabs: [
     { id: "basic", label: "Basic Information" },
     { id: "legal", label: "Legal Description" },
@@ -139,186 +139,14 @@ export const leasesConfig: ModuleConfig = {
     }),
 
     // ========== LEGAL DESCRIPTION TAB ==========
-    field.select(
-      "legalDescriptionType",
-      "Legal Description Type",
-      [
-        "Block/Section/Survey",
-        "Rectangular (STR)",
-        "Metes and Bounds",
-        "Freeform",
-      ],
-      {
-        required: true,
-        tab: "legal",
-        section: "legal-type",
-        gridColumn: "span 2",
-      }
-    ),
-
-    // Block/Section/Survey fields
-    field.text("block", "Block", {
+    {
+      id: "legalDescriptions",
+      label: "Legal Descriptions",
+      type: "custom" as const,
       tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    field.text("township", "Township", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    field.text("section", "Section", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    field.text("abstract", "Abstract", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    field.text("survey", "Survey", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    field.text("quarterCallsAliquot", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Block/Section/Survey",
-    }),
-
-    // Rectangular (STR) fields
-    field.text("lot", "Lot", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    field.text("blockSTR", "Block", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    field.text("sectionSTR", "Section", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    field.text("townshipSTR", "Township", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    field.text("range", "Range", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    field.text("quarterCallsAliquotSTR", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Rectangular (STR)",
-    }),
-
-    // Metes and Bounds fields
-    field.text("blockMB", "Block", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Metes and Bounds",
-    }),
-
-    field.text("sectionMB", "Section", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Metes and Bounds",
-    }),
-
-    field.text("surveyMB", "Survey", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Metes and Bounds",
-    }),
-
-    field.text("quarterCallsAliquotMB", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Metes and Bounds",
-    }),
-
-    field.textarea("legalDescriptionMB", "Legal Description", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Metes and Bounds",
-      gridColumn: "span 2",
-      rows: 10,
-      helpText: "Free form - no more than 5 pages",
-    }),
-
-    // Freeform fields
-    field.text("blockFF", "Block", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Freeform",
-    }),
-
-    field.text("sectionFF", "Section", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Freeform",
-    }),
-
-    field.text("surveyFF", "Survey", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Freeform",
-    }),
-
-    field.text("quarterCallsAliquotFF", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Freeform",
-    }),
-
-    field.textarea("legalDescriptionFF", "Legal Description", {
-      tab: "legal",
-      section: "legal-details",
-      dependsOn: "legalDescriptionType",
-      dependsOnValue: "Freeform",
-      gridColumn: "span 2",
-      rows: 10,
-      helpText: "Free form - no more than 5 pages",
-    }),
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
 
     // ========== TERMS & PAYMENTS TAB ==========
     field.select("leaseType", "Lease Type", ["Paid Up", "Delay Rental"], {
@@ -581,36 +409,13 @@ export const leasesConfig: ModuleConfig = {
     ),
 
     // ========== RECORDATION & REFERENCES TAB ==========
-    field.text("recordationCounty", "County", {
-      tab: "recordation",
-      section: "recordation",
-      helpText:
-        "Can have more than one recordation as deed can be recorded in multiple counties",
-    }),
-
-    field.select("recordationState", "State", STATES, {
-      tab: "recordation",
-      section: "recordation",
-    }),
-
-    field.text("volumePage", "Volume/Page", {
-      tab: "recordation",
-      section: "recordation",
-      placeholder: "Volume / Page",
-    }),
-
-    field.text("instrumentDocumentId", "Instrument/Document ID", {
-      tab: "recordation",
-      section: "recordation",
-    }),
-
     {
-      id: "recordingDate",
-      label: "Recording Date",
-      type: "date",
+      id: "recordation",
+      label: "Recordation",
+      type: "custom" as const,
       tab: "recordation",
       section: "recordation",
-      gridColumn: "span 1",
+      gridColumn: "span 2" as const,
     },
 
     // Cross-references
@@ -620,7 +425,7 @@ export const leasesConfig: ModuleConfig = {
       helpText: "Select from Name and Address screen",
     }),
 
-    field.text("crossRefLeaseId", "Cross-Reference Lease ID", {
+    field.text("crossRefLeaseId", "Cross-Reference Deed ID", {
       tab: "recordation",
       section: "cross-reference",
     }),
@@ -662,9 +467,9 @@ export const leasesConfig: ModuleConfig = {
 
 export default leasesConfig;
 
-export const MOCK_LEASES = [
+export const MOCK_LEASES: Record<string, any>[] = [
   {
-    id: 1,
+    id: "1",
     leaseIdType: "smart",
     leaseId: "LSE-2024-001",
     typeOfLease: "Original",
@@ -681,13 +486,6 @@ export const MOCK_LEASES = [
     county: "Reeves",
     costFree: "No",
     acres: 640.0,
-    legalDescriptionType: "Block/Section/Survey",
-    block: "10",
-    township: "5S",
-    section: "12",
-    abstract: "A-123",
-    survey: "Smith Survey",
-    quarterCallsAliquot: "NW/4",
     leaseType: "Paid Up",
     paidUpLeaseBonus: 320000,
     paidUpBonusReceived: "Yes",
@@ -700,15 +498,40 @@ export const MOCK_LEASES = [
     shutInFrequency: "Paid Annually",
     horizontalPugh: "Yes",
     pooling: "Yes",
-    recordationCounty: "Reeves",
-    recordationState: "TX",
-    volumePage: "1234 / 567",
-    instrumentDocumentId: "DOC-2024-0156",
-    recordingDate: "2024-01-20",
+    crossRefNameId: "",
+    crossRefLeaseId: "",
+    crossRefWellId: "",
+    crossRefTractId: "",
+    crossRefAcquisitionId: "",
     notes: "Standard oil and gas lease with favorable terms.",
+    _legalDescriptions: [
+      {
+        id: "ld-1-1",
+        type: "Block/Section/Survey",
+        block: "10",
+        township: "5S",
+        section: "12",
+        abstract: "A-123",
+        survey: "Smith Survey",
+        quarterCalls: "NW/4",
+        upi: "",
+      },
+    ],
+    _recordation: [
+      {
+        id: "rec-1-1",
+        county: "Reeves",
+        state: "TX",
+        volume: "1234",
+        page: "567",
+        instrumentId: "DOC-2024-0156",
+        recordingDate: "2024-01-20",
+      },
+    ],
+    _attachments: [],
   },
   {
-    id: 2,
+    id: "2",
     leaseIdType: "smart",
     leaseId: "LSE-2024-002",
     typeOfLease: "Amended",
@@ -725,37 +548,51 @@ export const MOCK_LEASES = [
     county: "Canadian",
     costFree: "Yes",
     acres: 320.5,
-    legalDescriptionType: "Rectangular (STR)",
-    lot: "1",
-    blockSTR: "8",
-    sectionSTR: "14",
-    townshipSTR: "12N",
-    range: "8W",
-    quarterCallsAliquotSTR: "SE/4",
     leaseType: "Delay Rental",
     delayRentalPaymentAmount: 3200,
     delayRentalPaymentFrequency: "Annually",
     surfaceRights: "No",
-    provisions: [
-      "Continuous Development",
-      "Vertical Pugh",
-      "Consent to Assign",
-    ],
+    provisions: ["Continuous Development", "Vertical Pugh", "Consent to Assign"],
     continuousDevelopment: "Yes",
     verticalPugh: "Yes",
     timeBetweenCompletionValue: 180,
     timeBetweenCompletionUnit: "Days",
     consentToAssign: "Yes",
     typeOfConsent: "Lessee to Provide Notice Only",
-    recordationCounty: "Canadian",
-    recordationState: "OK",
-    volumePage: "2456 / 123",
-    instrumentDocumentId: "REC-2023-8901",
-    recordingDate: "2023-06-10",
+    crossRefNameId: "",
+    crossRefLeaseId: "",
+    crossRefWellId: "",
+    crossRefTractId: "",
+    crossRefAcquisitionId: "",
     notes: "Lease amended to extend primary term and increase royalty rate.",
+    _legalDescriptions: [
+      {
+        id: "ld-2-1",
+        type: "Rectangular (STR)",
+        lot: "1",
+        block: "8",
+        section: "14",
+        township: "12N",
+        range: "8W",
+        quarterCalls: "SE/4",
+        upi: "",
+      },
+    ],
+    _recordation: [
+      {
+        id: "rec-2-1",
+        county: "Canadian",
+        state: "OK",
+        volume: "2456",
+        page: "123",
+        instrumentId: "REC-2023-8901",
+        recordingDate: "2023-06-10",
+      },
+    ],
+    _attachments: [],
   },
   {
-    id: 3,
+    id: "3",
     leaseIdType: "custom",
     leaseId: "CUSTOM-TX-2024",
     typeOfLease: "Original",
@@ -772,25 +609,12 @@ export const MOCK_LEASES = [
     county: "Midland",
     costFree: "No",
     acres: 1280.75,
-    legalDescriptionType: "Metes and Bounds",
-    blockMB: "45",
-    sectionMB: "20",
-    surveyMB: "Block 45 Survey",
-    quarterCallsAliquotMB: "All",
-    legalDescriptionMB:
-      "Beginning at the NE corner of Section 20, Block 45, thence South 5280 feet, thence West 5280 feet, thence North 5280 feet, thence East 5280 feet to the point of beginning.",
     leaseType: "Paid Up",
     paidUpLeaseBonus: 640000,
     paidUpBonusReceived: "Yes",
     pricePerAcre: 500,
     surfaceRights: "Yes",
-    provisions: [
-      "Shut-In",
-      "Option to Extend",
-      "Pooling",
-      "Offset",
-      "Title Records",
-    ],
+    provisions: ["Shut-In", "Option to Extend", "Pooling", "Offset", "Title Records"],
     shutInPeriodValue: 6,
     shutInPeriodUnit: "Months",
     shutInPaymentAmount: 2.5,
@@ -800,14 +624,36 @@ export const MOCK_LEASES = [
     offsetLocationRestrictions: "Yes",
     distanceOfRestriction: "660 feet from property line",
     lessorEntitledToTitleRecords: "Yes",
-    recordationCounty: "Midland",
-    recordationState: "TX",
-    volumePage: "3567 / 890",
-    instrumentDocumentId: "INS-2024-3456",
-    recordingDate: "2024-03-15",
     crossRefNameId: "NAME-001, NAME-002",
+    crossRefLeaseId: "",
     crossRefWellId: "WELL-2024-01",
-    notes:
-      "Prime acreage in highly productive area. Includes surface rights with restrictions on drilling locations.",
+    crossRefTractId: "",
+    crossRefAcquisitionId: "",
+    notes: "Prime acreage in highly productive area. Includes surface rights with restrictions on drilling locations.",
+    _legalDescriptions: [
+      {
+        id: "ld-3-1",
+        type: "Metes and Bounds",
+        block: "45",
+        section: "20",
+        survey: "Block 45 Survey",
+        quarterCalls: "All",
+        legalDescription:
+          "Beginning at the NE corner of Section 20, Block 45, thence South 5280 feet, thence West 5280 feet, thence North 5280 feet, thence East 5280 feet to the point of beginning.",
+        upi: "",
+      },
+    ],
+    _recordation: [
+      {
+        id: "rec-3-1",
+        county: "Midland",
+        state: "TX",
+        volume: "3567",
+        page: "890",
+        instrumentId: "INS-2024-3456",
+        recordingDate: "2024-03-15",
+      },
+    ],
+    _attachments: [],
   },
 ];

@@ -99,12 +99,13 @@ export const MultiAddressField = ({
     if (activeType === type) setActiveType("Physical");
   };
 
-  const isPhysical = activeType === "Physical";
-  const physicalEntry = value.find((a) => a.type === "Physical");
-  const physicalInvalid =
+  const activeInvalid =
     showValidation &&
-    isPhysical &&
-    (!physicalEntry?.address || !physicalEntry?.city || !physicalEntry?.state);
+    (!activeEntry?.address || !activeEntry?.city || !activeEntry?.state);
+
+  const invalidTypes = showValidation
+    ? new Set(value.filter((a) => !a.address || !a.city || !a.state).map((a) => a.type))
+    : new Set<string>();
 
   return (
     <div className="space-y-3">
@@ -118,9 +119,14 @@ export const MultiAddressField = ({
             className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium transition-all border cursor-pointer ${
               activeType === addr.type
                 ? "bg-purple-600 text-white border-purple-500"
+                : invalidTypes.has(addr.type)
+                ? "bg-white/5 text-purple-200 border-red-400/60 hover:bg-white/10"
                 : "bg-white/5 text-purple-200 border-purple-300/20 hover:bg-white/10"
             }`}
           >
+            {invalidTypes.has(addr.type) && (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+            )}
             {addr.type}
             {addr.type !== "Physical" && (
               <X
@@ -166,13 +172,13 @@ export const MultiAddressField = ({
           <div>
             <Label className={labelCls}>
               Address
-              {isPhysical && <span className="text-red-400 ml-1">*</span>}
+              <span className="text-red-400 ml-1">*</span>
             </Label>
             <Input
               value={activeEntry.address}
               onChange={(e) => update("address", e.target.value)}
               placeholder="Street address"
-              className={`${inputCls} ${physicalInvalid && !activeEntry.address ? "border-red-500" : ""}`}
+              className={`${inputCls} ${activeInvalid && !activeEntry.address ? "border-red-500" : ""}`}
             />
           </div>
 
@@ -190,27 +196,27 @@ export const MultiAddressField = ({
             <div>
               <Label className={labelCls}>
                 City
-                {isPhysical && <span className="text-red-400 ml-1">*</span>}
+                <span className="text-red-400 ml-1">*</span>
               </Label>
               <Input
                 value={activeEntry.city}
                 onChange={(e) => update("city", e.target.value)}
                 placeholder="City"
-                className={`${inputCls} ${physicalInvalid && !activeEntry.city ? "border-red-500" : ""}`}
+                className={`${inputCls} ${activeInvalid && !activeEntry.city ? "border-red-500" : ""}`}
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className={labelCls}>
                   State
-                  {isPhysical && <span className="text-red-400 ml-1">*</span>}
+                  <span className="text-red-400 ml-1">*</span>
                 </Label>
                 <Select
                   value={activeEntry.state || undefined}
                   onValueChange={(v) => update("state", v)}
                 >
                   <SelectTrigger
-                    className={`bg-white/5 border-purple-300/30 text-white h-9 cursor-pointer data-[placeholder]:text-white/30 ${physicalInvalid && !activeEntry.state ? "border-red-500" : ""}`}
+                    className={`bg-white/5 border-purple-300/30 text-white h-9 cursor-pointer data-[placeholder]:text-white/30 ${activeInvalid && !activeEntry.state ? "border-red-500" : ""}`}
                   >
                     <SelectValue placeholder="" />
                   </SelectTrigger>
@@ -243,9 +249,9 @@ export const MultiAddressField = ({
             </div>
           </div>
 
-          {physicalInvalid && (
+          {activeInvalid && (
             <p className="text-red-400 text-xs">
-              Physical address, city, and state are required.
+              Address, city, and state are required.
             </p>
           )}
         </div>

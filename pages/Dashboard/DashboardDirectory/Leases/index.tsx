@@ -5,6 +5,8 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab, LeaseAttachment } from "../../../../components/FormComponents/LeaseAttachmentsTab";
+import { MultiLegalDescriptionField, LegalDescriptionEntry } from "../../../../components/FormComponents/MultiLegalDescriptionField";
+import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import leasesConfig from "@/config/leasesConfig";
 import { useLeases } from "@/hooks/useLeases";
 import { useAtom } from "jotai";
@@ -16,6 +18,8 @@ const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
+  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
+  const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
 
   const {
     view,
@@ -53,13 +57,21 @@ const Leases = () => {
   }, [filteredData.length]);
 
   const handleAdd = () => {
+    setLegalDescriptions([]);
+    setRecordation([]);
     setAttachments([]);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
+    setLegalDescriptions(item._legalDescriptions || []);
+    setRecordation(item._recordation || []);
     setAttachments(item._attachments || []);
     _handleEdit(item);
+  };
+
+  const onSave = (formData: any) => {
+    handleSave(formData, legalDescriptions, recordation, attachments);
   };
 
   return (
@@ -94,12 +106,24 @@ const Leases = () => {
             <Form
               config={leasesConfig}
               initialData={selectedItem}
-              onSave={handleSave}
+              onSave={onSave}
               onCancel={handleCancel}
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
               customContent={{
+                legalDescriptions: (
+                  <MultiLegalDescriptionField
+                    value={legalDescriptions}
+                    onChange={setLegalDescriptions}
+                  />
+                ),
+                recordation: (
+                  <MultiRecordationField
+                    value={recordation}
+                    onChange={setRecordation}
+                  />
+                ),
                 attachments: (
                   <LeaseAttachmentsTab
                     value={attachments}

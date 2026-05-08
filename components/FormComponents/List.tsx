@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { ModuleConfig } from "../../src/config/directoryConfig";
 import { useAtom } from "jotai";
@@ -65,7 +66,7 @@ const isLockedColumn = (col: string, firstField: string) =>
   col === "status" ||
   col === "leaseStatus";
 
-/** Truncated text cell that shows full value in a styled tooltip on hover */
+/** Truncated text cell that shows full value in a portal tooltip on hover */
 const TruncatedCell = ({
   text,
   isLight,
@@ -73,31 +74,28 @@ const TruncatedCell = ({
   text: string;
   isLight: boolean;
 }) => (
-  <div className="relative group/tip max-w-[220px]">
-    <span
-      className={`block truncate text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}
-    >
-      {text}
-    </span>
-    {/* Tooltip */}
-    <div className="pointer-events-none absolute bottom-full left-0 mb-2 z-[100] hidden group-hover/tip:block">
-      <div
-        className={`rounded-lg px-3 py-2 text-xs shadow-2xl whitespace-normal max-w-xs leading-relaxed border ${
-          isLight
-            ? "bg-white text-gray-800 border-purple-200 shadow-purple-100/60"
-            : "bg-[#1e1b3a] text-white border-purple-300/30 shadow-black/60"
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span
+        className={`block truncate text-sm max-w-[220px] cursor-default ${
+          isLight ? "text-gray-700" : "text-white/80"
         }`}
       >
         {text}
-      </div>
-      {/* Arrow */}
-      <div
-        className={`w-2.5 h-2.5 rotate-45 ml-4 -mt-[5px] border-b border-r ${
-          isLight ? "bg-white border-purple-200" : "bg-[#1e1b3a] border-purple-300/30"
-        }`}
-      />
-    </div>
-  </div>
+      </span>
+    </TooltipTrigger>
+    <TooltipContent
+      side="top"
+      sideOffset={6}
+      className={`max-w-xs text-xs leading-relaxed whitespace-normal rounded-lg px-3 py-2 shadow-2xl border ${
+        isLight
+          ? "bg-white text-gray-800 border-purple-200 shadow-purple-100/60"
+          : "bg-[#1e1b3a] text-white border-purple-300/30 shadow-black/60"
+      }`}
+    >
+      {text}
+    </TooltipContent>
+  </Tooltip>
 );
 
 export const List: React.FC<ListProps> = ({

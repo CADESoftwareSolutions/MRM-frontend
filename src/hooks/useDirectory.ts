@@ -140,7 +140,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
           line1: addr.address,
           line2: addr.addressLine2 || undefined,
           city: addr.city,
-          stateCode: addr.state,
+          stateCode: addr.state || undefined,
           postalCode: addr.zip || undefined,
         });
         const addressId = parseInt(addressResult.createAddress.address.id, 10);

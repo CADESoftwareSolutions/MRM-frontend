@@ -3,6 +3,9 @@ import { useAtom } from "jotai";
 import { moduleViewAtom } from "../atoms/NavigationAtom";
 import { ModuleConfig } from "../config/directoryConfig";
 import { MOCK_LEASES } from "../config/leasesConfig";
+import { LegalDescriptionEntry } from "../../components/FormComponents/MultiLegalDescriptionField";
+import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
+import { LeaseAttachment } from "../../components/FormComponents/LeaseAttachmentsTab";
 
 interface UseLeasesProps {
   config: ModuleConfig;
@@ -11,21 +14,12 @@ interface UseLeasesProps {
 
 let _nextId = MOCK_LEASES.length + 1;
 
-const generateSmartId = (formData: any): string => {
+const generateSmartId = (formData: any, legalDescriptions: LegalDescriptionEntry[]): string => {
   const state = formData.state || "XX";
-  const block =
-    formData.block ||
-    formData.blockSTR ||
-    formData.blockMB ||
-    formData.blockFF;
-  const section =
-    formData.section ||
-    formData.sectionSTR ||
-    formData.sectionMB ||
-    formData.sectionFF;
-  if (block && section) {
-    const b = String(block).padStart(3, "0");
-    const s = String(section).padStart(3, "0");
+  const first = legalDescriptions[0];
+  if (first?.block && first?.section) {
+    const b = String(first.block).padStart(3, "0");
+    const s = String(first.section).padStart(3, "0");
     return `${state}-B${b}-S${s}`;
   }
   return `LSE-${new Date().getFullYear()}-${String(_nextId).padStart(3, "0")}`;
@@ -44,9 +38,7 @@ const SEARCH_FIELDS = [
 ];
 
 export const useLeases = ({ config: _config, accountId: _accountId }: UseLeasesProps) => {
-  const [data, setData] = useState<Record<string, any>[]>(
-    MOCK_LEASES.map((l) => ({ ...l, id: String(l.id) }))
-  );
+  const [data, setData] = useState<Record<string, any>[]>(MOCK_LEASES);
   const [loading] = useState(false);
   const [view, setView] = useAtom(moduleViewAtom);
   useEffect(() => () => setView("list"), []);
@@ -68,19 +60,30 @@ export const useLeases = ({ config: _config, accountId: _accountId }: UseLeasesP
     );
   }, [data, searchTerm]);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (
+    formData: any,
+    legalDescriptions: LegalDescriptionEntry[],
+    recordation: RecordationEntry[],
+    attachments: LeaseAttachment[]
+  ) => {
     try {
+      const payload = {
+        ...formData,
+        _legalDescriptions: legalDescriptions,
+        _recordation: recordation,
+        _attachments: attachments,
+      };
       if (view === "add") {
         const leaseId =
           formData.leaseIdType === "smart"
-            ? generateSmartId(formData)
-            : formData.leaseId || generateSmartId(formData);
+            ? generateSmartId(formData, legalDescriptions)
+            : formData.leaseId || generateSmartId(formData, legalDescriptions);
         const newId = String(_nextId++);
-        setData((prev) => [...prev, { ...formData, id: newId, leaseId }]);
+        setData((prev) => [...prev, { ...payload, id: newId, leaseId }]);
       } else {
         setData((prev) =>
           prev.map((item) =>
-            item.id === selectedItem?.id ? { ...item, ...formData } : item
+            item.id === selectedItem?.id ? { ...item, ...payload } : item
           )
         );
       }
@@ -100,15 +103,6 @@ export const useLeases = ({ config: _config, accountId: _accountId }: UseLeasesP
   };
 
   const cancelDelete = () => setPendingDeleteItem(null);
-
-  const bulkImport = (rows: Record<string, any>[]) => {
-    const newItems = rows.map((row) => ({
-      ...row,
-      id: String(_nextId++),
-      leaseId: row.leaseId || generateSmartId(row),
-    }));
-    setData((prev) => [...prev, ...newItems]);
-  };
 
   return {
     data,
@@ -137,6 +131,5 @@ export const useLeases = ({ config: _config, accountId: _accountId }: UseLeasesP
       setView("list");
       setSelectedItem(null);
     },
-    bulkImport,
   };
 };

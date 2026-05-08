@@ -51,7 +51,7 @@ export const MultiRecordationField = ({
             <button
               type="button"
               onClick={() => remove(entry.id)}
-              className="text-white/30 hover:text-red-400 transition-colors cursor-pointer"
+              className="p-1.5 rounded transition-colors cursor-pointer text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
               title="Remove"
             >
               <Trash2 className="w-4 h-4" />

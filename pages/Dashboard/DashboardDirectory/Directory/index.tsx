@@ -110,8 +110,10 @@ const AddressDirectory = () => {
   };
 
   const onSave = (formData: any) => {
-    const physical = addressesRef.current.find((a) => a.type === "Physical");
-    if (!physical?.address || !physical?.city || !physical?.state) {
+    const anyInvalid = addressesRef.current.some(
+      (a) => !a.address || !a.city || !a.state
+    );
+    if (anyInvalid) {
       setShowAddressValidation(true);
       return;
     }
