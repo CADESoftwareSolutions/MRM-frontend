@@ -13,7 +13,6 @@ export const leasesConfig: ModuleConfig = {
     { id: "documents", label: "Documents" },
   ],
   listFields: [
-    "leaseId",
     "lessor",
     "lessee",
     "effectiveDate",
@@ -24,20 +23,6 @@ export const leasesConfig: ModuleConfig = {
   ],
   fields: [
     // ========== BASIC TAB ==========
-    field.select("leaseIdType", "Lease ID Type", ["smart", "custom"], {
-      required: true,
-      tab: "basic",
-      section: "identification",
-      defaultValue: "smart",
-    }),
-
-    field.text("leaseId", "Lease ID", {
-      tab: "basic",
-      section: "identification",
-      dependsOn: "leaseIdType",
-      dependsOnValue: "custom",
-    }),
-
     field.select(
       "typeOfLease",
       "Type of Lease",
@@ -52,7 +37,7 @@ export const leasesConfig: ModuleConfig = {
     field.text("document", "Document", {
       tab: "basic",
       section: "identification",
-      gridColumn: "span 2",
+      gridColumn: "span 1",
     }),
 
     field.text("lessor", "Lessor", {

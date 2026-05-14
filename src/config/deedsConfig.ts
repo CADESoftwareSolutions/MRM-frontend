@@ -11,7 +11,6 @@ export const deedsConfig: ModuleConfig = {
     { id: "documents", label: "Documents" },
   ],
   listFields: [
-    "deedId",
     "typeOfDeed",
     "grantor",
     "grantee",
@@ -21,11 +20,6 @@ export const deedsConfig: ModuleConfig = {
   ],
   fields: [
     // ========== BASIC TAB — identification ==========
-    field.text("deedId", "Deed ID", {
-      tab: "basic",
-      section: "identification",
-    }),
-
     field.select(
       "typeOfDeed",
       "Type of Deed",
@@ -43,6 +37,7 @@ export const deedsConfig: ModuleConfig = {
         required: true,
         tab: "basic",
         section: "identification",
+        gridColumn: "span 2",
       }
     ),
 

@@ -258,13 +258,13 @@ export const directoryConfig: ModuleConfig = {
     field.text("nameLine1", "Name Line 1", {
       required: true,
       section: "basic-info",
-      gridColumn: "span 2",
+      gridColumn: "span 1",
       graphqlKey: "nameFirst",
     }),
 
     field.text("nameLine2", "Name Line 2", {
       section: "basic-info",
-      gridColumn: "span 2",
+      gridColumn: "span 1",
       graphqlKey: "nameMiddle",
     }),
 
@@ -288,12 +288,12 @@ export const directoryConfig: ModuleConfig = {
 
     field.email("email", "Email Address", {
       section: "contact",
-      gridColumn: "span 2",
+      gridColumn: "span 1",
       graphqlKey: "email",
     }),
 
     field.select("status", "Active Status", ["Active", "Inactive"], {
-      section: "status",
+      section: "contact",
       defaultValue: "Active",
       graphqlKey: "isActive",
       toGraphQL: (v: string) => v === "Active",
