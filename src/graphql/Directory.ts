@@ -40,7 +40,7 @@ export const FETCH_PARTIES = `
 export const CREATE_PARTY_MUTATION = `
   mutation CreateParty(
     $accountId: Int!
-    $partyTypes: String!
+    $partyTypes: [String!]!
     $nameFull: String!
     $nameFirst: String
     $nameLast: String
@@ -74,7 +74,7 @@ export const CREATE_PARTY_MUTATION = `
 export const UPDATE_PARTY_MUTATION = `
   mutation UpdateParty(
     $id: Int!
-    $partyTypes: String
+    $partyTypes: [String]
     $nameFull: String
     $nameFirst: String
     $nameLast: String

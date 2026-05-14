@@ -250,7 +250,8 @@ export const directoryConfig: ModuleConfig = {
         graphqlKey: "partyTypes",
         toGraphQL: (v: string | string[]) => {
           const arr = Array.isArray(v) ? v : [v];
-          return arr.filter(Boolean).join(",") || undefined;
+          const filtered = arr.filter(Boolean);
+          return filtered.length > 0 ? filtered : undefined;
         },
       },
     ),
