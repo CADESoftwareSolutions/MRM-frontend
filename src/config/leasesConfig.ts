@@ -31,7 +31,7 @@ export const leasesConfig: ModuleConfig = {
         required: true,
         tab: "basic",
         section: "identification",
-      }
+      },
     ),
 
     field.text("document", "Document", {
@@ -96,7 +96,7 @@ export const leasesConfig: ModuleConfig = {
         tab: "basic",
         section: "basic-details",
         defaultValue: "Active",
-      }
+      },
     ),
 
     field.select("state", "State", STATES, {
@@ -120,7 +120,6 @@ export const leasesConfig: ModuleConfig = {
       tab: "basic",
       section: "basic-details",
       placeholder: "0.0000",
-      helpText: "Decimal carried out to 4 places",
     }),
 
     // ========== LEGAL DESCRIPTION TAB ==========
@@ -159,7 +158,7 @@ export const leasesConfig: ModuleConfig = {
         section: "paid-up",
         dependsOn: "leaseType",
         dependsOnValue: "Paid Up",
-      }
+      },
     ),
 
     field.number("pricePerAcre", "Price/Acre", {
@@ -188,7 +187,7 @@ export const leasesConfig: ModuleConfig = {
         section: "delay-rental",
         dependsOn: "leaseType",
         dependsOnValue: "Delay Rental",
-      }
+      },
     ),
 
     field.select("surfaceRights", "Surface Rights", ["Yes", "No"], {
@@ -217,7 +216,7 @@ export const leasesConfig: ModuleConfig = {
         tab: "provisions",
         section: "provisions-list",
         gridColumn: "span 2",
-      }
+      },
     ),
 
     // Shut-In provisions
@@ -237,7 +236,7 @@ export const leasesConfig: ModuleConfig = {
         section: "shut-in",
         dependsOn: "provisions",
         dependsOnValue: "Shut-In",
-      }
+      },
     ),
 
     field.number("shutInPaymentAmount", "Shut-In Payment Amount/Acre", {
@@ -257,7 +256,7 @@ export const leasesConfig: ModuleConfig = {
         section: "shut-in",
         dependsOn: "provisions",
         dependsOnValue: "Shut-In",
-      }
+      },
     ),
 
     // Option to Extend
@@ -300,7 +299,7 @@ export const leasesConfig: ModuleConfig = {
         section: "development",
         dependsOn: "provisions",
         dependsOnValue: "Continuous Development",
-      }
+      },
     ),
 
     field.number(
@@ -311,7 +310,7 @@ export const leasesConfig: ModuleConfig = {
         section: "development",
         dependsOn: "provisions",
         dependsOnValue: "Continuous Development",
-      }
+      },
     ),
 
     field.select(
@@ -323,7 +322,7 @@ export const leasesConfig: ModuleConfig = {
         section: "development",
         dependsOn: "provisions",
         dependsOnValue: "Continuous Development",
-      }
+      },
     ),
 
     // Pooling
@@ -345,7 +344,7 @@ export const leasesConfig: ModuleConfig = {
         section: "offset",
         dependsOn: "provisions",
         dependsOnValue: "Offset",
-      }
+      },
     ),
 
     field.text("distanceOfRestriction", "Distance of Restriction", {
@@ -366,7 +365,7 @@ export const leasesConfig: ModuleConfig = {
         dependsOn: "provisions",
         dependsOnValue: "Title Records",
         gridColumn: "span 2",
-      }
+      },
     ),
 
     // Consent to Assign
@@ -390,7 +389,7 @@ export const leasesConfig: ModuleConfig = {
         section: "consent",
         dependsOn: "provisions",
         dependsOnValue: "Consent to Assign",
-      }
+      },
     ),
 
     // ========== RECORDATION & REFERENCES TAB ==========
@@ -537,7 +536,11 @@ export const MOCK_LEASES: Record<string, any>[] = [
     delayRentalPaymentAmount: 3200,
     delayRentalPaymentFrequency: "Annually",
     surfaceRights: "No",
-    provisions: ["Continuous Development", "Vertical Pugh", "Consent to Assign"],
+    provisions: [
+      "Continuous Development",
+      "Vertical Pugh",
+      "Consent to Assign",
+    ],
     continuousDevelopment: "Yes",
     verticalPugh: "Yes",
     timeBetweenCompletionValue: 180,
@@ -599,7 +602,13 @@ export const MOCK_LEASES: Record<string, any>[] = [
     paidUpBonusReceived: "Yes",
     pricePerAcre: 500,
     surfaceRights: "Yes",
-    provisions: ["Shut-In", "Option to Extend", "Pooling", "Offset", "Title Records"],
+    provisions: [
+      "Shut-In",
+      "Option to Extend",
+      "Pooling",
+      "Offset",
+      "Title Records",
+    ],
     shutInPeriodValue: 6,
     shutInPeriodUnit: "Months",
     shutInPaymentAmount: 2.5,
@@ -614,7 +623,8 @@ export const MOCK_LEASES: Record<string, any>[] = [
     crossRefWellId: "WELL-2024-01",
     crossRefTractId: "",
     crossRefAcquisitionId: "",
-    notes: "Prime acreage in highly productive area. Includes surface rights with restrictions on drilling locations.",
+    notes:
+      "Prime acreage in highly productive area. Includes surface rights with restrictions on drilling locations.",
     _legalDescriptions: [
       {
         id: "ld-3-1",

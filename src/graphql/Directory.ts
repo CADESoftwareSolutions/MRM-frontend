@@ -2,7 +2,7 @@ export const FETCH_PARTIES = `
   query FetchParties($accountId: Int!) {
     parties(accountId: $accountId) {
       id
-      partyType
+      partyTypes
       nameFull
       nameFirst
       nameLast
@@ -40,7 +40,7 @@ export const FETCH_PARTIES = `
 export const CREATE_PARTY_MUTATION = `
   mutation CreateParty(
     $accountId: Int!
-    $partyType: String!
+    $partyTypes: String!
     $nameFull: String!
     $nameFirst: String
     $nameLast: String
@@ -51,7 +51,7 @@ export const CREATE_PARTY_MUTATION = `
   ) {
     createParty(
       accountId: $accountId
-      partyType: $partyType
+      partyTypes: $partyTypes
       nameFull: $nameFull
       nameFirst: $nameFirst
       nameLast: $nameLast
@@ -62,7 +62,7 @@ export const CREATE_PARTY_MUTATION = `
     ) {
       party {
         id
-        partyType
+        partyTypes
         nameFull
         email
         isActive
@@ -74,7 +74,7 @@ export const CREATE_PARTY_MUTATION = `
 export const UPDATE_PARTY_MUTATION = `
   mutation UpdateParty(
     $id: Int!
-    $partyType: String
+    $partyTypes: String
     $nameFull: String
     $nameFirst: String
     $nameLast: String
@@ -85,7 +85,7 @@ export const UPDATE_PARTY_MUTATION = `
   ) {
     updateParty(
       id: $id
-      partyType: $partyType
+      partyTypes: $partyTypes
       nameFull: $nameFull
       nameFirst: $nameFirst
       nameLast: $nameLast
@@ -96,7 +96,7 @@ export const UPDATE_PARTY_MUTATION = `
     ) {
       party {
         id
-        partyType
+        partyTypes
         nameFull
         email
         isActive

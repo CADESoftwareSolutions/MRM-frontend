@@ -247,7 +247,7 @@ export const directoryConfig: ModuleConfig = {
         section: "identification",
         gridColumn: "span 2",
         defaultValue: [],
-        graphqlKey: "partyType",
+        graphqlKey: "partyTypes",
         toGraphQL: (v: string | string[]) => {
           const arr = Array.isArray(v) ? v : [v];
           return arr.filter(Boolean).join(",") || undefined;

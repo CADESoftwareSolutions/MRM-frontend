@@ -56,8 +56,8 @@ const transformParties = (parties: any[]) =>
       name: party.nameFull,
       nameLine1: party.nameFirst || "",
       nameLine2: party.nameMiddle || "",
-      classifications: party.partyType
-        ? String(party.partyType).split(",").filter(Boolean)
+      classifications: party.partyTypes
+        ? String(party.partyTypes).split(",").filter(Boolean)
         : [],
       email: party.email,
       phone: primaryPhone,
@@ -241,6 +241,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       if (view === "add") {
         const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, {
           ...partyVariables,
+          partyTypes: partyVariables.partyTypes ?? "",
           nameFull,
         });
         const partyId = parseInt(partyResult.createParty.party.id, 10);

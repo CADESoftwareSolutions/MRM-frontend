@@ -38,7 +38,7 @@ export const deedsConfig: ModuleConfig = {
         tab: "basic",
         section: "identification",
         gridColumn: "span 2",
-      }
+      },
     ),
 
     // ========== BASIC TAB — parties ==========
@@ -93,7 +93,7 @@ export const deedsConfig: ModuleConfig = {
         required: true,
         tab: "basic",
         section: "dates",
-      }
+      },
     ),
 
     // ========== BASIC TAB — location ==========
@@ -114,7 +114,6 @@ export const deedsConfig: ModuleConfig = {
       tab: "basic",
       section: "details",
       placeholder: "0.0000",
-      helpText: "Decimal carried out to 4 places",
     }),
 
     field.textarea("reservationsBurdens", "Reservations/Burdens", {
