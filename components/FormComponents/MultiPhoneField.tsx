@@ -95,7 +95,7 @@ export const MultiPhoneField = ({ value, onChange }: MultiPhoneFieldProps) => {
           variant="outline"
           size="sm"
           onClick={add}
-          className="border-purple-300/30 text-purple-300 hover:bg-purple-500/20 cursor-pointer h-8 text-xs mt-1"
+          className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 cursor-pointer h-8 text-xs mt-1"
         >
           <Plus className="w-3.5 h-3.5 mr-1.5" />
           Add Phone

@@ -300,7 +300,7 @@ export const MultiLegalDescriptionField = ({
         type="button"
         variant="outline"
         onClick={() => onChange([...value, newEntry()])}
-        className="border-purple-300/30 text-purple-200 hover:bg-purple-500/20 hover:text-white cursor-pointer"
+        className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 hover:text-white cursor-pointer"
       >
         <Plus className="w-4 h-4 mr-2" />
         Add Legal Description

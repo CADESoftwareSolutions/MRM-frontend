@@ -15,10 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, FileText, X } from "lucide-react";
-import {
-  FieldConfig,
-  ModuleConfig,
-} from "../../src/config/directoryConfig";
+import { FieldConfig, ModuleConfig } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 
 interface FormProps {
@@ -70,9 +67,15 @@ export const Form: React.FC<FormProps> = ({
   }, {});
 
   const [activeTab, setActiveTab] = React.useState(config.tabs[0].id);
-  const showOuterSave = !config.tabs.find((t) => t.id === activeTab)?.noOuterSave;
+  const showOuterSave = !config.tabs.find((t) => t.id === activeTab)
+    ?.noOuterSave;
 
-  const { control, handleSubmit, watch, formState: { errors, isSubmitted } } = useForm({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitted },
+  } = useForm({
     defaultValues: { ...configDefaults, ...(initialData || {}) },
   });
 
@@ -89,7 +92,10 @@ export const Form: React.FC<FormProps> = ({
   const getFieldRules = (f: FieldConfig) => {
     if (!f.required) return {};
     if (f.type === "multi-badge") {
-      return { validate: (v: string[]) => (v && v.length > 0) || `${f.label} is required` };
+      return {
+        validate: (v: string[]) =>
+          (v && v.length > 0) || `${f.label} is required`,
+      };
     }
     return { required: `${f.label} is required` };
   };
@@ -102,7 +108,10 @@ export const Form: React.FC<FormProps> = ({
     // Custom content injected from parent
     if (field.type === "custom") {
       return (
-        <div key={field.id} className={field.gridColumn === "span 2" ? "col-span-2" : ""}>
+        <div
+          key={field.id}
+          className={field.gridColumn === "span 2" ? "col-span-2" : ""}
+        >
           {customContent[field.id] ?? null}
         </div>
       );
@@ -166,6 +175,7 @@ export const Form: React.FC<FormProps> = ({
             render={({ field: f }) => (
               <Select value={f.value || undefined} onValueChange={f.onChange}>
                 <SelectTrigger
+                  style={{ width: "100%" }}
                   className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70 ${errors[field.id] ? "border-red-500" : ""}`}
                 >
                   <SelectValue
@@ -333,7 +343,10 @@ export const Form: React.FC<FormProps> = ({
       {saveError && (
         <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
           <p className="text-sm text-red-300">{saveError}</p>
-          <button onClick={onClearSaveError} className="text-red-400 hover:text-red-200 ml-4">
+          <button
+            onClick={onClearSaveError}
+            className="text-red-400 hover:text-red-200 ml-4"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -343,10 +356,17 @@ export const Form: React.FC<FormProps> = ({
         <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm text-red-300 font-medium">Please fill in the required fields:</p>
+            <p className="text-sm text-red-300 font-medium">
+              Please fill in the required fields:
+            </p>
             <ul className="mt-1 space-y-0.5">
               {Object.entries(errors).map(([, err]) => (
-                <li key={err?.message as string} className="text-xs text-red-400">{err?.message as string}</li>
+                <li
+                  key={err?.message as string}
+                  className="text-xs text-red-400"
+                >
+                  {err?.message as string}
+                </li>
               ))}
             </ul>
           </div>
@@ -359,11 +379,13 @@ export const Form: React.FC<FormProps> = ({
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
           >
-            {mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes"}
+            {mode === "add"
+              ? `Save ${(config as any).itemName || config.title}`
+              : "Save Changes"}
           </Button>
           <Button
             variant="outline"
-            className="flex-1 border-purple-300/30 text-purple-300 hover:bg-purple-500/20 cursor-pointer"
+            className="flex-1 border-purple-300/30 text-purple-600 hover:bg-purple-500/20 cursor-pointer"
             onClick={onCancel}
           >
             Cancel

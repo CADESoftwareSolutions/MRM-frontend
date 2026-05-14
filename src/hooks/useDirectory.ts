@@ -56,7 +56,9 @@ const transformParties = (parties: any[]) =>
       name: party.nameFull,
       nameLine1: party.nameFirst || "",
       nameLine2: party.nameMiddle || "",
-      classifications: party.partyType ? String(party.partyType).split(",").filter(Boolean) : [],
+      classifications: party.partyType
+        ? String(party.partyType).split(",").filter(Boolean)
+        : [],
       email: party.email,
       phone: primaryPhone,
       phoneNumber: primaryPhone,
@@ -81,9 +83,14 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
 
   useEffect(() => () => setView("list"), []);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Record<string, any> | null>(
+    null,
+  );
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<string, any> | null>(null);
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<
+    string,
+    any
+  > | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   const { data = [], isLoading: loading } = useQuery({
@@ -110,12 +117,17 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     return result;
   };
 
-  const saveAddresses = async (partyId: number, addresses: AddressEntry[], isNew: boolean) => {
+  const saveAddresses = async (
+    partyId: number,
+    addresses: AddressEntry[],
+    isNew: boolean,
+  ) => {
     if (!isNew) {
       const currentPartyAddressIds = new Set(
-        addresses.map((a) => a._partyAddressId).filter(Boolean)
+        addresses.map((a) => a._partyAddressId).filter(Boolean),
       );
-      const initialRaw: any[] = (selectedItem as any)?._rawData?.addresses || [];
+      const initialRaw: any[] =
+        (selectedItem as any)?._rawData?.addresses || [];
       for (const rawAddr of initialRaw) {
         const paId = rawAddr.id ? parseInt(rawAddr.id, 10) : null;
         if (paId && !currentPartyAddressIds.has(paId)) {
@@ -155,9 +167,15 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     }
   };
 
-  const savePhones = async (partyId: number, phones: PhoneEntry[], isNew: boolean) => {
+  const savePhones = async (
+    partyId: number,
+    phones: PhoneEntry[],
+    isNew: boolean,
+  ) => {
     if (!isNew) {
-      const currentPartyPhoneIds = new Set(phones.map((p) => p._partyPhoneId).filter(Boolean));
+      const currentPartyPhoneIds = new Set(
+        phones.map((p) => p._partyPhoneId).filter(Boolean),
+      );
       const initialRaw: any[] = (selectedItem as any)?._rawData?.phones || [];
       for (const rawPhone of initialRaw) {
         const ppId = rawPhone.id ? parseInt(rawPhone.id, 10) : null;
@@ -171,13 +189,18 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       if (!phone.number) continue;
       if (!isNew && phone._phoneId) {
         const original = ((selectedItem as any)?._rawData?.phones || []).find(
-          (p: any) => parseInt(p.id, 10) === phone._partyPhoneId
+          (p: any) => parseInt(p.id, 10) === phone._partyPhoneId,
         );
         if (original && original.phone?.number !== phone.number) {
-          await executeGraphQL(UPDATE_PHONE_MUTATION, { id: phone._phoneId, number: phone.number });
+          await executeGraphQL(UPDATE_PHONE_MUTATION, {
+            id: phone._phoneId,
+            number: phone.number,
+          });
         }
       } else {
-        const phoneResult = await executeGraphQL(CREATE_PHONE_MUTATION, { number: phone.number });
+        const phoneResult = await executeGraphQL(CREATE_PHONE_MUTATION, {
+          number: phone.number,
+        });
         const phoneId = parseInt(phoneResult.createPhone.phone.id, 10);
         await executeGraphQL(CREATE_PARTY_PHONE_MUTATION, {
           accountId,
@@ -193,13 +216,25 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const handleSave = async (
     formData: any,
     addresses: AddressEntry[],
-    phones: PhoneEntry[]
+    phones: PhoneEntry[],
   ) => {
     try {
       const variables = transformFormDataToGraphQL(formData);
-      const { line1, line2, city, stateCode, postalCode, addressType, ...partyVariables } = variables;
+      const {
+        line1,
+        line2,
+        city,
+        stateCode,
+        postalCode,
+        addressType,
+        ...partyVariables
+      } = variables;
 
-      const nameFull = [partyVariables.nameFirst, partyVariables.nameMiddle, partyVariables.nameLast]
+      const nameFull = [
+        partyVariables.nameFirst,
+        partyVariables.nameMiddle,
+        partyVariables.nameLast,
+      ]
         .filter(Boolean)
         .join(" ");
 
@@ -236,7 +271,9 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const confirmDelete = async () => {
     if (!pendingDeleteItem) return;
     try {
-      await executeGraphQL(DELETE_PARTY_MUTATION, { id: parseInt(pendingDeleteItem.id, 10) });
+      await executeGraphQL(DELETE_PARTY_MUTATION, {
+        id: parseInt(pendingDeleteItem.id, 10),
+      });
       await invalidate();
     } catch (error) {
       console.error("Failed to delete party:", error);
@@ -267,7 +304,10 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     }
   };
 
-  const handleUpdateContact = async (id: number, contact: Omit<Contact, "id">) => {
+  const handleUpdateContact = async (
+    id: number,
+    contact: Omit<Contact, "id">,
+  ) => {
     const { nameFirst, nameMiddle, nameLast, ...rest } = contact;
     try {
       await executeGraphQL(UPDATE_CONTACT_MUTATION, {
@@ -275,7 +315,9 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
         name: buildContactName(contact),
         ...rest,
       });
-      setContacts((prev) => prev.map((c) => (c.id === id ? { id, ...contact } : c)));
+      setContacts((prev) =>
+        prev.map((c) => (c.id === id ? { id, ...contact } : c)),
+      );
     } catch (error) {
       setSaveError((error as Error).message);
     }
@@ -299,10 +341,12 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       SEARCH_FIELDS.some((fieldId) => {
         const value = (item as Record<string, any>)[fieldId];
         if (Array.isArray(value)) {
-          return value.some((v) => v?.toString().toLowerCase().includes(searchLower));
+          return value.some((v) =>
+            v?.toString().toLowerCase().includes(searchLower),
+          );
         }
         return value?.toString().toLowerCase().includes(searchLower);
-      })
+      }),
     );
   }, [data, searchTerm]);
 
