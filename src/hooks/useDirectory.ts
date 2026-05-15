@@ -371,6 +371,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     handleEdit: (item: Record<string, any>) => {
       setSelectedItem(item);
       setContacts((item.contacts as Contact[]) || []);
+      setSaveError(null);
       setView("edit");
     },
     contacts,
@@ -382,6 +383,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     handleCancel: () => {
       setView("list");
       setSelectedItem(null);
+      setSaveError(null);
     },
   };
 };

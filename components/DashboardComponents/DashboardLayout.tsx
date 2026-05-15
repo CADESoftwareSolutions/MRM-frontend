@@ -122,18 +122,30 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       >
         {/* Logo + company name — height matches header (64px) */}
         <div className="flex items-center justify-between px-3 border-b shrink-0" style={{ height: 64, borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.3)" }}>
-          <div className={`flex items-center gap-2 min-w-0 ${!sidebarOpen ? "justify-center w-full" : ""}`}>
-            <Image
-              src={isLight ? "/images/logo-light.svg" : "/images/logo-dark.svg"}
-              alt="CADE Logo"
-              width={32}
-              height={32}
-              className="shrink-0"
-            />
-            {sidebarOpen && (
-              <span className={`text-base font-bold tracking-widest truncate ${isLight ? "text-purple-900" : "text-white"}`}>
-                CADE
-              </span>
+          <div className={`flex items-center min-w-0 ${!sidebarOpen ? "justify-center w-full" : ""}`}>
+            {isLight ? (
+              <div
+                className="relative shrink-0 transition-all"
+                style={{ width: sidebarOpen ? 90 : 28, height: 24 }}
+              >
+                <div className="absolute inset-0" style={{ backgroundColor: "#7e22ce" }} />
+                <Image
+                  src="/images/logo.png"
+                  alt="CADE Logo"
+                  width={sidebarOpen ? 90 : 28}
+                  height={24}
+                  className="relative object-contain"
+                  style={{ mixBlendMode: "screen" }}
+                />
+              </div>
+            ) : (
+              <Image
+                src="/images/logo.png"
+                alt="CADE Logo"
+                width={sidebarOpen ? 90 : 28}
+                height={24}
+                className="shrink-0 object-contain transition-all invert mix-blend-screen"
+              />
             )}
           </div>
           {sidebarOpen && (

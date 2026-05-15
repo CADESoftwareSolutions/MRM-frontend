@@ -227,7 +227,7 @@ export const directoryConfig: ModuleConfig = {
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
     { id: "vendor", label: "A/P Vendor Info" },
-    { id: "contacts", label: "Connection", noOuterSave: true },
+    { id: "contacts", label: "Internal Contacts", noOuterSave: true },
   ],
   listFields: [
     "name",
@@ -329,7 +329,6 @@ export const directoryConfig: ModuleConfig = {
       tab: "tax",
       section: "tax-basic",
       placeholder: "SSN or TIN format",
-      helpText: "Format auto-created based on Owner Tax Classification",
       graphqlKey: "taxId",
     }),
 

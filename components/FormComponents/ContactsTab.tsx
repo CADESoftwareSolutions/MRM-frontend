@@ -67,7 +67,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
   if (!partyId) {
     return (
       <div className="flex items-center justify-center py-16 text-purple-300/70 text-sm">
-        Save this record first to add a connection.
+        Save this record first to add an internal contact.
       </div>
     );
   }
@@ -119,7 +119,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
     <div className="space-y-3">
       {contacts.length === 0 && !showForm && (
         <div className="text-center py-10 text-purple-300/70 text-sm">
-          No connections added yet.
+          No internal contacts added yet.
         </div>
       )}
 
@@ -345,7 +345,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               size="sm"
               variant="outline"
               onClick={cancelForm}
-              className="border-purple-300/30 text-purple-300 hover:text-white hover:bg-white/10 cursor-pointer"
+              className="border-purple-300/30 text-purple-600 hover:text-white hover:bg-white/10 cursor-pointer"
             >
               <X className="w-4 h-4 mr-1" />
               Cancel
@@ -357,7 +357,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
             >
               <Save className="w-4 h-4 mr-1" />
-              {editingId !== null ? "Update" : "Save"} Person
+              {editingId !== null ? "Update" : "Save"} Contact
             </Button>
           </div>
         </div>
@@ -370,7 +370,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           className="w-full border border-dashed border-purple-300/30 text-purple-300 hover:text-white hover:bg-white/5 cursor-pointer h-10"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Add a connection
+          Add an Internal Contact
         </Button>
       )}
     </div>
