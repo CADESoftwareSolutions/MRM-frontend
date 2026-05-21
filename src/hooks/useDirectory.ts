@@ -65,6 +65,7 @@ const transformParties = (parties: any[]) =>
       city: party.addresses?.[0]?.address?.city || "",
       state: party.addresses?.[0]?.address?.stateCode || "",
       status: party.isActive ? "Active" : "Inactive",
+      comments: party.notes || "",
       address: party.addresses?.[0]?.address?.line1 || "",
       addressLine2: party.addresses?.[0]?.address?.line2 || "",
       zip: party.addresses?.[0]?.address?.postalCode || "",

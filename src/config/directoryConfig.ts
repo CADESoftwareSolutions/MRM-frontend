@@ -304,6 +304,7 @@ export const directoryConfig: ModuleConfig = {
       section: "notes",
       gridColumn: "span 2",
       helpText: "Auto-populate if address was changed or transfer was done",
+      graphqlKey: "notes",
     }),
 
     field.select(

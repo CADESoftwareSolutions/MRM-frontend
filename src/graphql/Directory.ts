@@ -9,6 +9,7 @@ export const FETCH_PARTIES = `
       nameMiddle
       email
       isActive
+      notes
       createdAt
       updatedAt
       phones {
@@ -48,6 +49,7 @@ export const CREATE_PARTY_MUTATION = `
     $taxId: String
     $email: String
     $isActive: Boolean
+    $notes: String
   ) {
     createParty(
       accountId: $accountId
@@ -59,6 +61,7 @@ export const CREATE_PARTY_MUTATION = `
       taxId: $taxId
       email: $email
       isActive: $isActive
+      notes: $notes
     ) {
       party {
         id
@@ -82,6 +85,7 @@ export const UPDATE_PARTY_MUTATION = `
     $taxId: String
     $email: String
     $isActive: Boolean
+    $notes: String
   ) {
     updateParty(
       id: $id
@@ -93,6 +97,7 @@ export const UPDATE_PARTY_MUTATION = `
       taxId: $taxId
       email: $email
       isActive: $isActive
+      notes: $notes
     ) {
       party {
         id
