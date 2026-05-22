@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { ModuleConfig } from "../../src/config/directoryConfig";
 import { useAtom } from "jotai";
@@ -66,36 +65,10 @@ const isLockedColumn = (col: string, firstField: string) =>
   col === "status" ||
   col === "leaseStatus";
 
-/** Truncated text cell that shows full value in a portal tooltip on hover */
-const TruncatedCell = ({
-  text,
-  isLight,
-}: {
-  text: string;
-  isLight: boolean;
-}) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <span
-        className={`block truncate text-sm max-w-[220px] cursor-default ${
-          isLight ? "text-gray-700" : "text-white/80"
-        }`}
-      >
-        {text}
-      </span>
-    </TooltipTrigger>
-    <TooltipContent
-      side="top"
-      sideOffset={6}
-      className={`max-w-xs text-xs leading-relaxed whitespace-normal rounded-lg px-3 py-2 shadow-2xl border ${
-        isLight
-          ? "bg-white text-gray-800 border-purple-200 shadow-purple-100/60"
-          : "bg-[#1e1b3a] text-white border-purple-300/30 shadow-black/60"
-      }`}
-    >
-      {text}
-    </TooltipContent>
-  </Tooltip>
+const TruncatedCell = ({ text, isLight }: { text: string; isLight: boolean }) => (
+  <span className={`block truncate text-sm w-full ${isLight ? "text-gray-700" : "text-white/80"}`}>
+    {text}
+  </span>
 );
 
 export const List: React.FC<ListProps> = ({
@@ -111,9 +84,39 @@ export const List: React.FC<ListProps> = ({
   const isLight = theme === "light";
 
   const storageKey = `mrm-columns-${config.name}`;
+  const widthKey = `mrm-colwidths-${config.name}`;
   const firstField = config.listFields[0];
 
   const [visibleCols, setVisibleCols] = useState<string[]>([...config.listFields]);
+  const [colWidths, setColWidths] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem(widthKey);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+
+  const getColWidth = (col: string) => colWidths[col] ?? 160;
+
+  const startResize = (col: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startWidth = getColWidth(col);
+    const onMove = (ev: MouseEvent) => {
+      const next = Math.max(80, startWidth + ev.clientX - startX);
+      setColWidths((prev) => {
+        const updated = { ...prev, [col]: next };
+        localStorage.setItem(widthKey, JSON.stringify(updated));
+        return updated;
+      });
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
 
   useEffect(() => {
     try {
@@ -160,7 +163,7 @@ export const List: React.FC<ListProps> = ({
   const fallbackBadge = isLight
     ? "bg-purple-100 text-purple-700 border-purple-300"
     : "bg-purple-500/20 text-purple-300 border-purple-400/30";
-  const emptyText = isLight ? "text-gray-300" : "text-white/30";
+  const emptyText = isLight ? "text-gray-500" : "text-white/40";
 
   const renderCell = (fieldId: string, value: any, item: any) => {
     if (fieldId === "fullAddress") {
@@ -178,13 +181,18 @@ export const List: React.FC<ListProps> = ({
 
     if (Array.isArray(value)) {
       if (value.length === 0) return <span className={emptyText}>—</span>;
+      const visible = value.slice(0, 2);
+      const overflow = value.length - visible.length;
       return (
-        <div className="flex flex-wrap gap-1">
-          {value.map((v: string) => (
-            <Badge key={v} variant="outline" className={`text-xs font-medium ${classColors[v] ?? fallbackBadge}`}>
+        <div className="flex items-center gap-1 overflow-hidden">
+          {visible.map((v: string) => (
+            <Badge key={v} variant="outline" className={`text-xs font-medium shrink-0 ${classColors[v] ?? fallbackBadge}`}>
               {v}
             </Badge>
           ))}
+          {overflow > 0 && (
+            <span className={`text-xs shrink-0 ${isLight ? "text-gray-400" : "text-white/40"}`}>+{overflow}</span>
+          )}
         </div>
       );
     }
@@ -197,11 +205,7 @@ export const List: React.FC<ListProps> = ({
       );
     }
 
-    return (
-      <span className={`text-sm ${isLight ? "text-gray-700" : "text-white/80"}`}>
-        {String(value)}
-      </span>
-    );
+    return <TruncatedCell text={String(value)} isLight={isLight} />;
   };
 
   const borderColor = isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.2)";
@@ -252,7 +256,7 @@ export const List: React.FC<ListProps> = ({
                 isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"
               }`}
             >
-              <p className={`px-4 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-400" : "text-purple-300/50"}`}>
+              <p className={`px-4 pb-2 pt-1 text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-500" : "text-purple-300/80"}`}>
                 Visible columns
               </p>
               {config.listFields.map((col) => {
@@ -302,20 +306,34 @@ export const List: React.FC<ListProps> = ({
 
       {/* Table — overflow-hidden here clips the table corners at the bottom */}
       <div className="overflow-x-auto overflow-y-visible rounded-b-xl">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+          <colgroup>
+            {columns.map((col) => (
+              <col key={col} style={{ width: getColWidth(col) }} />
+            ))}
+            <col style={{ width: 72 }} />
+          </colgroup>
           <thead>
             <tr className="border-b" style={{ borderColor: dividerColor }}>
               {columns.map((col) => (
                 <th
                   key={col}
-                  className={`text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${
-                    isLight ? "text-gray-500" : "text-purple-300/60"
+                  className={`relative text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden ${
+                    isLight ? "text-gray-500" : "text-purple-200/80"
                   }`}
                 >
                   {toLabel(col)}
+                  <div
+                    onMouseDown={(e) => startResize(col, e)}
+                    className="absolute right-0 top-0 h-full w-2 cursor-col-resize flex items-center justify-center group"
+                  >
+                    <div className={`w-px h-4 rounded-full transition-colors group-hover:h-full ${
+                      isLight ? "bg-purple-200 group-hover:bg-purple-400" : "bg-white/10 group-hover:bg-purple-400/60"
+                    }`} />
+                  </div>
                 </th>
               ))}
-              <th className="px-5 py-3 w-20" />
+              <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -324,14 +342,14 @@ export const List: React.FC<ListProps> = ({
                 <td colSpan={columns.length + 1} className="text-center py-16">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
-                    <span className={`text-sm ${isLight ? "text-gray-400" : "text-purple-300/60"}`}>Loading...</span>
+                    <span className={`text-sm ${isLight ? "text-gray-500" : "text-purple-200/70"}`}>Loading...</span>
                   </div>
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + 1} className="text-center py-16">
-                  <p className={isLight ? "text-gray-400" : "text-purple-300/50"}>
+                  <p className={isLight ? "text-gray-500" : "text-purple-200/70"}>
                     No {config.title.toLowerCase()} found
                   </p>
                 </td>
@@ -348,11 +366,11 @@ export const List: React.FC<ListProps> = ({
                   }`}
                 >
                   {columns.map((col) => (
-                    <td key={col} className="px-5 py-3.5">
+                    <td key={col} className="px-5 py-3 h-12 overflow-hidden">
                       {renderCell(col, item[col], item)}
                     </td>
                   ))}
-                  <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-5 py-3 h-12 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"

@@ -65,7 +65,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
           </p>
           {pageHeader.subtitle && (
             <p
-              className={`text-xs leading-tight ${isLight ? "text-purple-600/70" : "text-white/50"}`}
+              className={`text-xs leading-tight ${isLight ? "text-purple-600/80" : "text-white/65"}`}
             >
               {pageHeader.subtitle}
             </p>

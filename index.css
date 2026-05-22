@@ -51,6 +51,9 @@ body {
 .light-theme .text-blue-200,
 .light-theme .text-blue-300       { color: rgb(29 78 216); }
 .light-theme .text-red-300        { color: rgb(185 28 28); }
+.light-theme .text-red-400        { color: rgb(185 28 28); }
+.light-theme .text-green-400      { color: rgb(21 128 61); }
+.light-theme .text-yellow-400     { color: rgb(161 98 7); }
 .light-theme .hover\:text-red-100:hover { color: rgb(153 27 27); }
 
 /* Keep white text on purple/coloured filled backgrounds */
@@ -60,7 +63,7 @@ body {
 .light-theme .bg-purple-700:hover { color: white; }
 
 /* Help text */
-.form-help-text { color: rgb(167 139 250 / 0.7); }
+.form-help-text { color: rgb(167 139 250 / 0.85); }
 .light-theme .form-help-text { color: rgb(107 114 128); }
 
 /* Backgrounds */
@@ -119,9 +122,9 @@ body {
 
 /* Cards */
 .light-theme [data-slot="card"] {
-  background-color: rgb(250 247 255);
-  border-color: rgb(216 180 254 / 0.4);
-  box-shadow: 0 2px 12px 0 rgb(139 92 246 / 0.08);
+  background-color: white;
+  border-color: rgb(167 139 250 / 0.5);
+  box-shadow: 0 2px 16px 0 rgb(139 92 246 / 0.12);
 }
 
 /* Tabs */

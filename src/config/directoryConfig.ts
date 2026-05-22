@@ -238,14 +238,42 @@ export const directoryConfig: ModuleConfig = {
     "status",
   ],
   fields: [
+    field.text("nameLine1", "Name Line 1", {
+      required: true,
+      section: "default",
+      gridColumn: "span 1",
+      graphqlKey: "nameFirst",
+    }),
+
+    field.email("email", "Email Address", {
+      section: "default",
+      gridColumn: "span 1",
+      graphqlKey: "email",
+    }),
+
+    field.text("nameLine2", "Name Line 2", {
+      section: "default",
+      gridColumn: "span 1",
+      graphqlKey: "nameMiddle",
+    }),
+
+    {
+      id: "phones",
+      label: "Phone Numbers",
+      type: "custom" as const,
+      tab: "basic",
+      section: "default",
+      gridColumn: "span 1" as const,
+    },
+
     field.multiBadge(
       "classifications",
       "Name Classification",
       ["REV", "JIB", "OPERATOR", "PURCHASER", "VENDOR", "EMPLOYEE", "PARTNER"],
       {
         required: true,
-        section: "identification",
-        gridColumn: "span 2",
+        section: "default",
+        gridColumn: "span 1",
         defaultValue: [],
         graphqlKey: "partyTypes",
         toGraphQL: (v: string | string[]) => {
@@ -256,17 +284,11 @@ export const directoryConfig: ModuleConfig = {
       },
     ),
 
-    field.text("nameLine1", "Name Line 1", {
-      required: true,
-      section: "basic-info",
-      gridColumn: "span 1",
-      graphqlKey: "nameFirst",
-    }),
-
-    field.text("nameLine2", "Name Line 2", {
-      section: "basic-info",
-      gridColumn: "span 1",
-      graphqlKey: "nameMiddle",
+    field.select("status", "Active Status", ["Active", "Inactive"], {
+      section: "default",
+      defaultValue: "Active",
+      graphqlKey: "isActive",
+      toGraphQL: (v: string) => v === "Active",
     }),
 
     {
@@ -278,27 +300,6 @@ export const directoryConfig: ModuleConfig = {
       gridColumn: "span 2",
     },
 
-    {
-      id: "phones",
-      label: "Phone Numbers",
-      type: "custom",
-      tab: "basic",
-      section: "contact",
-      gridColumn: "span 2",
-    },
-
-    field.email("email", "Email Address", {
-      section: "contact",
-      gridColumn: "span 1",
-      graphqlKey: "email",
-    }),
-
-    field.select("status", "Active Status", ["Active", "Inactive"], {
-      section: "contact",
-      defaultValue: "Active",
-      graphqlKey: "isActive",
-      toGraphQL: (v: string) => v === "Active",
-    }),
 
     field.textarea("comments", "Comments/Notes", {
       section: "notes",

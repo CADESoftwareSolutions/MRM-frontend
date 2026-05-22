@@ -286,7 +286,7 @@ export const Form: React.FC<FormProps> = ({
             }
           >
             {sectionId !== "default" && (
-              <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-semibold text-purple-200 uppercase tracking-wider mb-3">
                 {sectionId.replace(/-/g, " ")}
               </h3>
             )}
@@ -307,7 +307,7 @@ export const Form: React.FC<FormProps> = ({
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-300/60 hover:text-purple-200 hover:bg-purple-500/10 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-200 hover:text-purple-100 hover:bg-purple-500/10 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
               {tab.label}
             </TabsTrigger>

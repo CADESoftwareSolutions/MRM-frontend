@@ -5,7 +5,7 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { MultiAddressField, AddressEntry } from "../../../../components/FormComponents/MultiAddressField";
-import { MultiPhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
+import { SinglePhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
 import { directoryConfig } from "@/config/directoryConfig";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useEffect, useRef, useState } from "react";
@@ -38,7 +38,7 @@ const addressesFromItem = (item: any): AddressEntry[] => {
 const phonesFromItem = (item: any): PhoneEntry[] => {
   const rawPhones: any[] = item?._rawData?.phones || [];
   return rawPhones.map((pp: any) => ({
-    type: pp.phoneType || "Business",
+    type: pp.phoneType || "Home",
     number: pp.phone?.number || "",
     _phoneId: pp.phone?.id ? parseInt(pp.phone.id, 10) : undefined,
     _partyPhoneId: pp.id ? parseInt(pp.id, 10) : undefined,
@@ -172,7 +172,7 @@ const AddressDirectory = () => {
                   />
                 ),
                 phones: (
-                  <MultiPhoneField
+                  <SinglePhoneField
                     value={phones}
                     onChange={setPhones}
                   />
