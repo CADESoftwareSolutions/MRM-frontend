@@ -15,6 +15,9 @@ import { STATES } from "@/config/directoryConfig";
 
 export interface Contact {
   id: number;
+  _relatedPartyId?: number;
+  _phoneId?: number;
+  _addressId?: number;
   nameFirst: string;
   nameMiddle?: string;
   nameLast: string;

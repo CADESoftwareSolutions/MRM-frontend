@@ -12,9 +12,9 @@ import {
   UPDATE_ADDRESS_MUTATION,
   CREATE_PARTY_ADDRESS_MUTATION,
   DELETE_PARTY_ADDRESS_MUTATION,
-  CREATE_CONTACT_MUTATION,
-  UPDATE_CONTACT_MUTATION,
-  DELETE_CONTACT_MUTATION,
+  CREATE_PARTY_RELATIONSHIP_MUTATION,
+  UPDATE_PARTY_RELATIONSHIP_MUTATION,
+  DELETE_PARTY_RELATIONSHIP_MUTATION,
   CREATE_PHONE_MUTATION,
   UPDATE_PHONE_MUTATION,
   CREATE_PARTY_PHONE_MUTATION,
@@ -45,12 +45,68 @@ const executeGraphQL = async (query: string, variables: any = {}) => {
   return result.data;
 };
 
+const boolToYesNo = (value: boolean | null | undefined) => {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  return "";
+};
+
+const assignGraphQLValue = (target: any, key: string, value: any) => {
+  const [head, ...rest] = key.split(".");
+  if (!head) return;
+  if (rest.length === 0) {
+    target[head] = value;
+    return;
+  }
+
+  target[head] = target[head] || {};
+  assignGraphQLValue(target[head], rest.join("."), value);
+};
+
+const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
+  relationships.map((relationship: any) => {
+    const relatedParty = relationship.relatedParty || {};
+    const primaryPhone =
+      relatedParty.phones?.find((p: any) => p.isPrimary)?.phone?.number ||
+      relatedParty.phones?.[0]?.phone?.number ||
+      "";
+    const primaryAddress = relatedParty.addresses?.[0];
+
+    return {
+      id: parseInt(relationship.id, 10),
+      _relatedPartyId: relatedParty.id
+        ? parseInt(relatedParty.id, 10)
+        : undefined,
+      _phoneId: relatedParty.phones?.[0]?.phone?.id
+        ? parseInt(relatedParty.phones[0].phone.id, 10)
+        : undefined,
+      _addressId: primaryAddress?.address?.id
+        ? parseInt(primaryAddress.address.id, 10)
+        : undefined,
+      nameFirst: relatedParty.nameFirst || relatedParty.nameFull || "",
+      nameMiddle: relatedParty.nameMiddle || "",
+      nameLast: relatedParty.nameLast || "",
+      phone: primaryPhone,
+      email: relatedParty.email || "",
+      addressType: primaryAddress?.addressType
+        ? [primaryAddress.addressType]
+        : [],
+      address: primaryAddress?.address?.line1 || "",
+      addressLine2: primaryAddress?.address?.line2 || "",
+      city: primaryAddress?.address?.city || "",
+      state: primaryAddress?.address?.stateCode || "",
+      zip: primaryAddress?.address?.postalCode || "",
+    };
+  });
+
 const transformParties = (parties: any[]) =>
   parties.map((party: any) => {
     const primaryPhone =
       party.phones?.find((p: any) => p.isPrimary)?.phone?.number ||
       party.phones?.[0]?.phone?.number ||
       null;
+    const taxInfo = party.taxInfo || {};
+    const vendorInfo = party.vendorInfo || {};
     return {
       id: party.id,
       name: party.nameFull,
@@ -66,6 +122,20 @@ const transformParties = (parties: any[]) =>
       state: party.addresses?.[0]?.address?.stateCode || "",
       status: party.isActive ? "Active" : "Inactive",
       comments: party.notes || "",
+      taxClassification: taxInfo.taxClassification || "",
+      taxId: taxInfo.taxId || "",
+      internalInHouse: boolToYesNo(taxInfo.internalInHouse),
+      federalTaxWithheld: boolToYesNo(taxInfo.federalTaxWithheld),
+      nonEmployeeComp: boolToYesNo(taxInfo.nonEmployeeComp),
+      send1099: boolToYesNo(taxInfo.send1099),
+      w9OnFile: boolToYesNo(taxInfo.w9OnFile),
+      backupWithholding: boolToYesNo(taxInfo.backupWithholding),
+      severanceTaxExempt: boolToYesNo(taxInfo.severanceTaxExempt),
+      otherExempt: boolToYesNo(taxInfo.otherExempt),
+      minPaymentAmount: taxInfo.minPaymentAmount ?? "",
+      pay: vendorInfo.pay || "",
+      duplicateInvoiceValidation: vendorInfo.duplicateInvoiceValidation || "",
+      contacts: transformRelatedContacts(party.relatedContacts),
       address: party.addresses?.[0]?.address?.line1 || "",
       addressLine2: party.addresses?.[0]?.address?.line2 || "",
       zip: party.addresses?.[0]?.address?.postalCode || "",
@@ -112,7 +182,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       const raw = formData[f.id];
       const val = f.toGraphQL ? f.toGraphQL(raw) : raw;
       if (val !== undefined && val !== null && val !== "") {
-        result[f.graphqlKey] = val;
+        assignGraphQLValue(result, f.graphqlKey, val);
       }
     });
     return result;
@@ -290,17 +360,111 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const buildContactName = (c: Omit<Contact, "id">) =>
     [c.nameFirst, c.nameMiddle, c.nameLast].filter(Boolean).join(" ");
 
+  const saveContactAddress = async (partyId: number, contact: Omit<Contact, "id">) => {
+    if (!contact.address || !contact.city || !contact.state) return;
+
+    const addressResult = await executeGraphQL(CREATE_ADDRESS_MUTATION, {
+      line1: contact.address,
+      line2: contact.addressLine2 || undefined,
+      city: contact.city,
+      stateCode: contact.state,
+      postalCode: contact.zip || undefined,
+    });
+    await executeGraphQL(CREATE_PARTY_ADDRESS_MUTATION, {
+      accountId,
+      partyId,
+      addressId: parseInt(addressResult.createAddress.address.id, 10),
+      addressType: contact.addressType?.[0] || "Mailing",
+      isPrimary: true,
+    });
+  };
+
+  const saveContactPhone = async (partyId: number, contact: Omit<Contact, "id">) => {
+    if (!contact.phone) return;
+
+    const phoneResult = await executeGraphQL(CREATE_PHONE_MUTATION, {
+      number: contact.phone,
+    });
+    await executeGraphQL(CREATE_PARTY_PHONE_MUTATION, {
+      accountId,
+      partyId,
+      phoneId: parseInt(phoneResult.createPhone.phone.id, 10),
+      phoneType: "Work",
+      isPrimary: true,
+    });
+  };
+
+  const updateContactPhone = async (
+    partyId: number,
+    contact: Omit<Contact, "id">,
+    existing?: Contact,
+  ) => {
+    if (!contact.phone) return;
+    if (existing?._phoneId) {
+      await executeGraphQL(UPDATE_PHONE_MUTATION, {
+        id: existing._phoneId,
+        number: contact.phone,
+      });
+      return;
+    }
+    await saveContactPhone(partyId, contact);
+  };
+
+  const updateContactAddress = async (
+    partyId: number,
+    contact: Omit<Contact, "id">,
+    existing?: Contact,
+  ) => {
+    if (!contact.address || !contact.city || !contact.state) return;
+    if (existing?._addressId) {
+      await executeGraphQL(UPDATE_ADDRESS_MUTATION, {
+        id: existing._addressId,
+        line1: contact.address,
+        line2: contact.addressLine2 || undefined,
+        city: contact.city,
+        stateCode: contact.state,
+        postalCode: contact.zip || undefined,
+      });
+      return;
+    }
+    await saveContactAddress(partyId, contact);
+  };
+
   const handleAddContact = async (contact: Omit<Contact, "id">) => {
     if (!selectedItem?.id) return;
-    const { nameFirst, nameMiddle, nameLast, ...rest } = contact;
     try {
-      const result = await executeGraphQL(CREATE_CONTACT_MUTATION, {
-        partyId: parseInt(selectedItem.id, 10),
-        name: buildContactName(contact),
-        ...rest,
+      const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, {
+        accountId,
+        partyTypes: ["EMPLOYEE"],
+        nameFull: buildContactName(contact),
+        nameFirst: contact.nameFirst,
+        nameMiddle: contact.nameMiddle || undefined,
+        nameLast: contact.nameLast,
+        email: contact.email || undefined,
       });
-      const newId = parseInt(result.createContact.contact.id, 10);
-      setContacts((prev) => [...prev, { id: newId, ...contact }]);
+      const relatedPartyId = parseInt(partyResult.createParty.party.id, 10);
+      await saveContactPhone(relatedPartyId, contact);
+      await saveContactAddress(relatedPartyId, contact);
+
+      const relationshipResult = await executeGraphQL(
+        CREATE_PARTY_RELATIONSHIP_MUTATION,
+        {
+          accountId,
+          partyId: parseInt(selectedItem.id, 10),
+          relatedPartyId,
+          relationshipType: "internal_contact",
+          isPrimary: false,
+        },
+      );
+      const newId = parseInt(
+        relationshipResult.createPartyRelationship.partyRelationship.id,
+        10,
+      );
+      setContacts((prev: Contact[]) => [
+        ...prev,
+        { id: newId, _relatedPartyId: relatedPartyId, ...contact },
+      ]);
+      await invalidate();
     } catch (error) {
       setSaveError((error as Error).message);
     }
@@ -310,16 +474,38 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     id: number,
     contact: Omit<Contact, "id">,
   ) => {
-    const { nameFirst, nameMiddle, nameLast, ...rest } = contact;
     try {
-      await executeGraphQL(UPDATE_CONTACT_MUTATION, {
+      const existing = contacts.find((c: Contact) => c.id === id);
+      if (existing?._relatedPartyId) {
+        await executeGraphQL(UPDATE_PARTY_MUTATION, {
+          id: existing._relatedPartyId,
+          nameFull: buildContactName(contact),
+          nameFirst: contact.nameFirst,
+          nameMiddle: contact.nameMiddle || undefined,
+          nameLast: contact.nameLast,
+          email: contact.email || undefined,
+        });
+        await updateContactPhone(existing._relatedPartyId, contact, existing);
+        await updateContactAddress(existing._relatedPartyId, contact, existing);
+      }
+      await executeGraphQL(UPDATE_PARTY_RELATIONSHIP_MUTATION, {
         id,
-        name: buildContactName(contact),
-        ...rest,
+        relationshipType: "internal_contact",
       });
-      setContacts((prev) =>
-        prev.map((c) => (c.id === id ? { id, ...contact } : c)),
+      setContacts((prev: Contact[]) =>
+        prev.map((c: Contact) =>
+          c.id === id
+            ? {
+                id,
+                _relatedPartyId: c._relatedPartyId,
+                _phoneId: c._phoneId,
+                _addressId: c._addressId,
+                ...contact,
+              }
+            : c,
+        ),
       );
+      await invalidate();
     } catch (error) {
       setSaveError((error as Error).message);
     }
@@ -327,8 +513,11 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
 
   const handleDeleteContact = async (id: number) => {
     try {
-      await executeGraphQL(DELETE_CONTACT_MUTATION, { id });
-      setContacts((prev) => prev.filter((c) => c.id !== id));
+      await executeGraphQL(DELETE_PARTY_RELATIONSHIP_MUTATION, { id });
+      setContacts((prev: Contact[]) =>
+        prev.filter((c: Contact) => c.id !== id),
+      );
+      await invalidate();
     } catch (error) {
       setSaveError((error as Error).message);
     }
@@ -339,7 +528,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const filteredData = useMemo(() => {
     if (!searchTerm) return data;
     const searchLower = searchTerm.toLowerCase();
-    return data.filter((item) =>
+    return data.filter((item: Record<string, any>) =>
       SEARCH_FIELDS.some((fieldId) => {
         const value = (item as Record<string, any>)[fieldId];
         if (Array.isArray(value)) {

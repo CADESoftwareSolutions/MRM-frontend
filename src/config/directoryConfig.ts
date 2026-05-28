@@ -219,6 +219,12 @@ export const STATES = [
   "WY",
 ];
 
+const yesNoToBoolean = (value: string) => {
+  if (value === "Yes") return true;
+  if (value === "No") return false;
+  return undefined;
+};
+
 export const directoryConfig: ModuleConfig = {
   name: "directory",
   title: "Contacts",
@@ -324,6 +330,7 @@ export const directoryConfig: ModuleConfig = {
       {
         tab: "tax",
         section: "tax-basic",
+        graphqlKey: "taxInfo.taxClassification",
       },
     ),
 
@@ -331,17 +338,21 @@ export const directoryConfig: ModuleConfig = {
       tab: "tax",
       section: "tax-basic",
       placeholder: "SSN or TIN format",
-      graphqlKey: "taxId",
+      graphqlKey: "taxInfo.taxId",
     }),
 
     field.select("internalInHouse", "Internal/In House", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.internalInHouse",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select("federalTaxWithheld", "Federal Tax Withheld", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.federalTaxWithheld",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select(
@@ -351,6 +362,8 @@ export const directoryConfig: ModuleConfig = {
       {
         tab: "tax",
         section: "tax-options",
+        graphqlKey: "taxInfo.nonEmployeeComp",
+        toGraphQL: yesNoToBoolean,
       },
     ),
 
@@ -358,26 +371,36 @@ export const directoryConfig: ModuleConfig = {
       tab: "tax",
       section: "tax-options",
       helpText: "Auto-filled from tax classification, but can be overridden",
+      graphqlKey: "taxInfo.send1099",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select("w9OnFile", "W-9 on File", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.w9OnFile",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select("backupWithholding", "Backup Withholding", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.backupWithholding",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select("severanceTaxExempt", "Severance Tax Exempt", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.severanceTaxExempt",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.select("otherExempt", "Other Exempt", ["Yes", "No"], {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.otherExempt",
+      toGraphQL: yesNoToBoolean,
     }),
 
     field.number("minPaymentAmount", "Minimum Payment Amount", {
@@ -385,8 +408,12 @@ export const directoryConfig: ModuleConfig = {
       section: "payment",
       placeholder: "$0.00",
       gridColumn: "span 2",
-      helpText:
-        "Company default will auto-apply but can be overridden per owner",
+      helpText: "Optional per-party minimum payment threshold",
+      graphqlKey: "taxInfo.minPaymentAmount",
+      toGraphQL: (value: string | number) =>
+        value === "" || value === undefined || value === null
+          ? undefined
+          : Number(value),
     }),
 
     field.select("pay", "Pay", ["Yes", "No", "Monthly", "Check per entry"], {
@@ -395,6 +422,7 @@ export const directoryConfig: ModuleConfig = {
       dependsOn: "classifications",
       dependsOnValue: "VENDOR",
       helpText: "Only appears for VENDOR classification",
+      graphqlKey: "vendorInfo.pay",
     }),
 
     field.select(
@@ -406,6 +434,7 @@ export const directoryConfig: ModuleConfig = {
         section: "vendor-options",
         dependsOnValue: "VENDOR",
         dependsOn: "classifications",
+        graphqlKey: "vendorInfo.duplicateInvoiceValidation",
       },
     ),
   ],

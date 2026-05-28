@@ -12,6 +12,59 @@ export const FETCH_PARTIES = `
       notes
       createdAt
       updatedAt
+      taxInfo {
+        taxClassification
+        taxId
+        internalInHouse
+        federalTaxWithheld
+        nonEmployeeComp
+        send1099
+        w9OnFile
+        backupWithholding
+        severanceTaxExempt
+        otherExempt
+        minPaymentAmount
+      }
+      vendorInfo {
+        pay
+        duplicateInvoiceValidation
+      }
+      relatedContacts {
+        id
+        relationshipType
+        notes
+        isPrimary
+        relatedParty {
+          id
+          nameFull
+          nameFirst
+          nameLast
+          nameMiddle
+          email
+          phones {
+            id
+            phoneType
+            isPrimary
+            phone {
+              id
+              number
+            }
+          }
+          addresses {
+            id
+            addressType
+            isPrimary
+            address {
+              id
+              line1
+              line2
+              city
+              stateCode
+              postalCode
+            }
+          }
+        }
+      }
       phones {
         id
         phoneType
@@ -46,7 +99,8 @@ export const CREATE_PARTY_MUTATION = `
     $nameFirst: String
     $nameLast: String
     $nameMiddle: String
-    $taxId: String
+    $taxInfo: PartyTaxInfoInput
+    $vendorInfo: PartyVendorInfoInput
     $email: String
     $isActive: Boolean
     $notes: String
@@ -58,7 +112,8 @@ export const CREATE_PARTY_MUTATION = `
       nameFirst: $nameFirst
       nameLast: $nameLast
       nameMiddle: $nameMiddle
-      taxId: $taxId
+      taxInfo: $taxInfo
+      vendorInfo: $vendorInfo
       email: $email
       isActive: $isActive
       notes: $notes
@@ -69,6 +124,23 @@ export const CREATE_PARTY_MUTATION = `
         nameFull
         email
         isActive
+        taxInfo {
+          taxClassification
+          taxId
+          internalInHouse
+          federalTaxWithheld
+          nonEmployeeComp
+          send1099
+          w9OnFile
+          backupWithholding
+          severanceTaxExempt
+          otherExempt
+          minPaymentAmount
+        }
+        vendorInfo {
+          pay
+          duplicateInvoiceValidation
+        }
       }
     }
   }
@@ -82,7 +154,8 @@ export const UPDATE_PARTY_MUTATION = `
     $nameFirst: String
     $nameLast: String
     $nameMiddle: String
-    $taxId: String
+    $taxInfo: PartyTaxInfoInput
+    $vendorInfo: PartyVendorInfoInput
     $email: String
     $isActive: Boolean
     $notes: String
@@ -94,7 +167,8 @@ export const UPDATE_PARTY_MUTATION = `
       nameFirst: $nameFirst
       nameLast: $nameLast
       nameMiddle: $nameMiddle
-      taxId: $taxId
+      taxInfo: $taxInfo
+      vendorInfo: $vendorInfo
       email: $email
       isActive: $isActive
       notes: $notes
@@ -105,6 +179,23 @@ export const UPDATE_PARTY_MUTATION = `
         nameFull
         email
         isActive
+        taxInfo {
+          taxClassification
+          taxId
+          internalInHouse
+          federalTaxWithheld
+          nonEmployeeComp
+          send1099
+          w9OnFile
+          backupWithholding
+          severanceTaxExempt
+          otherExempt
+          minPaymentAmount
+        }
+        vendorInfo {
+          pay
+          duplicateInvoiceValidation
+        }
       }
     }
   }
@@ -164,69 +255,49 @@ export const UPDATE_ADDRESS_MUTATION = `
   }
 `;
 
-export const CREATE_CONTACT_MUTATION = `
-  mutation CreateContact(
+export const CREATE_PARTY_RELATIONSHIP_MUTATION = `
+  mutation CreatePartyRelationship(
+    $accountId: Int!
     $partyId: Int!
-    $name: String!
-    $phone: String
-    $email: String
-    $addressType: [String]
-    $address: String
-    $addressLine2: String
-    $city: String
-    $state: String
-    $zip: String
+    $relatedPartyId: Int!
+    $relationshipType: String!
+    $notes: String
+    $isPrimary: Boolean
   ) {
-    createContact(
+    createPartyRelationship(
+      accountId: $accountId
       partyId: $partyId
-      name: $name
-      phone: $phone
-      email: $email
-      addressType: $addressType
-      address: $address
-      addressLine2: $addressLine2
-      city: $city
-      state: $state
-      zip: $zip
+      relatedPartyId: $relatedPartyId
+      relationshipType: $relationshipType
+      notes: $notes
+      isPrimary: $isPrimary
     ) {
-      contact { id name phone email addressType address addressLine2 city state zip }
+      partyRelationship { id }
     }
   }
 `;
 
-export const UPDATE_CONTACT_MUTATION = `
-  mutation UpdateContact(
+export const UPDATE_PARTY_RELATIONSHIP_MUTATION = `
+  mutation UpdatePartyRelationship(
     $id: Int!
-    $name: String
-    $phone: String
-    $email: String
-    $addressType: [String]
-    $address: String
-    $addressLine2: String
-    $city: String
-    $state: String
-    $zip: String
+    $relationshipType: String
+    $notes: String
+    $isPrimary: Boolean
   ) {
-    updateContact(
+    updatePartyRelationship(
       id: $id
-      name: $name
-      phone: $phone
-      email: $email
-      addressType: $addressType
-      address: $address
-      addressLine2: $addressLine2
-      city: $city
-      state: $state
-      zip: $zip
+      relationshipType: $relationshipType
+      notes: $notes
+      isPrimary: $isPrimary
     ) {
-      contact { id name phone email addressType address addressLine2 city state zip }
+      partyRelationship { id }
     }
   }
 `;
 
-export const DELETE_CONTACT_MUTATION = `
-  mutation DeleteContact($id: Int!) {
-    deleteContact(id: $id) {
+export const DELETE_PARTY_RELATIONSHIP_MUTATION = `
+  mutation DeletePartyRelationship($id: Int!) {
+    deletePartyRelationship(id: $id) {
       success
     }
   }
