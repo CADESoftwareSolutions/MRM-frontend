@@ -122,7 +122,7 @@ export const Form: React.FC<FormProps> = ({
         key={field.id}
         className={field.gridColumn === "span 2" ? "col-span-2" : ""}
       >
-        <Label className="text-purple-100 font-semibold flex items-center gap-1 mb-1.5 text-sm">
+        <Label className="text-white font-semibold flex items-center gap-1 mb-1.5 text-sm">
           {field.label}
           {field.required && (
             <span className="text-red-500 text-sm font-bold">*</span>
@@ -167,7 +167,7 @@ export const Form: React.FC<FormProps> = ({
           />
         )}
 
-        {field.type === "select" && (
+        {(field.type === "select" || field.type === "boolean") && (
           <Controller
             name={field.id}
             control={control}
@@ -286,11 +286,11 @@ export const Form: React.FC<FormProps> = ({
             }
           >
             {sectionId !== "default" && (
-              <h3 className="text-sm font-semibold text-purple-200 uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-3">
                 {sectionId.replace(/-/g, " ")}
               </h3>
             )}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div className={`grid gap-x-4 gap-y-3 ${fields.every((f) => f.type === "boolean") ? "grid-cols-3" : "grid-cols-2"}`}>
               {fields.map((field) => renderField(field))}
             </div>
           </div>
@@ -303,15 +303,19 @@ export const Form: React.FC<FormProps> = ({
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex w-full bg-transparent border-b border-purple-300/20 rounded-none gap-0 h-auto p-0">
-          {config.tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-200 hover:text-purple-100 hover:bg-purple-500/10 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
+          {config.tabs.map((tab) => {
+            const classifications = watchedValues.classifications ?? [];
+            if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
+            return (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-200 hover:text-purple-100 hover:bg-purple-500/10 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+              >
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         {config.tabs.map((tab) => (

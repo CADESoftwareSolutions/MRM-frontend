@@ -169,7 +169,15 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
     queryKey,
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_PARTIES, { accountId });
-      return transformParties(result.parties);
+      const relatedPartyIds = new Set(
+        result.parties.flatMap((p: any) =>
+          (p.relatedContacts || []).map((rc: any) => rc.relatedParty?.id).filter(Boolean),
+        ),
+      );
+      const topLevelParties = result.parties.filter(
+        (p: any) => !relatedPartyIds.has(p.id),
+      );
+      return transformParties(topLevelParties);
     },
     enabled: !!accountId,
   });
@@ -344,6 +352,13 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
   const confirmDelete = async () => {
     if (!pendingDeleteItem) return;
     try {
+      for (const contact of pendingDeleteItem.contacts ?? []) {
+        if (contact._relatedPartyId) {
+          await executeGraphQL(DELETE_PARTY_MUTATION, {
+            id: contact._relatedPartyId,
+          });
+        }
+      }
       await executeGraphQL(DELETE_PARTY_MUTATION, {
         id: parseInt(pendingDeleteItem.id, 10),
       });

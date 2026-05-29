@@ -1,6 +1,7 @@
 export type FieldType =
   | "text"
   | "select"
+  | "boolean"
   | "multi-select"
   | "multi-badge"
   | "textarea"
@@ -121,6 +122,25 @@ export const field = {
     ...opts,
   }),
 
+  boolean: (
+    id: string,
+    label: string,
+    opts: Partial<FieldConfig> = {},
+  ): FieldConfig => ({
+    id,
+    label,
+    type: "boolean",
+    options: ["Yes", "No"],
+    tab: "basic",
+    gridColumn: "span 1",
+    toGraphQL: (value: string) => {
+      if (value === "Yes") return true;
+      if (value === "No") return false;
+      return undefined;
+    },
+    ...opts,
+  }),
+
   multiSelect: (
     id: string,
     label: string,
@@ -219,12 +239,6 @@ export const STATES = [
   "WY",
 ];
 
-const yesNoToBoolean = (value: string) => {
-  if (value === "Yes") return true;
-  if (value === "No") return false;
-  return undefined;
-};
-
 export const directoryConfig: ModuleConfig = {
   name: "directory",
   title: "Contacts",
@@ -306,7 +320,6 @@ export const directoryConfig: ModuleConfig = {
       gridColumn: "span 2",
     },
 
-
     field.textarea("comments", "Comments/Notes", {
       section: "notes",
       gridColumn: "span 2",
@@ -341,66 +354,52 @@ export const directoryConfig: ModuleConfig = {
       graphqlKey: "taxInfo.taxId",
     }),
 
-    field.select("internalInHouse", "Internal/In House", ["Yes", "No"], {
+    field.boolean("internalInHouse", "Internal/In House", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.internalInHouse",
-      toGraphQL: yesNoToBoolean,
     }),
 
-    field.select("federalTaxWithheld", "Federal Tax Withheld", ["Yes", "No"], {
+    field.boolean("federalTaxWithheld", "Federal Tax Withheld", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.federalTaxWithheld",
-      toGraphQL: yesNoToBoolean,
     }),
 
-    field.select(
-      "nonEmployeeComp",
-      "Non-Employee Compensation",
-      ["Yes", "No"],
-      {
-        tab: "tax",
-        section: "tax-options",
-        graphqlKey: "taxInfo.nonEmployeeComp",
-        toGraphQL: yesNoToBoolean,
-      },
-    ),
-
-    field.select("send1099", "Send 1099", ["Yes", "No"], {
+    field.boolean("nonEmployeeComp", "Non-Employee Compensation", {
       tab: "tax",
       section: "tax-options",
-      helpText: "Auto-filled from tax classification, but can be overridden",
-      graphqlKey: "taxInfo.send1099",
-      toGraphQL: yesNoToBoolean,
+      graphqlKey: "taxInfo.nonEmployeeComp",
     }),
 
-    field.select("w9OnFile", "W-9 on File", ["Yes", "No"], {
+    field.boolean("send1099", "Send 1099", {
+      tab: "tax",
+      section: "tax-options",
+      graphqlKey: "taxInfo.send1099",
+    }),
+
+    field.boolean("w9OnFile", "W-9 on File", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.w9OnFile",
-      toGraphQL: yesNoToBoolean,
     }),
 
-    field.select("backupWithholding", "Backup Withholding", ["Yes", "No"], {
+    field.boolean("backupWithholding", "Backup Withholding", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.backupWithholding",
-      toGraphQL: yesNoToBoolean,
     }),
 
-    field.select("severanceTaxExempt", "Severance Tax Exempt", ["Yes", "No"], {
+    field.boolean("severanceTaxExempt", "Severance Tax Exempt", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.severanceTaxExempt",
-      toGraphQL: yesNoToBoolean,
     }),
 
-    field.select("otherExempt", "Other Exempt", ["Yes", "No"], {
+    field.boolean("otherExempt", "Other Exempt", {
       tab: "tax",
       section: "tax-options",
       graphqlKey: "taxInfo.otherExempt",
-      toGraphQL: yesNoToBoolean,
     }),
 
     field.number("minPaymentAmount", "Minimum Payment Amount", {
@@ -421,7 +420,6 @@ export const directoryConfig: ModuleConfig = {
       section: "vendor-options",
       dependsOn: "classifications",
       dependsOnValue: "VENDOR",
-      helpText: "Only appears for VENDOR classification",
       graphqlKey: "vendorInfo.pay",
     }),
 

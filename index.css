@@ -63,7 +63,7 @@ body {
 .light-theme .bg-purple-700:hover { color: white; }
 
 /* Help text */
-.form-help-text { color: rgb(167 139 250 / 0.85); }
+.form-help-text { color: rgb(216 180 254); }
 .light-theme .form-help-text { color: rgb(107 114 128); }
 
 /* Backgrounds */
