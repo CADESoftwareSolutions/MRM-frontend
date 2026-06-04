@@ -87,6 +87,7 @@ const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
       nameFirst: relatedParty.nameFirst || relatedParty.nameFull || "",
       nameMiddle: relatedParty.nameMiddle || "",
       nameLast: relatedParty.nameLast || "",
+      role: relationship.notes || "",
       phone: primaryPhone,
       email: relatedParty.email || "",
       addressType: primaryAddress?.addressType
@@ -469,6 +470,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
           partyId: parseInt(selectedItem.id, 10),
           relatedPartyId,
           relationshipType: "internal_contact",
+          notes: contact.role || undefined,
           isPrimary: false,
         },
       );
@@ -507,6 +509,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       await executeGraphQL(UPDATE_PARTY_RELATIONSHIP_MUTATION, {
         id,
         relationshipType: "internal_contact",
+        notes: contact.role || undefined,
       });
       setContacts((prev: Contact[]) =>
         prev.map((c: Contact) =>

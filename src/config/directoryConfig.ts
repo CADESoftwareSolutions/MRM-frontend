@@ -248,6 +248,7 @@ export const directoryConfig: ModuleConfig = {
     { id: "tax", label: "Tax Information" },
     { id: "vendor", label: "A/P Vendor Info" },
     { id: "contacts", label: "Internal Contacts", noOuterSave: true },
+    { id: "netting", label: "Netting", noOuterSave: true },
   ],
   listFields: [
     "name",
@@ -311,6 +312,11 @@ export const directoryConfig: ModuleConfig = {
       toGraphQL: (v: string) => v === "Active",
     }),
 
+    field.boolean("ownerNettingApplies", "Owner Netting Applies", {
+      section: "default",
+      defaultValue: "No",
+    }),
+
     {
       id: "addresses",
       label: "Addresses",
@@ -325,6 +331,12 @@ export const directoryConfig: ModuleConfig = {
       gridColumn: "span 2",
       helpText: "Auto-populate if address was changed or transfer was done",
       graphqlKey: "notes",
+    }),
+
+    field.textarea("notificationRecap", "Notification Recap", {
+      section: "notes",
+      gridColumn: "span 2",
+      helpText: "Snapshot of items to track: suspense balances, outstanding checks, missing W-9, etc.",
     }),
 
     field.select(

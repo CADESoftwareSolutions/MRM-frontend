@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, FileText, X } from "lucide-react";
 import { FieldConfig, ModuleConfig } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
+import { NettingTab, NettingEntry } from "./NettingTab";
 
 interface FormProps {
   config: ModuleConfig;
@@ -31,6 +32,9 @@ interface FormProps {
   onAddContact?: (contact: Omit<Contact, "id">) => Promise<void>;
   onUpdateContact?: (id: number, contact: Omit<Contact, "id">) => Promise<void>;
   onDeleteContact?: (id: number) => Promise<void>;
+  nettingEntries?: NettingEntry[];
+  onNettingChange?: (entries: NettingEntry[]) => void;
+  allParties?: Array<{ id: string; name: string }>;
   /** Custom React nodes injected by field id — rendered in place of fields with type "custom" */
   customContent?: Record<string, React.ReactNode>;
   /** When true, renders without the Card wrapper (for use inside a SideSheet) */
@@ -58,6 +62,9 @@ export const Form: React.FC<FormProps> = ({
   onAddContact,
   onUpdateContact,
   onDeleteContact,
+  nettingEntries = [],
+  onNettingChange,
+  allParties = [],
   customContent = {},
   bare = false,
 }) => {
@@ -306,6 +313,7 @@ export const Form: React.FC<FormProps> = ({
           {config.tabs.map((tab) => {
             const classifications = watchedValues.classifications ?? [];
             if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
+            if (tab.id === "netting" && watchedValues.ownerNettingApplies !== "Yes") return null;
             return (
               <TabsTrigger
                 key={tab.id}
@@ -336,6 +344,13 @@ export const Form: React.FC<FormProps> = ({
                 onAdd={onAddContact!}
                 onUpdate={onUpdateContact!}
                 onDelete={onDeleteContact!}
+              />
+            ) : tab.id === "netting" ? (
+              <NettingTab
+                partyId={partyId}
+                entries={nettingEntries}
+                allParties={allParties}
+                onChange={onNettingChange ?? (() => {})}
               />
             ) : (
               renderTabContent(tab.id)

@@ -21,6 +21,7 @@ export interface Contact {
   nameFirst: string;
   nameMiddle?: string;
   nameLast: string;
+  role?: string;
   phone?: string;
   email?: string;
   addressType?: string[];
@@ -45,6 +46,7 @@ const emptyForm = {
   nameFirst: "",
   nameMiddle: "",
   nameLast: "",
+  role: "",
   phone: "",
   email: "",
   addressType: [] as string[],
@@ -98,6 +100,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
       nameFirst: contact.nameFirst,
       nameMiddle: contact.nameMiddle || "",
       nameLast: contact.nameLast,
+      role: contact.role || "",
       phone: contact.phone || "",
       email: contact.email || "",
       addressType: contact.addressType || [],
@@ -141,6 +144,9 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                   .filter(Boolean)
                   .join(" ")}
               </p>
+              {contact.role && (
+                <p className="text-purple-300 text-xs mt-0.5">{contact.role}</p>
+              )}
               {(contact.phone || contact.email) && (
                 <p className="text-purple-300 text-xs mt-0.5">
                   {[contact.phone, contact.email].filter(Boolean).join(" · ")}
@@ -174,7 +180,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 First Name{" "}
                 <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
@@ -188,7 +194,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Middle Name
               </Label>
               <Input
@@ -200,8 +206,8 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                 className={commonInput}
               />
             </div>
-            <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+            <div>
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Last Name{" "}
                 <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
@@ -212,10 +218,21 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
                 className={commonInput}
               />
             </div>
+            <div>
+              <Label className="text-white font-semibold text-sm mb-2 block">
+                Role / Department
+              </Label>
+              <Input
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                placeholder="e.g. Accounting, Land Manager"
+                className={commonInput}
+              />
+            </div>
 
             {/* Phone & Email */}
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Phone
               </Label>
               <Input
@@ -227,7 +244,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Email
               </Label>
               <Input
@@ -241,7 +258,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address Type */}
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Address Type
               </Label>
               <div className="flex flex-wrap gap-2">
@@ -271,7 +288,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address */}
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Address
               </Label>
               <Input
@@ -282,7 +299,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div className="col-span-2">
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Address Line 2
               </Label>
               <Input
@@ -297,7 +314,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* City / State / Zip */}
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 City
               </Label>
               <Input
@@ -308,7 +325,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 State
               </Label>
               <Select
@@ -332,7 +349,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               </Select>
             </div>
             <div>
-              <Label className="text-purple-100 font-semibold text-sm mb-2 block">
+              <Label className="text-white font-semibold text-sm mb-2 block">
                 Zip
               </Label>
               <Input

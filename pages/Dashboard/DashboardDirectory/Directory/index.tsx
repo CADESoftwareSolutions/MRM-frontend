@@ -9,6 +9,7 @@ import { SinglePhoneField, PhoneEntry } from "../../../../components/FormCompone
 import { directoryConfig } from "@/config/directoryConfig";
 import { useDirectory } from "@/hooks/useDirectory";
 import { useEffect, useRef, useState } from "react";
+import { NettingEntry } from "../../../../components/FormComponents/NettingTab";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
@@ -50,6 +51,7 @@ const AddressDirectory = () => {
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [addresses, setAddresses] = useState<AddressEntry[]>(DEFAULT_ADDRESSES);
   const [phones, setPhones] = useState<PhoneEntry[]>([]);
+  const [nettingEntries, setNettingEntries] = useState<NettingEntry[]>([]);
   const [showAddressValidation, setShowAddressValidation] = useState(false);
   const addressesRef = useRef(addresses);
   const phonesRef = useRef(phones);
@@ -98,6 +100,7 @@ const AddressDirectory = () => {
   const handleAdd = () => {
     setAddresses(DEFAULT_ADDRESSES);
     setPhones([]);
+    setNettingEntries([]);
     setShowAddressValidation(false);
     _handleAdd();
   };
@@ -105,6 +108,7 @@ const AddressDirectory = () => {
   const handleEdit = (item: any) => {
     setAddresses(addressesFromItem(item));
     setPhones(phonesFromItem(item));
+    setNettingEntries([]);
     setShowAddressValidation(false);
     _handleEdit(item);
   };
@@ -163,6 +167,9 @@ const AddressDirectory = () => {
               onAddContact={handleAddContact}
               onUpdateContact={handleUpdateContact}
               onDeleteContact={handleDeleteContact}
+              nettingEntries={nettingEntries}
+              onNettingChange={setNettingEntries}
+              allParties={filteredData.map((p: any) => ({ id: String(p.id), name: p.name }))}
               customContent={{
                 addresses: (
                   <MultiAddressField

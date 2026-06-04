@@ -66,7 +66,7 @@ const isLockedColumn = (col: string, firstField: string) =>
   col === "leaseStatus";
 
 const TruncatedCell = ({ text, isLight }: { text: string; isLight: boolean }) => (
-  <span className={`block truncate text-sm w-full ${isLight ? "text-gray-700" : "text-white/80"}`}>
+  <span className={`block truncate text-sm w-full ${isLight ? "text-gray-700" : "text-white"}`}>
     {text}
   </span>
 );
