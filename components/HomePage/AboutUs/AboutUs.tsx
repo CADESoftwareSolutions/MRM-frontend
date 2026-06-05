@@ -5,19 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { X, Check } from "lucide-react";
 
 const challenges = [
-  "Spreadsheets that never match",
-  "Old software that can’t keep up",
-  "Missing documents",
+  "Land and accounting that does not interact with each other",
+  "Limited reporting that does not contain the information you need",
+  "Outdated software that will not meet your expectations",
+  "Cumbersome functionality and repetitive data entry",
   "Confusing ownership chains",
-  "Slow reporting",
 ];
 
 const solutions = [
-  "Automated revenue validation",
-  "Clear ownership & well tracking",
-  "Integrated document + PDF tools",
-  "Instant reporting",
+  "Fully integrated land and accounting system",
+  "Canned and customized reporting tailored to your specific needs",
   "Easy-to-use modern platform",
+  "Data entry that will populate across multiple modules to maximize efficiency",
+  "Clear visibility of your ownership and accurate asset tracking",
 ];
 
 const benefits = [
@@ -53,11 +53,11 @@ const AboutUs = () => {
 
           <p className="mb-4 text-gray-600">
             At CADE Solutions, we simplify the complex world of mineral
-            management. Backed by over 95 years of combined experience in oil,
-            gas and software development, our team is committed in delivering
-            quality and proven results. Our platform streamlines revenue
-            tracking, as well as lease, surface and document management so you
-            can focus on what matters most.
+            management. Backed by over 95 years of combined experience in oil
+            and gas management and software development, our team is committed
+            to delivering quality and proven results. Our platform streamlines
+            revenue tracking, as well as lease, surface and document management
+            so you can focus on what matters most.
           </p>
           <div className="mb-4 flex items-center text-gray-600">
             <Droplet className="mr-2 h-5 w-5" fill="currentColor" />
@@ -97,97 +97,91 @@ const AboutUs = () => {
             className="absolute inset-0 -z-10"
             style={{
               background:
-                "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%)",
+                "linear-gradient(135deg, #f8f9fa 0%, #ede8f7 50%, #e9d5ff 100%)",
             }}
           />
+          <div className="relative mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
 
-          <div className="absolute right-0 top-20 h-64 w-64 rounded-full bg-purple-200/30 blur-3xl" />
-          <div className="absolute left-0 bottom-20 h-96 w-96 rounded-full bg-pink-200/20 blur-3xl" />
+              {/* Problem column */}
+              <div
+                className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
+                style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
+              >
+                <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
+                <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
 
-          <div className="relative mx-auto max-w-5xl">
-            <div className="mb-16 text-center">
-              <div className="mb-6 inline-block rounded-full bg-red-100 px-6 py-2">
-                <span className="text-sm font-semibold uppercase tracking-wider text-red-600">
-                  The Problem
-                </span>
-              </div>
-              <h2 className="mb-4 text-5xl font-extrabold leading-tight text-gray-900 md:text-6xl">
-                Managing minerals
-                <br />
-                <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  shouldn't be this hard
-                </span>
-              </h2>
-            </div>
-
-            <div className="grid gap-4 md:gap-6">
-              {challenges.map((c, idx) => (
-                <div
-                  key={idx}
-                  className="group rounded-2xl border-2 border-red-100 bg-white/80 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
-                      <X className="h-5 w-5 text-red-600" />
-                    </div>
-                    <p className="pt-2 text-lg font-medium text-gray-800">
-                      {c}
-                    </p>
+                <div className="relative mb-10 flex min-h-44 flex-col items-center justify-center text-center">
+                  <div className="mb-4 inline-block rounded-full bg-red-100 px-6 py-2">
+                    <span className="text-sm font-semibold uppercase tracking-wider text-red-600">
+                      The Problem
+                    </span>
                   </div>
+                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+                    Managing Minerals Should Not Be This Hard
+                  </h2>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="relative w-full px-4 py-20 md:py-32">
-          <div
-            className="absolute inset-0 -z-10"
-            style={{
-              background:
-                "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
-            }}
-          />
-          <div className="absolute left-1/4 top-10 h-72 w-72 rounded-full bg-green-200/40 blur-3xl" />
-          <div className="absolute right-1/4 bottom-10 h-80 w-80 rounded-full bg-purple-300/30 blur-3xl" />
-          <div className="relative mx-auto max-w-5xl">
-            <div className="mb-16 text-center">
-              <div className="mb-6 inline-block rounded-full bg-green-100 px-6 py-2">
-                <span className="text-sm font-semibold uppercase tracking-wider text-green-700">
-                  The Solution
-                </span>
-              </div>
-              <h2 className="mb-4 text-5xl font-extrabold leading-tight text-gray-900 md:text-6xl">
-                That's why we built
-                <br />
-                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                  CADE
-                </span>
-              </h2>
-            </div>
 
-            <div className="mb-20 grid gap-4 md:gap-6">
-              {solutions.map((s, idx) => (
-                <div
-                  key={idx}
-                  className="group rounded-2xl border-2 border-green-100 bg-white/90 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-2xl hover:-translate-y-1"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
-                      <Check className="h-5 w-5 text-green-700" />
+                <div className="relative grid gap-4">
+                  {challenges.map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="group rounded-2xl border-2 border-red-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
+                          <X className="h-4 w-4 text-red-600" />
+                        </div>
+                        <p className="pt-1 text-base font-medium text-gray-800">
+                          {c}
+                        </p>
+                      </div>
                     </div>
-                    <p className="pt-2 text-lg font-medium text-gray-800">
-                      {s}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-600 to-pink-600 p-12 text-center shadow-2xl">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20" />
-              <h3 className="relative text-4xl font-black tracking-tight text-white md:text-5xl">
-                Simple. Accurate. Powerful.
-              </h3>
+              {/* Solution column */}
+              <div
+                className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
+                style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
+              >
+                <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
+                <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
+
+                <div className="relative mb-10 flex min-h-44 flex-col items-center justify-center text-center">
+                  <div className="mb-4 inline-block rounded-full bg-green-100 px-6 py-2">
+                    <span className="text-sm font-semibold uppercase tracking-wider text-green-700">
+                      The Solution
+                    </span>
+                  </div>
+                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+                    That Is Why We Built{" "}
+                    <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                      CADE
+                    </span>
+                  </h2>
+                </div>
+
+                <div className="relative grid gap-4">
+                  {solutions.map((s, idx) => (
+                    <div
+                      key={idx}
+                      className="group rounded-2xl border-2 border-green-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
+                          <Check className="h-4 w-4 text-green-700" />
+                        </div>
+                        <p className="pt-1 text-base font-medium text-gray-800">
+                          {s}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         </section>

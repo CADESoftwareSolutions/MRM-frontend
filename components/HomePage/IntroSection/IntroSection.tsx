@@ -38,8 +38,7 @@ const IntroSection = () => {
         <span style={{ color: "#e91e63" }}>Integrated</span> Software
       </h1>
       <p className="mb-12 max-w-2xl text-base text-white opacity-90 md:text-lg">
-        Designed for Accounting and Land Management - modern, reliable and built
-        for growth
+        Designed for Oil and Gas AAccounting and Land Management
       </p>
       <div className="flex max-w-7xl items-center justify-center gap-6 lg:gap-8">
         {homeImages.map((feature, index) => (
