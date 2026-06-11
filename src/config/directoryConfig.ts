@@ -1,6 +1,7 @@
 export type FieldType =
   | "text"
   | "select"
+  | "boolean"
   | "multi-select"
   | "multi-badge"
   | "textarea"
@@ -29,6 +30,8 @@ export interface FieldConfig {
   graphqlKey?: string;
   /** Transform the form value before sending to GraphQL. */
   toGraphQL?: (value: any) => any;
+  /** Transform the GraphQL value back into the form value when loading. */
+  fromGraphQL?: (value: any) => any;
   /** For multi-badge: clicking a badge replaces the selection instead of toggling. */
   singleSelect?: boolean;
 }
@@ -118,6 +121,30 @@ export const field = {
     options,
     tab: "basic",
     gridColumn: "span 1",
+    ...opts,
+  }),
+
+  boolean: (
+    id: string,
+    label: string,
+    opts: Partial<FieldConfig> = {},
+  ): FieldConfig => ({
+    id,
+    label,
+    type: "boolean",
+    options: ["Yes", "No"],
+    tab: "basic",
+    gridColumn: "span 1",
+    toGraphQL: (value: string) => {
+      if (value === "Yes") return true;
+      if (value === "No") return false;
+      return undefined;
+    },
+    fromGraphQL: (value: boolean | null | undefined) => {
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      return "";
+    },
     ...opts,
   }),
 
@@ -228,6 +255,7 @@ export const directoryConfig: ModuleConfig = {
     { id: "tax", label: "Tax Information" },
     { id: "vendor", label: "A/P Vendor Info" },
     { id: "contacts", label: "Internal Contacts", noOuterSave: true },
+    { id: "netting", label: "Netting", noOuterSave: true },
   ],
   listFields: [
     "name",
@@ -281,6 +309,7 @@ export const directoryConfig: ModuleConfig = {
           const filtered = arr.filter(Boolean);
           return filtered.length > 0 ? filtered : undefined;
         },
+        fromGraphQL: (v: any) => (Array.isArray(v) ? v.filter(Boolean) : []),
       },
     ),
 
@@ -289,6 +318,12 @@ export const directoryConfig: ModuleConfig = {
       defaultValue: "Active",
       graphqlKey: "isActive",
       toGraphQL: (v: string) => v === "Active",
+      fromGraphQL: (v: boolean | null | undefined) => (v === false ? "Inactive" : "Active"),
+    }),
+
+    field.boolean("ownerNettingApplies", "Owner Netting Applies", {
+      section: "default",
+      defaultValue: "No",
     }),
 
     {
@@ -300,12 +335,17 @@ export const directoryConfig: ModuleConfig = {
       gridColumn: "span 2",
     },
 
-
     field.textarea("comments", "Comments/Notes", {
       section: "notes",
       gridColumn: "span 2",
       helpText: "Auto-populate if address was changed or transfer was done",
       graphqlKey: "notes",
+    }),
+
+    field.textarea("notificationRecap", "Notification Recap", {
+      section: "notes",
+      gridColumn: "span 2",
+      helpText: "Snapshot of items to track: suspense balances, outstanding checks, missing W-9, etc.",
     }),
 
     field.select(
@@ -324,6 +364,7 @@ export const directoryConfig: ModuleConfig = {
       {
         tab: "tax",
         section: "tax-basic",
+        graphqlKey: "taxInfo.taxClassification",
       },
     ),
 
@@ -331,53 +372,55 @@ export const directoryConfig: ModuleConfig = {
       tab: "tax",
       section: "tax-basic",
       placeholder: "SSN or TIN format",
-      graphqlKey: "taxId",
+      graphqlKey: "taxInfo.taxId",
     }),
 
-    field.select("internalInHouse", "Internal/In House", ["Yes", "No"], {
+    field.boolean("internalInHouse", "Internal/In House", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.internalInHouse",
     }),
 
-    field.select("federalTaxWithheld", "Federal Tax Withheld", ["Yes", "No"], {
+    field.boolean("federalTaxWithheld", "Federal Tax Withheld", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.federalTaxWithheld",
     }),
 
-    field.select(
-      "nonEmployeeComp",
-      "Non-Employee Compensation",
-      ["Yes", "No"],
-      {
-        tab: "tax",
-        section: "tax-options",
-      },
-    ),
-
-    field.select("send1099", "Send 1099", ["Yes", "No"], {
+    field.boolean("nonEmployeeComp", "Non-Employee Compensation", {
       tab: "tax",
       section: "tax-options",
-      helpText: "Auto-filled from tax classification, but can be overridden",
+      graphqlKey: "taxInfo.nonEmployeeComp",
     }),
 
-    field.select("w9OnFile", "W-9 on File", ["Yes", "No"], {
+    field.boolean("send1099", "Send 1099", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.send1099",
     }),
 
-    field.select("backupWithholding", "Backup Withholding", ["Yes", "No"], {
+    field.boolean("w9OnFile", "W-9 on File", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.w9OnFile",
     }),
 
-    field.select("severanceTaxExempt", "Severance Tax Exempt", ["Yes", "No"], {
+    field.boolean("backupWithholding", "Backup Withholding", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.backupWithholding",
     }),
 
-    field.select("otherExempt", "Other Exempt", ["Yes", "No"], {
+    field.boolean("severanceTaxExempt", "Severance Tax Exempt", {
       tab: "tax",
       section: "tax-options",
+      graphqlKey: "taxInfo.severanceTaxExempt",
+    }),
+
+    field.boolean("otherExempt", "Other Exempt", {
+      tab: "tax",
+      section: "tax-options",
+      graphqlKey: "taxInfo.otherExempt",
     }),
 
     field.number("minPaymentAmount", "Minimum Payment Amount", {
@@ -385,8 +428,12 @@ export const directoryConfig: ModuleConfig = {
       section: "payment",
       placeholder: "$0.00",
       gridColumn: "span 2",
-      helpText:
-        "Company default will auto-apply but can be overridden per owner",
+      helpText: "Optional per-party minimum payment threshold",
+      graphqlKey: "taxInfo.minPaymentAmount",
+      toGraphQL: (value: string | number) =>
+        value === "" || value === undefined || value === null
+          ? undefined
+          : Number(value),
     }),
 
     field.select("pay", "Pay", ["Yes", "No", "Monthly", "Check per entry"], {
@@ -394,7 +441,7 @@ export const directoryConfig: ModuleConfig = {
       section: "vendor-options",
       dependsOn: "classifications",
       dependsOnValue: "VENDOR",
-      helpText: "Only appears for VENDOR classification",
+      graphqlKey: "vendorInfo.pay",
     }),
 
     field.select(
@@ -406,6 +453,7 @@ export const directoryConfig: ModuleConfig = {
         section: "vendor-options",
         dependsOnValue: "VENDOR",
         dependsOn: "classifications",
+        graphqlKey: "vendorInfo.duplicateInvoiceValidation",
       },
     ),
   ],
