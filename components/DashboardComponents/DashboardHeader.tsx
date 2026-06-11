@@ -85,7 +85,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <div className="cursor-pointer flex items-center gap-2.5">
+            <div className={`cursor-pointer flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${isLight ? "hover:bg-purple-200/50" : "hover:bg-white/10"}`}>
               <span
                 className={`text-sm hidden sm:block ${isLight ? "text-purple-900/70" : "text-white/80"}`}
               >
@@ -101,11 +101,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
           <DropdownMenuContent
             align="end"
             sideOffset={8}
-            className="w-48 border z-[9999] bg-[#1a1a2e] border-purple-300/20"
+            className={`w-48 border z-[9999] ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/20"}`}
           >
             <DropdownMenuItem
               onClick={handleLogout}
-              className="cursor-pointer px-4 py-3 text-sm text-white/80 hover:text-white hover:bg-purple-500/20 focus:bg-purple-500/20 focus:text-white"
+              className={`cursor-pointer px-4 py-3 text-sm ${isLight ? "text-purple-900/80 hover:text-purple-900 hover:bg-purple-100 focus:bg-purple-100 focus:text-purple-900" : "text-white/80 hover:text-white hover:bg-purple-500/20 focus:bg-purple-500/20 focus:text-white"}`}
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span>Logout</span>

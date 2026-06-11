@@ -361,7 +361,7 @@ export const List: React.FC<ListProps> = ({
                   onClick={() => onEdit(item)}
                   className={`border-b last:border-0 transition-colors cursor-pointer ${
                     isLight
-                      ? "border-purple-100 hover:bg-purple-100/70"
+                      ? "border-purple-100 hover:bg-purple-200/60"
                       : "border-purple-300/10 hover:bg-purple-500/[0.18]"
                   }`}
                 >

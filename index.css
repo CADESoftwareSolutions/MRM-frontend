@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant hover (&:hover);
 
 @tailwind base;
 @tailwind components;
@@ -54,7 +55,14 @@ body {
 .light-theme .text-red-400        { color: rgb(185 28 28); }
 .light-theme .text-green-400      { color: rgb(21 128 61); }
 .light-theme .text-yellow-400     { color: rgb(161 98 7); }
-.light-theme .hover\:text-red-100:hover { color: rgb(153 27 27); }
+.light-theme .hover\:text-red-100:hover  { color: rgb(153 27 27); }
+
+/* Form tab hover — these dark-mode classes are invisible / wrong on light backgrounds */
+.light-theme .hover\:text-purple-100:hover  { color: rgb(88 28 135); }
+.light-theme .hover\:bg-purple-500\/10:hover { background-color: rgb(243 232 255); }
+
+/* "Add Internal Contact" dashed button — hover:bg-white/5 is invisible on light bg */
+.light-theme .hover\:bg-white\/5:hover { background-color: rgb(237 233 254 / 0.6); }
 
 /* Keep white text on purple/coloured filled backgrounds */
 .light-theme .bg-purple-600,
