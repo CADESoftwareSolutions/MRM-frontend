@@ -30,6 +30,8 @@ export interface FieldConfig {
   graphqlKey?: string;
   /** Transform the form value before sending to GraphQL. */
   toGraphQL?: (value: any) => any;
+  /** Transform the GraphQL value back into the form value when loading. */
+  fromGraphQL?: (value: any) => any;
   /** For multi-badge: clicking a badge replaces the selection instead of toggling. */
   singleSelect?: boolean;
 }
@@ -137,6 +139,11 @@ export const field = {
       if (value === "Yes") return true;
       if (value === "No") return false;
       return undefined;
+    },
+    fromGraphQL: (value: boolean | null | undefined) => {
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      return "";
     },
     ...opts,
   }),
@@ -302,6 +309,7 @@ export const directoryConfig: ModuleConfig = {
           const filtered = arr.filter(Boolean);
           return filtered.length > 0 ? filtered : undefined;
         },
+        fromGraphQL: (v: any) => (Array.isArray(v) ? v.filter(Boolean) : []),
       },
     ),
 
@@ -310,6 +318,7 @@ export const directoryConfig: ModuleConfig = {
       defaultValue: "Active",
       graphqlKey: "isActive",
       toGraphQL: (v: string) => v === "Active",
+      fromGraphQL: (v: boolean | null | undefined) => (v === false ? "Inactive" : "Active"),
     }),
 
     field.boolean("ownerNettingApplies", "Owner Netting Applies", {

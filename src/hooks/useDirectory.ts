@@ -46,10 +46,17 @@ const executeGraphQL = async (query: string, variables: any = {}) => {
   return result.data;
 };
 
-const boolToYesNo = (value: boolean | null | undefined) => {
-  if (value === true) return "Yes";
-  if (value === false) return "No";
-  return "";
+const getGraphQLValue = (obj: any, path: string): any =>
+  path.split(".").reduce((acc: any, k) => acc?.[k], obj);
+
+const readConfigFields = (party: any, config: ModuleConfig): Record<string, any> => {
+  const result: Record<string, any> = {};
+  config.fields.forEach((f) => {
+    if (!f.graphqlKey) return;
+    const raw = getGraphQLValue(party, f.graphqlKey);
+    result[f.id] = f.fromGraphQL ? f.fromGraphQL(raw) : (raw ?? "");
+  });
+  return result;
 };
 
 const assignGraphQLValue = (target: any, key: string, value: any) => {
@@ -101,50 +108,28 @@ const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
     };
   });
 
-const transformParties = (parties: any[]) =>
+const transformParties = (parties: any[], config: ModuleConfig) =>
   parties.map((party: any) => {
     const primaryPhone =
       party.phones?.find((p: any) => p.isPrimary)?.phone?.number ||
       party.phones?.[0]?.phone?.number ||
       null;
-    const taxInfo = party.taxInfo || {};
-    const vendorInfo = party.vendorInfo || {};
     return {
       id: party.id,
       name: party.nameFull,
-      nameLine1: party.nameFirst || "",
-      nameLine2: party.nameMiddle || "",
-      classifications: Array.isArray(party.partyTypes)
-        ? party.partyTypes.filter(Boolean)
-        : [],
-      email: party.email,
       phone: primaryPhone,
       phoneNumber: primaryPhone,
       city: party.addresses?.[0]?.address?.city || "",
       state: party.addresses?.[0]?.address?.stateCode || "",
-      status: party.isActive ? "Active" : "Inactive",
-      comments: party.notes || "",
-      taxClassification: taxInfo.taxClassification || "",
-      taxId: taxInfo.taxId || "",
-      internalInHouse: boolToYesNo(taxInfo.internalInHouse),
-      federalTaxWithheld: boolToYesNo(taxInfo.federalTaxWithheld),
-      nonEmployeeComp: boolToYesNo(taxInfo.nonEmployeeComp),
-      send1099: boolToYesNo(taxInfo.send1099),
-      w9OnFile: boolToYesNo(taxInfo.w9OnFile),
-      backupWithholding: boolToYesNo(taxInfo.backupWithholding),
-      severanceTaxExempt: boolToYesNo(taxInfo.severanceTaxExempt),
-      otherExempt: boolToYesNo(taxInfo.otherExempt),
-      minPaymentAmount: taxInfo.minPaymentAmount ?? "",
-      pay: vendorInfo.pay || "",
-      duplicateInvoiceValidation: vendorInfo.duplicateInvoiceValidation || "",
-      contacts: transformRelatedContacts(party.relatedContacts),
       address: party.addresses?.[0]?.address?.line1 || "",
       addressLine2: party.addresses?.[0]?.address?.line2 || "",
       zip: party.addresses?.[0]?.address?.postalCode || "",
       addressTypes: party.addresses?.[0]?.addressType
         ? [party.addresses[0].addressType]
         : [],
+      contacts: transformRelatedContacts(party.relatedContacts),
       _rawData: party,
+      ...readConfigFields(party, config),
     };
   });
 
@@ -178,7 +163,7 @@ export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
       const topLevelParties = result.parties.filter(
         (p: any) => !relatedPartyIds.has(p.id),
       );
-      return transformParties(topLevelParties);
+      return transformParties(topLevelParties, config);
     },
     enabled: !!accountId,
   });
