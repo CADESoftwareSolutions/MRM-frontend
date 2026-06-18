@@ -59,7 +59,7 @@ body {
 
 /* Form tab hover — these dark-mode classes are invisible / wrong on light backgrounds */
 .light-theme .hover\:text-purple-100:hover  { color: rgb(88 28 135); }
-.light-theme .hover\:bg-purple-500\/10:hover { background-color: rgb(243 232 255); }
+.light-theme .hover\:bg-purple-500\/10:hover { background-color: rgb(216 180 254 / 0.5); }
 
 /* "Add Internal Contact" dashed button — hover:bg-white/5 is invisible on light bg */
 .light-theme .hover\:bg-white\/5:hover { background-color: rgb(237 233 254 / 0.6); }
@@ -137,7 +137,8 @@ body {
 
 /* Tabs */
 .light-theme [data-slot="tabs-list"] {
-  background-color: rgb(237 233 254);
+  background-color: rgb(237 233 254 / 0.6);
+  border-color: rgb(196 181 253 / 0.5);
 }
 .light-theme [data-slot="tabs-trigger"][data-state=active] {
   background-color: rgb(147 51 234);

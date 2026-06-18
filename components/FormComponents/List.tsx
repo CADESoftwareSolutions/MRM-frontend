@@ -305,7 +305,7 @@ export const List: React.FC<ListProps> = ({
       </div>
 
       {/* Table — overflow-hidden here clips the table corners at the bottom */}
-      <div className="overflow-x-auto overflow-y-visible rounded-b-xl">
+      <div className="overflow-x-auto rounded-b-xl">
         <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
           <colgroup>
             {columns.map((col) => (
@@ -361,7 +361,7 @@ export const List: React.FC<ListProps> = ({
                   onClick={() => onEdit(item)}
                   className={`border-b last:border-0 transition-colors cursor-pointer ${
                     isLight
-                      ? "border-purple-100 hover:bg-purple-200/60"
+                      ? "border-purple-100 hover:bg-purple-300/50"
                       : "border-purple-300/10 hover:bg-purple-500/[0.18]"
                   }`}
                 >

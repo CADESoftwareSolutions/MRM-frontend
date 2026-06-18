@@ -309,7 +309,7 @@ export const Form: React.FC<FormProps> = ({
   const formBody = (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-full bg-transparent border-b border-purple-300/20 rounded-none gap-0 h-auto p-0">
+        <TabsList className="flex w-full bg-white/5 border border-purple-300/20 rounded-xl gap-1 h-auto p-1">
           {config.tabs.map((tab) => {
             const classifications = watchedValues.classifications ?? [];
             if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
@@ -318,7 +318,7 @@ export const Form: React.FC<FormProps> = ({
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex-1 rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-purple-200 hover:text-purple-100 hover:bg-purple-500/10 cursor-pointer transition-all data-[state=active]:border-purple-400 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-200/70 hover:text-purple-100 hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 {tab.label}
               </TabsTrigger>

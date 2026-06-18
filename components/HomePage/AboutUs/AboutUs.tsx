@@ -1,23 +1,38 @@
 import Image from "next/image";
-import { useState } from "react";
+
 import { Droplet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { X, Check } from "lucide-react";
 
-const challenges = [
-  "Land and accounting that does not interact with each other",
-  "Limited reporting that does not contain the information you need",
-  "Outdated software that will not meet your expectations",
-  "Cumbersome functionality and repetitive data entry",
-  "Confusing ownership chains",
-];
-
-const solutions = [
-  "Fully integrated land and accounting system",
-  "Canned and customized reporting tailored to your specific needs",
-  "Easy-to-use modern platform",
-  "Data entry that will populate across multiple modules to maximize efficiency",
-  "Clear visibility of your ownership and accurate asset tracking",
+const pairs = [
+  {
+    problem: "Land and Accounting Do Not Interact With Each Other",
+    solution: "A Truly Integrated Land and Accounting System",
+  },
+  {
+    problem: "Time Wasted Due to Cumbersome and Repetitive Data Entry",
+    solution: "Data Entry That Will Populate Across Multiple Modules to Maximize Efficiency",
+  },
+  {
+    problem: "Not Fully Knowing What You Own",
+    solution: "Clear Visibility of Your Ownership and Accurate Asset Tracking",
+  },
+  {
+    problem: "Limited Reporting That Does Not Contain the Information You Need",
+    solution: "Canned and Customized Reporting Tailored to Your Specific Requirements",
+  },
+  {
+    problem: "Verify Revenue Manually",
+    solution: "Automated Revenue Validation",
+  },
+  {
+    problem: "Data Stuck in a PDF Format",
+    solution: "Integrated Documents + PDF Tools to Convert and Upload Data With Ease",
+  },
+  {
+    problem: "Limited and Outdated Software",
+    solution: "A Platform Built by Industry Experts Who Know What It Takes to Manage Minerals",
+  },
 ];
 
 const benefits = [
@@ -101,17 +116,17 @@ const AboutUs = () => {
             }}
           />
           <div className="relative mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 gap-16 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-14 md:grid-cols-2">
 
-              {/* Problem column */}
+              {/* Problem card */}
               <div
                 className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
                 style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
               >
-                <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
+                <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-red-200/30 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
 
-                <div className="relative mb-10 flex min-h-44 flex-col items-center justify-center text-center">
+                <div className="relative mb-10 flex h-56 flex-col items-center justify-start pt-10 text-center">
                   <div className="mb-4 inline-block rounded-full bg-red-100 px-6 py-2">
                     <span className="text-sm font-semibold uppercase tracking-wider text-red-600">
                       The Problem
@@ -122,26 +137,24 @@ const AboutUs = () => {
                   </h2>
                 </div>
 
-                <div className="relative grid gap-4">
-                  {challenges.map((c, idx) => (
+                <div className="relative flex flex-col gap-4">
+                  {pairs.map((pair, idx) => (
                     <div
                       key={idx}
-                      className="group rounded-2xl border-2 border-red-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
+                      className="group flex min-h-24 items-center rounded-2xl border-2 border-red-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-center gap-4">
                         <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
                           <X className="h-4 w-4 text-red-600" />
                         </div>
-                        <p className="pt-1 text-base font-medium text-gray-800">
-                          {c}
-                        </p>
+                        <p className="text-lg font-medium text-gray-800">{pair.problem}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Solution column */}
+              {/* Solution card — offset lower */}
               <div
                 className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
                 style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
@@ -149,7 +162,7 @@ const AboutUs = () => {
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
 
-                <div className="relative mb-10 flex min-h-44 flex-col items-center justify-center text-center">
+                <div className="relative mb-10 flex h-56 flex-col items-center justify-start pt-10 text-center">
                   <div className="mb-4 inline-block rounded-full bg-green-100 px-6 py-2">
                     <span className="text-sm font-semibold uppercase tracking-wider text-green-700">
                       The Solution
@@ -163,19 +176,17 @@ const AboutUs = () => {
                   </h2>
                 </div>
 
-                <div className="relative grid gap-4">
-                  {solutions.map((s, idx) => (
+                <div className="relative flex flex-col gap-4">
+                  {pairs.map((pair, idx) => (
                     <div
                       key={idx}
-                      className="group rounded-2xl border-2 border-green-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5"
+                      className="group flex min-h-24 items-center rounded-2xl border-2 border-green-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5"
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-center gap-4">
                         <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
                           <Check className="h-4 w-4 text-green-700" />
                         </div>
-                        <p className="pt-1 text-base font-medium text-gray-800">
-                          {s}
-                        </p>
+                        <p className="text-lg font-medium text-gray-800">{pair.solution}</p>
                       </div>
                     </div>
                   ))}
