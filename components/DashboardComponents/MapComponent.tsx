@@ -15,7 +15,6 @@ const ALL_MARKERS = [...MOCK_WELLS, ...MOCK_DEEDS];
 
 export default function MapComponent({ isLight }: { isLight: boolean }) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-  console.log("mapbox token:", process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
 
   if (!token || token === "your_mapbox_token_here") {
     return (
