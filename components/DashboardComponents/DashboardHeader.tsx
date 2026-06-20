@@ -75,7 +75,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         <div />
       )}
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => setTheme(isLight ? "dark" : "light")}
           className={`p-2 rounded-md transition-colors cursor-pointer ${isLight ? "text-purple-700/60 hover:text-purple-900 hover:bg-purple-200/50" : "text-white/50 hover:text-white hover:bg-white/10"}`}
@@ -85,12 +85,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <div className={`cursor-pointer flex items-center gap-2.5 px-2 py-1.5 rounded-lg transition-colors ${isLight ? "hover:bg-purple-200/50" : "hover:bg-white/10"}`}>
-              <span
-                className={`text-sm hidden sm:block ${isLight ? "text-purple-900/70" : "text-white/80"}`}
-              >
-                {userProfile?.user?.username}
-              </span>
+            <div
+              className={`cursor-pointer flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors ${isLight ? "hover:bg-purple-200/50" : "hover:bg-white/10"}`}
+            >
               <Avatar className="h-9 w-9">
                 <AvatarFallback className="bg-purple-600 text-white">
                   <User className="h-4 w-4" />
