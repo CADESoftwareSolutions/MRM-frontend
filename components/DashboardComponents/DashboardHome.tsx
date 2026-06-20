@@ -1,6 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   BarChart3,
   CheckSquare,
   Clock,
@@ -21,25 +28,72 @@ const MapComponent = dynamic(() => import("./MapComponent"), { ssr: false });
 
 // ── Metric pool ──────────────────────────────────────────────────────────────
 const METRIC_POOL = [
-  { id: "totalRevenue",     title: "Total Revenue",     value: "$45,231", change: "+12.5%",             trend: "up"      },
-  { id: "pendingChecks",    title: "Pending Checks",    value: "23",      change: "5 require attention", trend: "neutral" },
-  { id: "documents",        title: "Documents",         value: "142",     change: "8 uploaded today",    trend: "neutral" },
-  { id: "upcomingPayments", title: "Upcoming Payments", value: "$12,450", change: "Due this week",       trend: "down"    },
-  { id: "totalWells",       title: "Total Wells",       value: "18",      change: "+2 this quarter",     trend: "up"      },
-  { id: "missingDeeds",     title: "Missing Deeds",     value: "7",       change: "Needs attention",     trend: "down"    },
-  { id: "reports",          title: "Reports",           value: "34",      change: "3 generated today",   trend: "neutral" },
+  {
+    id: "totalRevenue",
+    title: "Total Revenue",
+    value: "$45,231",
+    change: "+12.5%",
+    trend: "up",
+  },
+  {
+    id: "pendingChecks",
+    title: "Pending Checks",
+    value: "23",
+    change: "5 require attention",
+    trend: "neutral",
+  },
+  {
+    id: "documents",
+    title: "Documents",
+    value: "142",
+    change: "8 uploaded today",
+    trend: "neutral",
+  },
+  {
+    id: "upcomingPayments",
+    title: "Upcoming Payments",
+    value: "$12,450",
+    change: "Due this week",
+    trend: "down",
+  },
+  {
+    id: "totalWells",
+    title: "Total Wells",
+    value: "18",
+    change: "+2 this quarter",
+    trend: "up",
+  },
+  {
+    id: "missingDeeds",
+    title: "Missing Deeds",
+    value: "7",
+    change: "Needs attention",
+    trend: "down",
+  },
+  {
+    id: "reports",
+    title: "Reports",
+    value: "34",
+    change: "3 generated today",
+    trend: "neutral",
+  },
 ];
-const DEFAULT_METRICS = ["totalRevenue", "pendingChecks", "documents", "upcomingPayments"];
+const DEFAULT_METRICS = [
+  "totalRevenue",
+  "pendingChecks",
+  "documents",
+  "upcomingPayments",
+];
 const STORAGE_KEY = "mrm-dashboard-metrics";
 const MAX_METRICS = 4;
 
 // ── Date range options ────────────────────────────────────────────────────────
 const DATE_RANGES = [
-  { label: "Last 7 Days",  value: "7d"  },
+  { label: "Last 7 Days", value: "7d" },
   { label: "Last 30 Days", value: "30d" },
   { label: "Last Quarter", value: "90d" },
-  { label: "This Year",    value: "1y"  },
-  { label: "All Time",     value: "all" },
+  { label: "This Year", value: "1y" },
+  { label: "All Time", value: "all" },
 ];
 
 // ── Alerts ────────────────────────────────────────────────────────────────────
@@ -75,10 +129,22 @@ const alerts = [
 
 // ── Quick access ──────────────────────────────────────────────────────────────
 const quickAccess = [
-  { icon: CheckSquare, label: "Process Revenue Checks", route: "/Dashboard/checks"  },
-  { icon: FileText,    label: "Set Up New Lease/Deed",  route: "/Dashboard/leases"  },
-  { icon: CreditCard,  label: "Process AP Payments",    route: "/Dashboard/checks"  },
-  { icon: BarChart3,   label: "View Reports",           route: "/Dashboard/reports" },
+  {
+    icon: CheckSquare,
+    label: "Process Revenue Checks",
+    route: "/Dashboard/checks",
+  },
+  {
+    icon: FileText,
+    label: "Set Up New Lease/Deed",
+    route: "/Dashboard/leases",
+  },
+  {
+    icon: CreditCard,
+    label: "Process AP Payments",
+    route: "/Dashboard/checks",
+  },
+  { icon: BarChart3, label: "View Reports", route: "/Dashboard/reports" },
 ];
 
 // ── Revenue chart ─────────────────────────────────────────────────────────────
@@ -92,15 +158,19 @@ const REVENUE_DATA = [
 ];
 
 const RevenueChart: React.FC<{ isLight: boolean }> = ({ isLight }) => {
-  const W = 500; const H = 160;
-  const padX = 40; const padY = 12;
+  const W = 500;
+  const H = 160;
+  const padX = 40;
+  const padY = 12;
   const chartW = W - padX * 2;
   const chartH = H - padY * 2;
   const max = 50000;
   const toX = (i: number) => padX + (i / (REVENUE_DATA.length - 1)) * chartW;
   const toY = (v: number) => padY + chartH - (v / max) * chartH;
   const points = REVENUE_DATA.map((d, i) => ({ x: toX(i), y: toY(d.value) }));
-  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const linePath = points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${H - padY} L ${points[0].x} ${H - padY} Z`;
   const stroke = "#9333ea";
   const labelColor = isLight ? "#6b7280" : "rgba(255,255,255,0.45)";
@@ -111,22 +181,63 @@ const RevenueChart: React.FC<{ isLight: boolean }> = ({ isLight }) => {
     <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full h-full">
       <defs>
         <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={stroke} stopOpacity={isLight ? "0.15" : "0.3"} />
+          <stop
+            offset="0%"
+            stopColor={stroke}
+            stopOpacity={isLight ? "0.15" : "0.3"}
+          />
           <stop offset="100%" stopColor={stroke} stopOpacity="0.02" />
         </linearGradient>
       </defs>
       {yTicks.map((t) => (
-        <line key={t} x1={padX} y1={toY(t)} x2={W - padX} y2={toY(t)} stroke={gridColor} strokeWidth="1" />
+        <line
+          key={t}
+          x1={padX}
+          y1={toY(t)}
+          x2={W - padX}
+          y2={toY(t)}
+          stroke={gridColor}
+          strokeWidth="1"
+        />
       ))}
       <path d={areaPath} fill="url(#areaGrad)" />
-      <path d={linePath} fill="none" stroke={stroke} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      {points.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3" fill={stroke} />)}
+      <path
+        d={linePath}
+        fill="none"
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {points.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r="3" fill={stroke} />
+      ))}
       {REVENUE_DATA.map((d, i) => (
-        <text key={i} x={toX(i)} y={H + 16} textAnchor="middle" fontSize="10" fill={labelColor}>{d.month}</text>
+        <text
+          key={i}
+          x={toX(i)}
+          y={H + 16}
+          textAnchor="middle"
+          fontSize="10"
+          fill={labelColor}
+        >
+          {d.month}
+        </text>
       ))}
-      {yTicks.filter((_, i) => i % 2 === 1).map((t) => (
-        <text key={t} x={padX - 6} y={toY(t) + 4} textAnchor="end" fontSize="9" fill={labelColor}>${(t / 1000).toFixed(0)}k</text>
-      ))}
+      {yTicks
+        .filter((_, i) => i % 2 === 1)
+        .map((t) => (
+          <text
+            key={t}
+            x={padX - 6}
+            y={toY(t) + 4}
+            textAnchor="end"
+            fontSize="9"
+            fill={labelColor}
+          >
+            ${(t / 1000).toFixed(0)}k
+          </text>
+        ))}
     </svg>
   );
 };
@@ -141,14 +252,17 @@ const DashboardHome: React.FC = () => {
 
   const [dateRange, setDateRange] = useState("30d");
 
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(DEFAULT_METRICS);
+  const [selectedMetrics, setSelectedMetrics] =
+    useState<string[]>(DEFAULT_METRICS);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setSelectedMetrics(JSON.parse(saved).slice(0, MAX_METRICS));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     setMounted(true);
   }, []);
 
@@ -164,7 +278,8 @@ const DashboardHome: React.FC = () => {
   }, [userProfile?.user?.username, setPageHeader]);
 
   useEffect(() => {
-    if (mounted) localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedMetrics));
+    if (mounted)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedMetrics));
   }, [selectedMetrics, mounted]);
 
   useEffect(() => {
@@ -186,36 +301,61 @@ const DashboardHome: React.FC = () => {
   };
 
   const atMax = selectedMetrics.length >= MAX_METRICS;
-  const displayMetrics = METRIC_POOL.filter((m) => selectedMetrics.includes(m.id));
+  const displayMetrics = METRIC_POOL.filter((m) =>
+    selectedMetrics.includes(m.id),
+  );
 
   // Shared card styles
   const contentCardStyle = isLight
-    ? { background: "white", borderColor: "rgb(167 139 250 / 0.5)", boxShadow: "0 2px 16px 0 rgb(139 92 246 / 0.08)" }
-    : { background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.08)" };
+    ? {
+        background: "white",
+        borderColor: "rgb(167 139 250 / 0.5)",
+        boxShadow: "0 2px 16px 0 rgb(139 92 246 / 0.08)",
+      }
+    : {
+        background: "rgba(255,255,255,0.05)",
+        borderColor: "rgba(255,255,255,0.08)",
+      };
 
   return (
     <div className="flex flex-col gap-4 p-4" style={{ marginTop: 64 }}>
-
       {/* ── Controls row ── */}
       <div className="flex items-center justify-end gap-2">
-        <select
-          value={dateRange}
-          onChange={(e) => setDateRange(e.target.value)}
-          className={`text-xs rounded-lg border px-3 py-1.5 cursor-pointer outline-none ${
-            isLight
-              ? "border-purple-200 bg-white text-gray-700 hover:border-purple-400"
-              : "border-purple-300/30 bg-white/10 text-white hover:border-purple-400"
-          }`}
-        >
-          {DATE_RANGES.map((r) => (
-            <option key={r.value} value={r.value}>{r.label}</option>
-          ))}
-        </select>
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger
+            className={`h-4 text-xs w-30 cursor-pointer ${
+              isLight
+                ? "bg-white border-purple-200 text-gray-700"
+                : "bg-white/10 border-purple-300/30 text-white"
+            }`}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent
+            className={`z-[9999] ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"}`}
+            position="popper"
+            sideOffset={4}
+          >
+            {DATE_RANGES.map((r) => (
+              <SelectItem
+                key={r.value}
+                value={r.value}
+                className={`text-xs cursor-pointer ${
+                  isLight
+                    ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                    : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
+                }`}
+              >
+                {r.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <div className="relative" ref={pickerRef}>
           <button
             onClick={() => setShowPicker((s) => !s)}
-            className={`flex items-center gap-1.5 text-xs rounded-lg border px-3 py-1.5 cursor-pointer transition-colors ${
+            className={`flex items-center justify-center gap-1.5 text-xs rounded-lg border w-30 h-9 cursor-pointer transition-colors ${
               isLight
                 ? "border-purple-200 bg-white text-gray-600 hover:bg-purple-50 hover:text-purple-700"
                 : "border-purple-300/30 bg-white/5 text-white/60 hover:bg-purple-500/20 hover:text-white"
@@ -228,14 +368,20 @@ const DashboardHome: React.FC = () => {
           {showPicker && (
             <div
               className={`absolute right-0 top-full mt-2 w-60 rounded-xl border shadow-xl z-50 py-2 ${
-                isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"
+                isLight
+                  ? "bg-white border-purple-200"
+                  : "bg-[#1a1a2e] border-purple-300/30"
               }`}
             >
               <div className="flex items-center justify-between px-4 pb-2 pt-1">
-                <p className={`text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-500" : "text-purple-300/80"}`}>
+                <p
+                  className={`text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-500" : "text-purple-300/80"}`}
+                >
                   Visible metrics
                 </p>
-                <p className={`text-xs ${atMax ? "text-amber-500 font-medium" : isLight ? "text-gray-400" : "text-white/40"}`}>
+                <p
+                  className={`text-xs ${atMax ? "text-amber-500 font-medium" : isLight ? "text-gray-400" : "text-white/40"}`}
+                >
                   {selectedMetrics.length}/{MAX_METRICS}
                 </p>
               </div>
@@ -249,21 +395,41 @@ const DashboardHome: React.FC = () => {
                     disabled={disabled}
                     className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors ${
                       disabled
-                        ? isLight ? "text-gray-300 cursor-not-allowed" : "text-white/25 cursor-not-allowed"
-                        : isLight ? "text-gray-700 hover:bg-purple-50 cursor-pointer" : "text-white hover:bg-purple-500/20 cursor-pointer"
+                        ? isLight
+                          ? "text-gray-300 cursor-not-allowed"
+                          : "text-white/25 cursor-not-allowed"
+                        : isLight
+                          ? "text-gray-700 hover:bg-purple-50 cursor-pointer"
+                          : "text-white hover:bg-purple-500/20 cursor-pointer"
                     }`}
                   >
                     <span>{m.title}</span>
-                    <span className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
-                      checked
-                        ? "bg-purple-600 border-purple-600"
-                        : disabled
-                          ? isLight ? "border-gray-200" : "border-purple-300/20"
-                          : isLight ? "border-gray-300" : "border-purple-300/40"
-                    }`}>
+                    <span
+                      className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                        checked
+                          ? "bg-purple-600 border-purple-600"
+                          : disabled
+                            ? isLight
+                              ? "border-gray-200"
+                              : "border-purple-300/20"
+                            : isLight
+                              ? "border-gray-300"
+                              : "border-purple-300/40"
+                      }`}
+                    >
                       {checked && (
-                        <svg className="w-2.5 h-2.5 text-white" viewBox="0 0 10 8" fill="none">
-                          <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          className="w-2.5 h-2.5 text-white"
+                          viewBox="0 0 10 8"
+                          fill="none"
+                        >
+                          <path
+                            d="M1 4l3 3 5-6"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       )}
                     </span>
@@ -271,7 +437,9 @@ const DashboardHome: React.FC = () => {
                 );
               })}
               {atMax && (
-                <p className={`px-4 pt-2 pb-1 text-xs ${isLight ? "text-gray-400" : "text-white/35"}`}>
+                <p
+                  className={`px-4 pt-2 pb-1 text-xs ${isLight ? "text-gray-400" : "text-white/35"}`}
+                >
                   Uncheck one to swap in another
                 </p>
               )}
@@ -286,30 +454,50 @@ const DashboardHome: React.FC = () => {
           <Card
             key={stat.id}
             className="backdrop-blur-lg hover:transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-            style={isLight ? {
-              background: "linear-gradient(135deg, rgb(237 233 254) 0%, rgb(252 231 243) 100%)",
-              borderColor: "rgb(216 180 254 / 0.6)",
-              boxShadow: "0 2px 12px 0 rgb(139 92 246 / 0.1)",
-            } : {
-              background: "linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%)",
-              borderColor: "rgba(233, 30, 99, 0.2)",
-            }}
+            style={
+              isLight
+                ? {
+                    background:
+                      "linear-gradient(135deg, rgb(237 233 254) 0%, rgb(252 231 243) 100%)",
+                    borderColor: "rgb(216 180 254 / 0.6)",
+                    boxShadow: "0 2px 12px 0 rgb(139 92 246 / 0.1)",
+                  }
+                : {
+                    background:
+                      "linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%)",
+                    borderColor: "rgba(233, 30, 99, 0.2)",
+                  }
+            }
           >
             <CardHeader className="pb-2">
-              <CardTitle className={`text-sm font-medium ${isLight ? "text-gray-700" : "text-white/85"}`}>
+              <CardTitle
+                className={`text-sm font-medium ${isLight ? "text-gray-700" : "text-white/85"}`}
+              >
                 {stat.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className={`text-3xl font-bold ${isLight ? "text-gray-900" : "text-white"}`}>{stat.value}</div>
-              <div className={`text-sm mt-2 flex items-center gap-1 ${
-                stat.trend === "up"
-                  ? isLight ? "text-green-700" : "text-green-400"
-                  : stat.trend === "down"
-                    ? isLight ? "text-red-700" : "text-red-400"
-                    : isLight ? "text-amber-700" : "text-yellow-400"
-              }`}>
-                {stat.trend === "up"   && <TrendingUp   className="h-4 w-4" />}
+              <div
+                className={`text-3xl font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+              >
+                {stat.value}
+              </div>
+              <div
+                className={`text-sm mt-2 flex items-center gap-1 ${
+                  stat.trend === "up"
+                    ? isLight
+                      ? "text-green-700"
+                      : "text-green-400"
+                    : stat.trend === "down"
+                      ? isLight
+                        ? "text-red-700"
+                        : "text-red-400"
+                      : isLight
+                        ? "text-amber-700"
+                        : "text-yellow-400"
+                }`}
+              >
+                {stat.trend === "up" && <TrendingUp className="h-4 w-4" />}
                 {stat.trend === "down" && <TrendingDown className="h-4 w-4" />}
                 {stat.change}
               </div>
@@ -320,9 +508,14 @@ const DashboardHome: React.FC = () => {
 
       {/* ── Row 2: Revenue chart + Map ── */}
       <div className="grid grid-cols-2 gap-3" style={{ height: 320 }}>
-        <Card className="border flex flex-col overflow-hidden" style={contentCardStyle}>
+        <Card
+          className="border flex flex-col overflow-hidden"
+          style={contentCardStyle}
+        >
           <CardHeader className="pb-1 flex-none">
-            <CardTitle className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}>
+            <CardTitle
+              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+            >
               Revenue Overview
             </CardTitle>
           </CardHeader>
@@ -333,15 +526,23 @@ const DashboardHome: React.FC = () => {
 
         <Card className="border overflow-hidden p-0" style={contentCardStyle}>
           <div className="flex items-center justify-between px-4 py-2 flex-none">
-            <span className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}>
+            <span
+              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+            >
               Wells &amp; Deeds
             </span>
             <div className="flex items-center gap-3 text-xs">
-              <span className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}>
-                <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" /> Wells
+              <span
+                className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />{" "}
+                Wells
               </span>
-              <span className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Deeds
+              <span
+                className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />{" "}
+                Deeds
               </span>
             </div>
           </div>
@@ -361,10 +562,14 @@ const DashboardHome: React.FC = () => {
 
       {/* ── Row 3: Alerts + Quick Access ── */}
       <div className="grid grid-cols-2 gap-3" style={{ height: 260 }}>
-
-        <Card className="border flex flex-col overflow-hidden" style={contentCardStyle}>
+        <Card
+          className="border flex flex-col overflow-hidden"
+          style={contentCardStyle}
+        >
           <CardHeader className="pb-1 flex-none">
-            <CardTitle className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}>
+            <CardTitle
+              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+            >
               Alerts
             </CardTitle>
           </CardHeader>
@@ -382,25 +587,35 @@ const DashboardHome: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${alert.iconColor}`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${alert.iconColor}`}
+                    >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="text-left">
-                      <p className={`text-sm font-medium leading-tight ${isLight ? "text-gray-900" : "text-white"}`}>
+                      <p
+                        className={`text-sm font-medium leading-tight ${isLight ? "text-gray-900" : "text-white"}`}
+                      >
                         {alert.title}
                       </p>
-                      <p className={`text-xs ${isLight ? "text-gray-500" : "text-white/50"}`}>
+                      <p
+                        className={`text-xs ${isLight ? "text-gray-500" : "text-white/50"}`}
+                      >
                         {alert.detail}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-0.5 shrink-0 ml-2">
                     {alert.amount && (
-                      <span className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}>
+                      <span
+                        className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+                      >
                         {alert.amount}
                       </span>
                     )}
-                    <span className={`text-xs flex items-center gap-0.5 ${isLight ? "text-gray-400" : "text-white/40"}`}>
+                    <span
+                      className={`text-xs flex items-center gap-0.5 ${isLight ? "text-gray-400" : "text-white/40"}`}
+                    >
                       <Clock className="h-3 w-3" />
                       {alert.time}
                     </span>
@@ -411,9 +626,14 @@ const DashboardHome: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border flex flex-col overflow-hidden" style={contentCardStyle}>
+        <Card
+          className="border flex flex-col overflow-hidden"
+          style={contentCardStyle}
+        >
           <CardHeader className="pb-1 flex-none">
-            <CardTitle className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}>
+            <CardTitle
+              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+            >
               Quick Access
             </CardTitle>
           </CardHeader>
@@ -431,9 +651,13 @@ const DashboardHome: React.FC = () => {
                       : "bg-white/5 border-white/10 text-white hover:bg-purple-500/20"
                   }`}
                 >
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                    isLight ? "bg-purple-100 text-purple-700" : "bg-purple-500/20 text-purple-300"
-                  }`}>
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                      isLight
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-purple-500/20 text-purple-300"
+                    }`}
+                  >
                     <Icon className="h-4 w-4" />
                   </div>
                   <span className="text-sm font-medium">{action.label}</span>
@@ -442,7 +666,6 @@ const DashboardHome: React.FC = () => {
             })}
           </CardContent>
         </Card>
-
       </div>
     </div>
   );
