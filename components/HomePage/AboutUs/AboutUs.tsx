@@ -6,32 +6,36 @@ import { X, Check } from "lucide-react";
 
 const pairs = [
   {
-    problem: "Land and Accounting Do Not Interact With Each Other",
-    solution: "A Truly Integrated Land and Accounting System",
+    problem: "Land and accounting do not interact with each other",
+    solution: "A truly integrated land and accounting system",
   },
   {
-    problem: "Time Wasted Due to Cumbersome and Repetitive Data Entry",
-    solution: "Data Entry That Will Populate Across Multiple Modules to Maximize Efficiency",
+    problem: "Time wasted due to cumbersome and repetitive data entry",
+    solution:
+      "Data entry that will populate across multiple modules to maximize efficiency",
   },
   {
-    problem: "Not Fully Knowing What You Own",
-    solution: "Clear Visibility of Your Ownership and Accurate Asset Tracking",
+    problem: "Not fully knowing what you own",
+    solution: "Clear visibility of your ownership and accurate asset tracking",
   },
   {
-    problem: "Limited Reporting That Does Not Contain the Information You Need",
-    solution: "Canned and Customized Reporting Tailored to Your Specific Requirements",
+    problem: "Limited reporting that does not contain the information you need",
+    solution:
+      "Canned and customized reporting tailored to your specific requirements",
   },
   {
-    problem: "Verify Revenue Manually",
-    solution: "Automated Revenue Validation",
+    problem: "Verify revenue manually",
+    solution: "Automated revenue validation",
   },
   {
-    problem: "Data Stuck in a PDF Format",
-    solution: "Integrated Documents + PDF Tools to Convert and Upload Data With Ease",
+    problem: "Data limited to a PDF format",
+    solution:
+      "Integrated documents + PDF tools to convert and upload data with ease",
   },
   {
-    problem: "Limited and Outdated Software",
-    solution: "A Platform Built by Industry Experts Who Know What It Takes to Manage Minerals",
+    problem: "Limited and outdated software",
+    solution:
+      "A platform built by industry experts who know what it takes to manage minerals",
   },
 ];
 
@@ -117,11 +121,13 @@ const AboutUs = () => {
           />
           <div className="relative mx-auto max-w-7xl">
             <div className="grid grid-cols-1 gap-14 md:grid-cols-2">
-
               {/* Problem card */}
               <div
                 className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
-                style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
+                }}
               >
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-red-200/30 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
@@ -147,7 +153,9 @@ const AboutUs = () => {
                         <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
                           <X className="h-4 w-4 text-red-600" />
                         </div>
-                        <p className="text-lg font-medium text-gray-800">{pair.problem}</p>
+                        <p className="text-lg font-medium text-gray-800">
+                          {pair.problem}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -157,7 +165,10 @@ const AboutUs = () => {
               {/* Solution card — offset lower */}
               <div
                 className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
-                style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
+                }}
               >
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
@@ -186,13 +197,14 @@ const AboutUs = () => {
                         <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
                           <Check className="h-4 w-4 text-green-700" />
                         </div>
-                        <p className="text-lg font-medium text-gray-800">{pair.solution}</p>
+                        <p className="text-lg font-medium text-gray-800">
+                          {pair.solution}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
           </div>
         </section>
