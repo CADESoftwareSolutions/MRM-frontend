@@ -486,15 +486,15 @@ const DashboardHome: React.FC = () => {
                 className={`text-sm mt-2 flex items-center gap-1 ${
                   stat.trend === "up"
                     ? isLight
-                      ? "text-green-700"
-                      : "text-green-400"
+                      ? "text-green-800"
+                      : "text-green-300"
                     : stat.trend === "down"
                       ? isLight
-                        ? "text-red-700"
-                        : "text-red-400"
+                        ? "text-red-800"
+                        : "text-red-300"
                       : isLight
-                        ? "text-amber-700"
-                        : "text-yellow-400"
+                        ? "text-amber-800"
+                        : "text-yellow-300"
                 }`}
               >
                 {stat.trend === "up" && <TrendingUp className="h-4 w-4" />}
@@ -599,7 +599,7 @@ const DashboardHome: React.FC = () => {
                         {alert.title}
                       </p>
                       <p
-                        className={`text-xs ${isLight ? "text-gray-500" : "text-white/50"}`}
+                        className={`text-xs ${isLight ? "text-gray-700" : "text-white/80"}`}
                       >
                         {alert.detail}
                       </p>
@@ -614,7 +614,7 @@ const DashboardHome: React.FC = () => {
                       </span>
                     )}
                     <span
-                      className={`text-xs flex items-center gap-0.5 ${isLight ? "text-gray-400" : "text-white/40"}`}
+                      className={`text-xs flex items-center gap-0.5 ${isLight ? "text-gray-600" : "text-white/70"}`}
                     >
                       <Clock className="h-3 w-3" />
                       {alert.time}

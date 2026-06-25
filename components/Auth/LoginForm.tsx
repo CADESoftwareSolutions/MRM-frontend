@@ -169,7 +169,7 @@ const LoginForm: React.FC = () => {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl"
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg transition-all hover:from-purple-700 hover:to-purple-800 hover:shadow-xl cursor-pointer"
             disabled={loading}
           >
             {loading ? "Signing in..." : "Sign In"}
