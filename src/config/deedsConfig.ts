@@ -1,4 +1,4 @@
-import { field, ModuleConfig, STATES } from "./directoryConfig";
+import { field, ModuleConfig } from "./directoryConfig";
 
 export const deedsConfig: ModuleConfig = {
   name: "deeds",
@@ -15,11 +15,10 @@ export const deedsConfig: ModuleConfig = {
     "grantor",
     "grantee",
     "effectiveDate",
-    "state",
-    "county",
   ],
   fields: [
     // ========== BASIC TAB — identification ==========
+    // typeOfDeed + interestType share a row
     field.select(
       "typeOfDeed",
       "Type of Deed",
@@ -37,34 +36,27 @@ export const deedsConfig: ModuleConfig = {
         required: true,
         tab: "basic",
         section: "identification",
-        gridColumn: "span 2",
+      },
+    ),
+
+    field.select(
+      "interestType",
+      "Interest Type",
+      ["Mineral", "Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
+      {
+        required: true,
+        tab: "basic",
+        section: "identification",
       },
     ),
 
     // ========== BASIC TAB — parties ==========
-    field.textarea("grantor", "Grantor", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      gridColumn: "span 2",
-      rows: 4,
-      helpText: "Free form — no more than 2 pages",
-    }),
-
+    // interests first, then free-form textareas side by side below
     field.text("grantorInterestConveyed", "Grantor Interest Conveyed", {
       required: true,
       tab: "basic",
       section: "parties",
       placeholder: "e.g. 1/2 or 0.5",
-    }),
-
-    field.textarea("grantee", "Grantee", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      gridColumn: "span 2",
-      rows: 4,
-      helpText: "Free form — no more than 2 pages",
     }),
 
     field.text("granteeInterestReceived", "Grantee Interest Received", {
@@ -74,7 +66,24 @@ export const deedsConfig: ModuleConfig = {
       placeholder: "e.g. 1/2 or 0.5",
     }),
 
+    field.textarea("grantor", "Grantor", {
+      required: true,
+      tab: "basic",
+      section: "parties",
+      rows: 2,
+      helpText: "Free form — no more than 2 pages",
+    }),
+
+    field.textarea("grantee", "Grantee", {
+      required: true,
+      tab: "basic",
+      section: "parties",
+      rows: 2,
+      helpText: "Free form — no more than 2 pages",
+    }),
+
     // ========== BASIC TAB — dates ==========
+    // effectiveDate + acres share a row
     {
       id: "effectiveDate",
       label: "Effective Date",
@@ -85,51 +94,26 @@ export const deedsConfig: ModuleConfig = {
       gridColumn: "span 1",
     },
 
-    field.select(
-      "interestType",
-      "Interest Type",
-      ["Mineral", "Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
-      {
-        required: true,
-        tab: "basic",
-        section: "dates",
-      },
-    ),
-
-    // ========== BASIC TAB — location ==========
-    field.select("state", "State", STATES, {
-      required: true,
-      tab: "basic",
-      section: "location",
-    }),
-
-    field.text("county", "County", {
-      required: true,
-      tab: "basic",
-      section: "location",
-    }),
-
-    // ========== BASIC TAB — details ==========
     field.number("acres", "Acres", {
       tab: "basic",
-      section: "details",
+      section: "dates",
       placeholder: "0.0000",
     }),
 
+    // ========== BASIC TAB — details ==========
     field.textarea("reservationsBurdens", "Reservations/Burdens", {
       tab: "basic",
       section: "details",
       gridColumn: "span 2",
-      rows: 4,
+      rows: 3,
       helpText: "Free form — no more than 4 pages",
     }),
 
-    // ========== BASIC TAB — notes ==========
     field.textarea("comments", "Comments", {
       tab: "basic",
-      section: "notes",
+      section: "details",
       gridColumn: "span 2",
-      rows: 4,
+      rows: 3,
       helpText: "Free form — no more than 3 pages",
     }),
 

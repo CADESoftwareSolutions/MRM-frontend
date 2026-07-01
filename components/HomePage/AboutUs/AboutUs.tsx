@@ -6,7 +6,7 @@ import { X, Check } from "lucide-react";
 
 const pairs = [
   {
-    problem: "Land and accounting do not interact with each other",
+    problem: "Land and Accounting do not interact with each other",
     solution: "A truly integrated land and accounting system",
   },
   {
@@ -126,7 +126,7 @@ const AboutUs = () => {
                 className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
                 style={{
                   background:
-                    "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
+                    "linear-gradient(135deg, #faf5ff 100%, #f3e8ff 50%, #e9d5ff 50%)",
                 }}
               >
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-red-200/30 blur-3xl" />

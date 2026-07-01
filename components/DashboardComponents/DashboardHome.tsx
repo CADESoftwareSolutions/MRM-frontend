@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertTriangle,
   BarChart3,
   CheckSquare,
   Clock,
@@ -124,6 +125,15 @@ const alerts = [
     amount: "$5,200",
     route: "/Dashboard/checks",
     iconColor: "bg-amber-500/20 text-amber-400",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Lease Expiring Soon",
+    detail: "Permian Basin — Section 14",
+    time: "3 days ago",
+    amount: null,
+    route: "/Dashboard/DashboardDirectory",
+    iconColor: "bg-red-500/20 text-red-400",
   },
 ];
 
@@ -301,9 +311,9 @@ const DashboardHome: React.FC = () => {
   };
 
   const atMax = selectedMetrics.length >= MAX_METRICS;
-  const displayMetrics = METRIC_POOL.filter((m) =>
-    selectedMetrics.includes(m.id),
-  );
+  const displayMetrics = selectedMetrics
+    .map((id) => METRIC_POOL.find((m) => m.id === id)!)
+    .filter(Boolean);
 
   // Shared card styles
   const contentCardStyle = isLight
@@ -379,14 +389,25 @@ const DashboardHome: React.FC = () => {
                 >
                   Visible metrics
                 </p>
-                <p
-                  className={`text-xs ${atMax ? "text-amber-500 font-medium" : isLight ? "text-gray-400" : "text-white/40"}`}
-                >
-                  {selectedMetrics.length}/{MAX_METRICS}
-                </p>
+                <div className="flex items-center gap-2">
+                  {selectedMetrics.length > 0 && (
+                    <button
+                      onClick={() => setSelectedMetrics([])}
+                      className={`text-xs cursor-pointer transition-colors ${isLight ? "text-gray-400 hover:text-red-600" : "text-white/40 hover:text-red-400"}`}
+                    >
+                      Deselect all
+                    </button>
+                  )}
+                  <p
+                    className={`text-xs ${atMax ? "text-amber-500 font-medium" : isLight ? "text-gray-400" : "text-white/40"}`}
+                  >
+                    {selectedMetrics.length}/{MAX_METRICS}
+                  </p>
+                </div>
               </div>
               {METRIC_POOL.map((m) => {
                 const checked = selectedMetrics.includes(m.id);
+                const position = selectedMetrics.indexOf(m.id);
                 const disabled = !checked && atMax;
                 return (
                   <button
@@ -405,9 +426,9 @@ const DashboardHome: React.FC = () => {
                   >
                     <span>{m.title}</span>
                     <span
-                      className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 transition-colors ${
+                      className={`w-5 h-5 rounded flex items-center justify-center border shrink-0 transition-colors text-xs font-bold ${
                         checked
-                          ? "bg-purple-600 border-purple-600"
+                          ? "bg-purple-600 border-purple-600 text-white"
                           : disabled
                             ? isLight
                               ? "border-gray-200"
@@ -417,21 +438,7 @@ const DashboardHome: React.FC = () => {
                               : "border-purple-300/40"
                       }`}
                     >
-                      {checked && (
-                        <svg
-                          className="w-2.5 h-2.5 text-white"
-                          viewBox="0 0 10 8"
-                          fill="none"
-                        >
-                          <path
-                            d="M1 4l3 3 5-6"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
+                      {checked ? position + 1 : null}
                     </span>
                   </button>
                 );
@@ -561,19 +568,19 @@ const DashboardHome: React.FC = () => {
       </div>
 
       {/* ── Row 3: Alerts + Quick Access ── */}
-      <div className="grid grid-cols-2 gap-3" style={{ height: 260 }}>
+      <div className="grid grid-cols-2 gap-3" style={{ height: 220 }}>
         <Card
-          className="border flex flex-col overflow-hidden"
+          className="border flex flex-col overflow-hidden py-0 gap-0"
           style={contentCardStyle}
         >
-          <CardHeader className="pb-1 flex-none">
+          <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
               className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Alerts
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0 overflow-y-auto px-4 pb-3 space-y-2">
+          <CardContent className="flex-1 min-h-0 overflow-y-auto px-4 pt-2 pb-2 space-y-2">
             {alerts.map((alert, idx) => {
               const Icon = alert.icon;
               return (
@@ -627,43 +634,47 @@ const DashboardHome: React.FC = () => {
         </Card>
 
         <Card
-          className="border flex flex-col overflow-hidden"
+          className="border flex flex-col overflow-hidden py-0 gap-0"
           style={contentCardStyle}
         >
-          <CardHeader className="pb-1 flex-none">
+          <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
               className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Quick Access
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0 overflow-y-auto px-4 pb-3 flex flex-col gap-2">
-            {quickAccess.map((action, idx) => {
-              const Icon = action.icon;
-              return (
-                <Button
-                  key={idx}
-                  variant="ghost"
-                  onClick={() => router.push(action.route)}
-                  className={`w-full justify-start gap-3 h-10 cursor-pointer border transition-colors ${
-                    isLight
-                      ? "bg-purple-50 border-purple-200 text-gray-800 hover:bg-purple-100 hover:text-purple-900"
-                      : "bg-white/5 border-white/10 text-white hover:bg-purple-500/20"
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+          <CardContent className="flex-1 min-h-0 px-4 pt-2 pb-2">
+            <div className="grid grid-cols-2 gap-2 h-full">
+              {quickAccess.map((action, idx) => {
+                const Icon = action.icon;
+                return (
+                  <Button
+                    key={idx}
+                    variant="ghost"
+                    onClick={() => router.push(action.route)}
+                    className={`w-full h-full flex-col gap-2 cursor-pointer border transition-colors ${
                       isLight
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-purple-500/20 text-purple-300"
+                        ? "bg-purple-50 border-purple-200 text-gray-800 hover:bg-purple-100 hover:text-purple-900"
+                        : "bg-white/5 border-white/10 text-white hover:bg-purple-500/20"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-sm font-medium">{action.label}</span>
-                </Button>
-              );
-            })}
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                        isLight
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-purple-500/20 text-purple-300"
+                      }`}
+                    >
+                      <Icon className="h-3 w-3" />
+                    </div>
+                    <span className="text-[11px] font-medium text-center leading-tight">
+                      {action.label}
+                    </span>
+                  </Button>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>

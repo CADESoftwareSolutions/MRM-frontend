@@ -1,5 +1,6 @@
 import { Copy, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { useAtom } from "jotai";
 
@@ -85,7 +86,7 @@ const TextareaField = ({
     <textarea
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
-      rows={6}
+      rows={4}
       className={textareaCls}
     />
   </div>
@@ -105,66 +106,26 @@ const EntryFields = ({
     case "Block/Section/Survey":
       return (
         <>
-          <div className="grid grid-cols-2 gap-3 col-span-2">
-            <Field label="Block" value={entry.block} onChange={f("block")} />
-            <Field
-              label="Township"
-              value={entry.township}
-              onChange={f("township")}
-            />
-          </div>
-          <Field
-            label="Section"
-            value={entry.section}
-            onChange={f("section")}
-          />
-          <Field
-            label="Abstract"
-            value={entry.abstract}
-            onChange={f("abstract")}
-          />
+          <Field label="Block" value={entry.block} onChange={f("block")} />
+          <Field label="Township" value={entry.township} onChange={f("township")} />
+          <Field label="Section" value={entry.section} onChange={f("section")} />
+          <Field label="Abstract" value={entry.abstract} onChange={f("abstract")} />
           <Field label="Survey" value={entry.survey} onChange={f("survey")} />
-          <Field
-            label="Quarter Calls/Aliquot"
-            value={entry.quarterCalls}
-            onChange={f("quarterCalls")}
-          />
-          <Field
-            label="UPI (if applicable)"
-            value={entry.upi}
-            onChange={f("upi")}
-          />
+          <Field label="Quarter Calls/Aliquot" value={entry.quarterCalls} onChange={f("quarterCalls")} />
+          <Field label="UPI (if applicable)" value={entry.upi} onChange={f("upi")} />
         </>
       );
 
     case "Rectangular (STR)":
       return (
         <>
-          <div className="grid grid-cols-2 gap-3 col-span-2">
-            <Field label="Lot" value={entry.lot} onChange={f("lot")} />
-            <Field label="Block" value={entry.block} onChange={f("block")} />
-          </div>
-          <Field
-            label="Section"
-            value={entry.section}
-            onChange={f("section")}
-          />
-          <Field
-            label="Township"
-            value={entry.township}
-            onChange={f("township")}
-          />
+          <Field label="Lot" value={entry.lot} onChange={f("lot")} />
+          <Field label="Block" value={entry.block} onChange={f("block")} />
+          <Field label="Section" value={entry.section} onChange={f("section")} />
+          <Field label="Township" value={entry.township} onChange={f("township")} />
           <Field label="Range" value={entry.range} onChange={f("range")} />
-          <Field
-            label="Quarter Calls/Aliquot"
-            value={entry.quarterCalls}
-            onChange={f("quarterCalls")}
-          />
-          <Field
-            label="UPI (if applicable)"
-            value={entry.upi}
-            onChange={f("upi")}
-          />
+          <Field label="Quarter Calls/Aliquot" value={entry.quarterCalls} onChange={f("quarterCalls")} />
+          <Field label="UPI (if applicable)" value={entry.upi} onChange={f("upi")} />
         </>
       );
 
@@ -173,22 +134,10 @@ const EntryFields = ({
       return (
         <>
           <Field label="Block" value={entry.block} onChange={f("block")} />
-          <Field
-            label="Section"
-            value={entry.section}
-            onChange={f("section")}
-          />
+          <Field label="Section" value={entry.section} onChange={f("section")} />
           <Field label="Survey" value={entry.survey} onChange={f("survey")} />
-          <Field
-            label="Quarter Calls/Aliquot"
-            value={entry.quarterCalls}
-            onChange={f("quarterCalls")}
-          />
-          <Field
-            label="UPI (if applicable)"
-            value={entry.upi}
-            onChange={f("upi")}
-          />
+          <Field label="Quarter Calls/Aliquot" value={entry.quarterCalls} onChange={f("quarterCalls")} />
+          <Field label="UPI (if applicable)" value={entry.upi} onChange={f("upi")} />
           <TextareaField
             label="Legal Description"
             value={entry.legalDescription}
@@ -248,19 +197,21 @@ export const MultiLegalDescriptionField = ({
               Legal #{index + 1}
             </span>
             <div className="flex-1">
-              <select
+              <Select
                 value={entry.type}
-                onChange={(e) =>
-                  update(entry.id, { type: e.target.value as LegalDescType })
-                }
-                className="h-8 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white outline-none focus:border-purple-400 cursor-pointer"
+                onValueChange={(v) => update(entry.id, { type: v as LegalDescType })}
               >
-                {LEGAL_DESC_TYPES.map((t) => (
-                  <option key={t} value={t} className="bg-[#1a1a2e]">
-                    {t}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="h-8 text-sm bg-white/5 border-purple-300/30 text-white cursor-pointer">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a2e] border-purple-300/30 z-50">
+                  {LEGAL_DESC_TYPES.map((t) => (
+                    <SelectItem key={t} value={t} className="text-white hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer">
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-center gap-1">
               <button
@@ -268,8 +219,8 @@ export const MultiLegalDescriptionField = ({
                 onClick={() => copy(entry, index)}
                 className={`p-1.5 rounded transition-colors cursor-pointer ${
                   isLight
-                    ? "text-gray-400 hover:text-purple-600 hover:bg-purple-100"
-                    : "text-purple-300/50 hover:text-purple-200 hover:bg-purple-500/20"
+                    ? "text-purple-500 hover:text-purple-700 hover:bg-purple-100"
+                    : "text-purple-200 hover:text-white hover:bg-purple-500/20"
                 }`}
                 title="Copy this entry"
               >
@@ -278,7 +229,11 @@ export const MultiLegalDescriptionField = ({
               <button
                 type="button"
                 onClick={() => remove(entry.id)}
-                className="p-1.5 rounded transition-colors cursor-pointer text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
+                className={`p-1.5 rounded transition-colors cursor-pointer ${
+                  isLight
+                    ? "text-red-500 hover:text-red-700 hover:bg-red-100"
+                    : "text-red-300 hover:text-red-200 hover:bg-red-500/20"
+                }`}
                 title="Remove"
               >
                 <Trash2 className="w-4 h-4" />

@@ -318,7 +318,7 @@ export const Form: React.FC<FormProps> = ({
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-200/70 hover:text-purple-100 hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-100 hover:text-white hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 {tab.label}
               </TabsTrigger>
