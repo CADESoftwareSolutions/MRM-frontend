@@ -111,7 +111,7 @@ const AboutUs = () => {
       </div>
 
       <div className="relative overflow-hidden">
-        <section className="relative w-full px-4 py-20 md:py-32">
+        <section className="relative w-full px-4 py-12 md:py-16">
           <div
             className="absolute inset-0 -z-10"
             style={{
@@ -120,10 +120,10 @@ const AboutUs = () => {
             }}
           />
           <div className="relative mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 gap-14 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
               {/* Problem card */}
               <div
-                className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
+                className="relative flex flex-col overflow-hidden rounded-3xl p-6 md:p-8"
                 style={{
                   background:
                     "linear-gradient(135deg, #faf5ff 100%, #f3e8ff 50%, #e9d5ff 50%)",
@@ -132,28 +132,28 @@ const AboutUs = () => {
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-red-200/30 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
 
-                <div className="relative mb-10 flex h-56 flex-col items-center justify-start pt-10 text-center">
-                  <div className="mb-4 inline-block rounded-full bg-red-100 px-6 py-2">
+                <div className="relative mb-5 flex flex-col items-center pt-4 text-center">
+                  <div className="mb-3 inline-block rounded-full bg-red-100 px-6 py-2">
                     <span className="text-sm font-semibold uppercase tracking-wider text-red-600">
                       The Problem
                     </span>
                   </div>
-                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+                  <h2 className="text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
                     Managing Minerals Should Not Be This Hard
                   </h2>
                 </div>
 
-                <div className="relative flex flex-col gap-4">
+                <div className="relative flex flex-col gap-2">
                   {pairs.map((pair, idx) => (
                     <div
                       key={idx}
-                      className="group flex min-h-24 items-center rounded-2xl border-2 border-red-100 bg-white/80 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
+                      className="group flex items-center rounded-2xl border-2 border-red-100 bg-white/80 p-3 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-red-200 hover:shadow-xl"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
                           <X className="h-4 w-4 text-red-600" />
                         </div>
-                        <p className="text-lg font-medium text-gray-800">
+                        <p className="text-sm font-medium text-gray-800">
                           {pair.problem}
                         </p>
                       </div>
@@ -162,9 +162,9 @@ const AboutUs = () => {
                 </div>
               </div>
 
-              {/* Solution card — offset lower */}
+              {/* Solution card */}
               <div
-                className="relative flex flex-col overflow-hidden rounded-3xl p-8 md:p-10"
+                className="relative flex flex-col overflow-hidden rounded-3xl p-6 md:p-8"
                 style={{
                   background:
                     "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
@@ -173,13 +173,13 @@ const AboutUs = () => {
                 <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
                 <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
 
-                <div className="relative mb-10 flex h-56 flex-col items-center justify-start pt-10 text-center">
-                  <div className="mb-4 inline-block rounded-full bg-green-100 px-6 py-2">
+                <div className="relative mb-5 flex flex-col items-center pt-4 text-center">
+                  <div className="mb-3 inline-block rounded-full bg-green-100 px-6 py-2">
                     <span className="text-sm font-semibold uppercase tracking-wider text-green-700">
                       The Solution
                     </span>
                   </div>
-                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900 md:text-4xl">
+                  <h2 className="text-2xl font-extrabold leading-tight text-gray-900 md:text-3xl">
                     That Is Why We Built{" "}
                     <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                       CADE
@@ -187,17 +187,17 @@ const AboutUs = () => {
                   </h2>
                 </div>
 
-                <div className="relative flex flex-col gap-4">
+                <div className="relative flex flex-col gap-2">
                   {pairs.map((pair, idx) => (
                     <div
                       key={idx}
-                      className="group flex min-h-24 items-center rounded-2xl border-2 border-green-100 bg-white/90 p-5 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5"
+                      className="group flex items-center rounded-2xl border-2 border-green-100 bg-white/90 p-3 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
                           <Check className="h-4 w-4 text-green-700" />
                         </div>
-                        <p className="text-lg font-medium text-gray-800">
+                        <p className="text-sm font-medium text-gray-800">
                           {pair.solution}
                         </p>
                       </div>
