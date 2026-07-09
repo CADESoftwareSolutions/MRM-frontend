@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
@@ -13,6 +13,7 @@ import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
+import { useStateCountyReference } from "@/hooks/useStateCountyReference";
 
 const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
@@ -20,6 +21,20 @@ const Leases = () => {
   const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
   const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
+  const { data: stateCountyReference = [] } = useStateCountyReference();
+
+  const dynamicOptions = useMemo(
+    () =>
+      stateCountyReference.length
+        ? {
+            state: stateCountyReference.map((state) => ({
+              value: state.code,
+              label: state.name,
+            })),
+          }
+        : {},
+    [stateCountyReference],
+  );
 
   const {
     view,
@@ -111,6 +126,8 @@ const Leases = () => {
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
+              dynamicOptions={dynamicOptions}
+              stateCountyReference={stateCountyReference}
               customContent={{
                 legalDescriptions: (
                   <MultiLegalDescriptionField

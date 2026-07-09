@@ -105,11 +105,17 @@ export const leasesConfig: ModuleConfig = {
       section: "location",
     }),
 
-    field.text("county", "County", {
+    {
+      id: "county",
+      label: "County",
+      type: "county-combobox" as const,
       required: true,
       tab: "basic",
       section: "location",
-    }),
+      gridColumn: "span 1" as const,
+      countyStateField: "state",
+      placeholder: "Select county",
+    },
 
     field.select("costFree", "Cost Free", ["Yes", "No"], {
       tab: "basic",

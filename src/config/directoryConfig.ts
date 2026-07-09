@@ -9,6 +9,7 @@ export type FieldType =
   | "email"
   | "phone"
   | "date"
+  | "county-combobox"
   | "custom";
 
 export interface FieldConfig {
@@ -34,6 +35,8 @@ export interface FieldConfig {
   fromGraphQL?: (value: any) => any;
   /** For multi-badge: clicking a badge replaces the selection instead of toggling. */
   singleSelect?: boolean;
+  /** For county-combobox: state field id used to choose the county option set. */
+  countyStateField?: string;
 }
 
 export interface TabConfig {

@@ -18,6 +18,8 @@ import { AlertCircle, FileText, X } from "lucide-react";
 import { FieldConfig, ModuleConfig } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 import { NettingTab, NettingEntry } from "./NettingTab";
+import { CountyCombobox } from "./CountyCombobox";
+import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 
 interface FormProps {
   config: ModuleConfig;
@@ -37,6 +39,10 @@ interface FormProps {
   allParties?: Array<{ id: string; name: string }>;
   /** Custom React nodes injected by field id — rendered in place of fields with type "custom" */
   customContent?: Record<string, React.ReactNode>;
+  /** Runtime options loaded from reference data, keyed by field id. */
+  dynamicOptions?: Record<string, FieldConfig["options"]>;
+  /** State/county reference data for county-combobox fields. */
+  stateCountyReference?: StateCountyReference[];
   /** When true, renders without the Card wrapper (for use inside a SideSheet) */
   bare?: boolean;
 }
@@ -66,6 +72,8 @@ export const Form: React.FC<FormProps> = ({
   onNettingChange,
   allParties = [],
   customContent = {},
+  dynamicOptions = {},
+  stateCountyReference = [],
   bare = false,
 }) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
@@ -80,6 +88,7 @@ export const Form: React.FC<FormProps> = ({
   const {
     control,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors, isSubmitted },
   } = useForm({
@@ -87,6 +96,29 @@ export const Form: React.FC<FormProps> = ({
   });
 
   const watchedValues = watch();
+
+  const getFieldOptions = (field: FieldConfig) =>
+    dynamicOptions[field.id] ?? field.options ?? [];
+
+  const clearCountyFieldsForState = (stateFieldId: string) => {
+    config.fields.forEach((candidate) => {
+      if (
+        candidate.type === "county-combobox" &&
+        (candidate.countyStateField ?? "state") === stateFieldId
+      ) {
+        setValue(candidate.id, "");
+      }
+    });
+  };
+
+  const getCountiesForField = (field: FieldConfig) => {
+    const stateFieldId = field.countyStateField ?? "state";
+    const stateCode = watchedValues[stateFieldId];
+    if (!stateCode) return [];
+    return (
+      stateCountyReference.find((state) => state.code === stateCode)?.counties ?? []
+    );
+  };
 
   const shouldShowField = (field: FieldConfig): boolean => {
     if (!field.dependsOn) return true;
@@ -180,7 +212,15 @@ export const Form: React.FC<FormProps> = ({
             control={control}
             rules={getFieldRules(field)}
             render={({ field: f }) => (
-              <Select value={f.value || undefined} onValueChange={f.onChange}>
+              <Select
+                value={f.value || undefined}
+                onValueChange={(nextValue) => {
+                  if (nextValue !== f.value) {
+                    f.onChange(nextValue);
+                    clearCountyFieldsForState(field.id);
+                  }
+                }}
+              >
                 <SelectTrigger
                   style={{ width: "100%" }}
                   className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70 ${errors[field.id] ? "border-red-500" : ""}`}
@@ -196,7 +236,7 @@ export const Form: React.FC<FormProps> = ({
                   position="popper"
                   sideOffset={4}
                 >
-                  {field.options?.map((option) => {
+                  {getFieldOptions(field).map((option) => {
                     const val =
                       typeof option === "string" ? option : option.value;
                     const label =
@@ -214,6 +254,35 @@ export const Form: React.FC<FormProps> = ({
                 </SelectContent>
               </Select>
             )}
+          />
+        )}
+
+        {field.type === "county-combobox" && (
+          <Controller
+            name={field.id}
+            control={control}
+            rules={getFieldRules(field)}
+            render={({ field: f }) => {
+              const counties = getCountiesForField(field);
+              const stateFieldId = field.countyStateField ?? "state";
+              const hasState = Boolean(watchedValues[stateFieldId]);
+              return (
+                <CountyCombobox
+                  value={f.value ?? ""}
+                  onChange={f.onChange}
+                  onBlur={f.onBlur}
+                  counties={counties}
+                  disabled={!hasState}
+                  placeholder={
+                    hasState
+                      ? field.placeholder || `Select ${field.label.toLowerCase()}`
+                      : "Select state first"
+                  }
+                  className={`${commonClasses} ${errors[field.id] ? "border-red-500" : ""}`}
+                  invalid={Boolean(errors[field.id])}
+                />
+              );
+            }}
           />
         )}
 
