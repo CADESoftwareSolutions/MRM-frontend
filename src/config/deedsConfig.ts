@@ -14,7 +14,7 @@ export const deedsConfig: ModuleConfig = {
     "typeOfDeed",
     "grantor",
     "grantee",
-    "effectiveDate",
+    "interestType",
   ],
   fields: [
     // ========== BASIC TAB — identification ==========
@@ -42,7 +42,7 @@ export const deedsConfig: ModuleConfig = {
     field.select(
       "interestType",
       "Interest Type",
-      ["Mineral", "Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
+      ["Mineral", "Royalty", "Mineral and Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
       {
         required: true,
         tab: "basic",
@@ -51,27 +51,13 @@ export const deedsConfig: ModuleConfig = {
     ),
 
     // ========== BASIC TAB — parties ==========
-    // interests first, then free-form textareas side by side below
-    field.text("grantorInterestConveyed", "Grantor Interest Conveyed", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      placeholder: "e.g. 1/2 or 0.5",
-    }),
-
-    field.text("granteeInterestReceived", "Grantee Interest Received", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      placeholder: "e.g. 1/2 or 0.5",
-    }),
-
+    // Backend stores these as title_document_conveyance_party rows (multi-grantee).
+    // FE still uses flat grantor + grantee display fields until a multi-party control ships.
     field.textarea("grantor", "Grantor", {
       required: true,
       tab: "basic",
       section: "parties",
       rows: 2,
-      helpText: "Free form — no more than 2 pages",
     }),
 
     field.textarea("grantee", "Grantee", {
@@ -79,24 +65,19 @@ export const deedsConfig: ModuleConfig = {
       tab: "basic",
       section: "parties",
       rows: 2,
-      helpText: "Free form — no more than 2 pages",
+      helpText: "Multiple grantees with interest are supported in the API; UI multi-entry coming next",
     }),
 
-    // ========== BASIC TAB — dates ==========
-    // effectiveDate + acres share a row
-    {
-      id: "effectiveDate",
-      label: "Effective Date",
-      type: "date",
-      required: true,
+    field.text("granteeInterestReceived", "Grantee Interest Received", {
       tab: "basic",
-      section: "dates",
-      gridColumn: "span 1",
-    },
+      section: "parties",
+      placeholder: "e.g. 1/2 or 0.5",
+    }),
 
+    // ========== BASIC TAB — location ==========
     field.number("acres", "Acres", {
       tab: "basic",
-      section: "dates",
+      section: "location",
       placeholder: "0.0000",
     }),
 
@@ -157,16 +138,19 @@ export const MOCK_DEEDS: Record<string, any>[] = [
     deedId: "D-TX-B010-S012",
     typeOfDeed: "Mineral",
     grantor: "Smith Family Trust",
-    grantorInterestConveyed: "1/2",
-    grantee: "Acme Minerals LLC",
-    granteeInterestReceived: "1/2",
-    effectiveDate: "2023-03-15",
+    grantee: "Acme Minerals LLC; Pioneer Royalties Inc",
+    granteeInterestReceived: "1/2; 1/2",
     interestType: "Mineral",
     state: "TX",
     county: "Reeves",
     acres: 320.0,
     reservationsBurdens: "",
     comments: "Standard mineral deed with no reservations.",
+    _conveyanceParties: [
+      { role: "grantor", name: "Smith Family Trust", sortOrder: 0 },
+      { role: "grantee", name: "Acme Minerals LLC", interest: "1/2", sortOrder: 0 },
+      { role: "grantee", name: "Pioneer Royalties Inc", interest: "1/2", sortOrder: 1 },
+    ],
     _legalDescriptions: [
       {
         id: "ld-1",
@@ -198,16 +182,18 @@ export const MOCK_DEEDS: Record<string, any>[] = [
     deedId: "D-OK-2023-002",
     typeOfDeed: "Royalty",
     grantor: "Jane Doe",
-    grantorInterestConveyed: "0.25",
     grantee: "Pioneer Royalties Inc",
     granteeInterestReceived: "0.25",
-    effectiveDate: "2023-06-01",
     interestType: "Royalty",
     state: "OK",
     county: "Canadian",
     acres: 160.5,
     reservationsBurdens: "Grantor reserves NPRI of 1/128.",
     comments: "",
+    _conveyanceParties: [
+      { role: "grantor", name: "Jane Doe", sortOrder: 0 },
+      { role: "grantee", name: "Pioneer Royalties Inc", interest: "0.25", sortOrder: 0 },
+    ],
     _legalDescriptions: [
       {
         id: "ld-2",
