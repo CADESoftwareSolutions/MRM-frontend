@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -7,250 +13,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertTriangle,
-  BarChart3,
-  CheckSquare,
-  Clock,
-  CreditCard,
-  FileText,
-  Settings,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { Clock, Settings, TrendingDown, TrendingUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import React, { useEffect, useRef, useState } from "react";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "../../src/atoms/userProfileAtom";
 import { themeAtom, pageHeaderAtom } from "../../src/atoms/NavigationAtom";
 import { useRouter } from "next/router";
+import RevenueChart from "./RevenueChart";
+import {
+  alerts,
+  DATE_RANGES,
+  DEFAULT_METRICS,
+  MAX_METRICS,
+  METRIC_POOL,
+  quickAccess,
+  REVENUE_VIEWS,
+  REVENUE_VIEW_OPTIONS,
+  STORAGE_KEY,
+  type MetricData,
+  type RevenueViewKey,
+} from "../utils/dashboardHomeUtils";
 
 const MapComponent = dynamic(() => import("./MapComponent"), { ssr: false });
-
-// ── Metric pool ──────────────────────────────────────────────────────────────
-const METRIC_POOL = [
-  {
-    id: "totalRevenue",
-    title: "Total Revenue",
-    value: "$45,231",
-    change: "+12.5%",
-    trend: "up",
-  },
-  {
-    id: "pendingChecks",
-    title: "Pending Checks",
-    value: "23",
-    change: "5 require attention",
-    trend: "neutral",
-  },
-  {
-    id: "documents",
-    title: "Documents",
-    value: "142",
-    change: "8 uploaded today",
-    trend: "neutral",
-  },
-  {
-    id: "upcomingPayments",
-    title: "Upcoming Payments",
-    value: "$12,450",
-    change: "Due this week",
-    trend: "down",
-  },
-  {
-    id: "totalWells",
-    title: "Total Wells",
-    value: "18",
-    change: "+2 this quarter",
-    trend: "up",
-  },
-  {
-    id: "missingDeeds",
-    title: "Missing Deeds",
-    value: "7",
-    change: "Needs attention",
-    trend: "down",
-  },
-  {
-    id: "reports",
-    title: "Reports",
-    value: "34",
-    change: "3 generated today",
-    trend: "neutral",
-  },
-];
-const DEFAULT_METRICS = [
-  "totalRevenue",
-  "pendingChecks",
-  "documents",
-  "upcomingPayments",
-];
-const STORAGE_KEY = "mrm-dashboard-metrics";
-const MAX_METRICS = 4;
-
-// ── Date range options ────────────────────────────────────────────────────────
-const DATE_RANGES = [
-  { label: "Last 7 Days", value: "7d" },
-  { label: "Last 30 Days", value: "30d" },
-  { label: "Last Quarter", value: "90d" },
-  { label: "This Year", value: "1y" },
-  { label: "All Time", value: "all" },
-];
-
-// ── Alerts ────────────────────────────────────────────────────────────────────
-const alerts = [
-  {
-    icon: CheckSquare,
-    title: "Check #1234 Processed",
-    detail: "Pioneer Natural Resources",
-    time: "2 hours ago",
-    amount: "$2,500",
-    route: "/Dashboard/checks",
-    iconColor: "bg-pink-500/20 text-pink-400",
-  },
-  {
-    icon: FileText,
-    title: "New Document Uploaded",
-    detail: "Lease_Agreement_2024.pdf",
-    time: "5 hours ago",
-    amount: null,
-    route: "/Dashboard/documents",
-    iconColor: "bg-purple-500/20 text-purple-400",
-  },
-  {
-    icon: CreditCard,
-    title: "AP Payment Due",
-    detail: "Anadarko Petroleum",
-    time: "1 day ago",
-    amount: "$5,200",
-    route: "/Dashboard/checks",
-    iconColor: "bg-amber-500/20 text-amber-400",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Lease Expiring Soon",
-    detail: "Permian Basin — Section 14",
-    time: "3 days ago",
-    amount: null,
-    route: "/Dashboard/DashboardDirectory",
-    iconColor: "bg-red-500/20 text-red-400",
-  },
-];
-
-// ── Quick access ──────────────────────────────────────────────────────────────
-const quickAccess = [
-  {
-    icon: CheckSquare,
-    label: "Process Revenue Checks",
-    route: "/Dashboard/checks",
-  },
-  {
-    icon: FileText,
-    label: "Set Up New Lease/Deed",
-    route: "/Dashboard/leases",
-  },
-  {
-    icon: CreditCard,
-    label: "Process AP Payments",
-    route: "/Dashboard/checks",
-  },
-  { icon: BarChart3, label: "View Reports", route: "/Dashboard/reports" },
-];
-
-// ── Revenue chart ─────────────────────────────────────────────────────────────
-const REVENUE_DATA = [
-  { month: "Aug", value: 28000 },
-  { month: "Sep", value: 34000 },
-  { month: "Oct", value: 29500 },
-  { month: "Nov", value: 41000 },
-  { month: "Dec", value: 37500 },
-  { month: "Jan", value: 45231 },
-];
-
-const RevenueChart: React.FC<{ isLight: boolean }> = ({ isLight }) => {
-  const W = 500;
-  const H = 160;
-  const padX = 40;
-  const padY = 12;
-  const chartW = W - padX * 2;
-  const chartH = H - padY * 2;
-  const max = 50000;
-  const toX = (i: number) => padX + (i / (REVENUE_DATA.length - 1)) * chartW;
-  const toY = (v: number) => padY + chartH - (v / max) * chartH;
-  const points = REVENUE_DATA.map((d, i) => ({ x: toX(i), y: toY(d.value) }));
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-    .join(" ");
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${H - padY} L ${points[0].x} ${H - padY} Z`;
-  const stroke = "#9333ea";
-  const labelColor = isLight ? "#6b7280" : "rgba(255,255,255,0.45)";
-  const gridColor = isLight ? "rgba(147,51,234,0.1)" : "rgba(255,255,255,0.06)";
-  const yTicks = [10000, 20000, 30000, 40000, 50000];
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H + 24}`} className="w-full h-full">
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop
-            offset="0%"
-            stopColor={stroke}
-            stopOpacity={isLight ? "0.15" : "0.3"}
-          />
-          <stop offset="100%" stopColor={stroke} stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      {yTicks.map((t) => (
-        <line
-          key={t}
-          x1={padX}
-          y1={toY(t)}
-          x2={W - padX}
-          y2={toY(t)}
-          stroke={gridColor}
-          strokeWidth="1"
-        />
-      ))}
-      <path d={areaPath} fill="url(#areaGrad)" />
-      <path
-        d={linePath}
-        fill="none"
-        stroke={stroke}
-        strokeWidth="2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      {points.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r="3" fill={stroke} />
-      ))}
-      {REVENUE_DATA.map((d, i) => (
-        <text
-          key={i}
-          x={toX(i)}
-          y={H + 16}
-          textAnchor="middle"
-          fontSize="10"
-          fill={labelColor}
-        >
-          {d.month}
-        </text>
-      ))}
-      {yTicks
-        .filter((_, i) => i % 2 === 1)
-        .map((t) => (
-          <text
-            key={t}
-            x={padX - 6}
-            y={toY(t) + 4}
-            textAnchor="end"
-            fontSize="9"
-            fill={labelColor}
-          >
-            ${(t / 1000).toFixed(0)}k
-          </text>
-        ))}
-    </svg>
-  );
-};
 
 // ── Main component ────────────────────────────────────────────────────────────
 const DashboardHome: React.FC = () => {
@@ -261,6 +46,10 @@ const DashboardHome: React.FC = () => {
   const router = useRouter();
 
   const [dateRange, setDateRange] = useState("30d");
+  const [revenueView, setRevenueView] = useState<RevenueViewKey>("month");
+  const [statDropdowns, setStatDropdowns] = useState<Record<string, string>>(
+    {}
+  );
 
   const [selectedMetrics, setSelectedMetrics] =
     useState<string[]>(DEFAULT_METRICS);
@@ -323,8 +112,23 @@ const DashboardHome: React.FC = () => {
         boxShadow: "0 2px 16px 0 rgb(139 92 246 / 0.08)",
       }
     : {
-        background: "rgba(255,255,255,0.05)",
-        borderColor: "rgba(255,255,255,0.08)",
+        background: "rgba(255,255,255,0.09)",
+        borderColor: "rgba(255,255,255,0.18)",
+        boxShadow: "0 2px 16px 0 rgba(0,0,0,0.3)",
+      };
+
+  const statCardStyle = isLight
+    ? {
+        background:
+          "linear-gradient(135deg, rgb(243 232 255) 0%, rgb(233 213 255) 100%)",
+        borderColor: "rgb(216 180 254 / 0.6)",
+        boxShadow: "0 2px 12px 0 rgb(139 92 246 / 0.1)",
+      }
+    : {
+        background:
+          "linear-gradient(135deg, rgba(147, 51, 234, 0.22) 0%, rgba(126, 34, 206, 0.22) 100%)",
+        borderColor: "rgba(147, 51, 234, 0.4)",
+        boxShadow: "0 2px 16px 0 rgba(0,0,0,0.3)",
       };
 
   return (
@@ -457,60 +261,131 @@ const DashboardHome: React.FC = () => {
 
       {/* ── Row 1: Stat boxes ── */}
       <div className="grid grid-cols-4 gap-3">
-        {displayMetrics.map((stat) => (
-          <Card
-            key={stat.id}
-            className="backdrop-blur-lg hover:transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-            style={
-              isLight
-                ? {
-                    background:
-                      "linear-gradient(135deg, rgb(237 233 254) 0%, rgb(252 231 243) 100%)",
-                    borderColor: "rgb(216 180 254 / 0.6)",
-                    boxShadow: "0 2px 12px 0 rgb(139 92 246 / 0.1)",
-                  }
-                : {
-                    background:
-                      "linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%)",
-                    borderColor: "rgba(233, 30, 99, 0.2)",
-                  }
-            }
-          >
-            <CardHeader className="pb-2">
-              <CardTitle
-                className={`text-sm font-medium ${isLight ? "text-gray-700" : "text-white/85"}`}
-              >
-                {stat.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div
-                className={`text-3xl font-bold ${isLight ? "text-gray-900" : "text-white"}`}
-              >
-                {stat.value}
-              </div>
-              <div
-                className={`text-sm mt-2 flex items-center gap-1 ${
-                  stat.trend === "up"
-                    ? isLight
-                      ? "text-green-800"
-                      : "text-green-300"
-                    : stat.trend === "down"
-                      ? isLight
-                        ? "text-red-800"
-                        : "text-red-300"
-                      : isLight
-                        ? "text-amber-800"
-                        : "text-yellow-300"
-                }`}
-              >
-                {stat.trend === "up" && <TrendingUp className="h-4 w-4" />}
-                {stat.trend === "down" && <TrendingDown className="h-4 w-4" />}
-                {stat.change}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {displayMetrics.map((stat) => {
+          const isLink = stat.kind === "link";
+          const isDropdown = stat.kind === "dropdown";
+          const selectedValue = isDropdown
+            ? (statDropdowns[stat.id] ?? stat.options[0].value)
+            : undefined;
+          const selectedOption = isDropdown
+            ? (stat.options.find((o) => o.value === selectedValue) ??
+              stat.options[0])
+            : undefined;
+          const data: MetricData | undefined = isDropdown
+            ? selectedOption!.data
+            : isLink
+              ? undefined
+              : stat;
+          const LinkIcon = isLink ? stat.icon : undefined;
+
+          return (
+            <Card
+              key={stat.id}
+              onClick={isLink ? () => router.push(stat.route) : undefined}
+              className={`backdrop-blur-lg hover:transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col overflow-hidden ${isLink ? "cursor-pointer" : ""}`}
+              style={statCardStyle}
+            >
+              <CardHeader className="pb-2 flex-none">
+                <CardTitle
+                  className={`text-lg font-bold ${isLight ? "text-gray-700" : "text-white"}`}
+                >
+                  {stat.title}
+                </CardTitle>
+                {isDropdown && (
+                  <CardAction>
+                    <Select
+                      value={selectedValue}
+                      onValueChange={(v) =>
+                        setStatDropdowns((prev) => ({
+                          ...prev,
+                          [stat.id]: v,
+                        }))
+                      }
+                    >
+                      <SelectTrigger
+                        className={`h-6 text-[10px] w-[92px] px-2 cursor-pointer ${
+                          isLight
+                            ? "bg-white border-purple-200 text-gray-700"
+                            : "bg-white/10 border-purple-300/30 text-white"
+                        }`}
+                      >
+                        <SelectValue className="truncate" />
+                      </SelectTrigger>
+                      <SelectContent
+                        className={`z-[9999] ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"}`}
+                        position="popper"
+                        sideOffset={4}
+                      >
+                        {stat.options.map((o) => (
+                          <SelectItem
+                            key={o.value}
+                            value={o.value}
+                            className={`text-xs cursor-pointer ${
+                              isLight
+                                ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                                : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
+                            }`}
+                          >
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardAction>
+                )}
+              </CardHeader>
+              {isLink ? (
+                <CardContent className="flex-1 flex flex-col items-center justify-center gap-2">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      isLight
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-purple-500/20 text-purple-300"
+                    }`}
+                  >
+                    {LinkIcon && <LinkIcon className="h-5 w-5" />}
+                  </div>
+                  <span
+                    className={`text-sm font-medium ${isLight ? "text-purple-700" : "text-purple-300"}`}
+                  >
+                    {stat.label}
+                  </span>
+                </CardContent>
+              ) : (
+                <CardContent>
+                  <div
+                    className={`text-4xl font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+                  >
+                    {data!.value}
+                  </div>
+                  <div
+                    className={`text-base font-semibold mt-2 flex items-center gap-1 ${
+                      data!.trend === "up"
+                        ? isLight
+                          ? "text-green-800"
+                          : "text-emerald-300"
+                        : data!.trend === "down"
+                          ? isLight
+                            ? "text-red-800"
+                            : "text-red-300"
+                          : isLight
+                            ? "text-amber-800"
+                            : "text-amber-200"
+                    }`}
+                  >
+                    {data!.trend === "up" && (
+                      <TrendingUp className="h-5 w-5" />
+                    )}
+                    {data!.trend === "down" && (
+                      <TrendingDown className="h-5 w-5" />
+                    )}
+                    {data!.change}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          );
+        })}
       </div>
 
       {/* ── Row 2: Revenue chart + Map ── */}
@@ -521,20 +396,55 @@ const DashboardHome: React.FC = () => {
         >
           <CardHeader className="pb-1 flex-none">
             <CardTitle
-              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Revenue Overview
             </CardTitle>
+            <CardAction>
+              <Select
+                value={revenueView}
+                onValueChange={(v) => setRevenueView(v as RevenueViewKey)}
+              >
+                <SelectTrigger
+                  className={`h-7 text-xs w-28 cursor-pointer ${
+                    isLight
+                      ? "bg-white border-purple-200 text-gray-700"
+                      : "bg-white/10 border-purple-300/30 text-white"
+                  }`}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent
+                  className={`z-[9999] ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"}`}
+                  position="popper"
+                  sideOffset={4}
+                >
+                  {REVENUE_VIEW_OPTIONS.map((o) => (
+                    <SelectItem
+                      key={o.value}
+                      value={o.value}
+                      className={`text-xs cursor-pointer ${
+                        isLight
+                          ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                          : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
+                      }`}
+                    >
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardAction>
           </CardHeader>
           <CardContent className="flex-1 min-h-0 px-4 pb-3">
-            <RevenueChart isLight={isLight} />
+            <RevenueChart data={REVENUE_VIEWS[revenueView]} isLight={isLight} />
           </CardContent>
         </Card>
 
         <Card className="border overflow-hidden p-0" style={contentCardStyle}>
           <div className="flex items-center justify-between px-4 py-2 flex-none">
             <span
-              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Wells &amp; Deeds
             </span>
@@ -575,7 +485,7 @@ const DashboardHome: React.FC = () => {
         >
           <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
-              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Alerts
             </CardTitle>
@@ -615,7 +525,7 @@ const DashboardHome: React.FC = () => {
                   <div className="flex flex-col items-end gap-0.5 shrink-0 ml-2">
                     {alert.amount && (
                       <span
-                        className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+                        className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
                       >
                         {alert.amount}
                       </span>
@@ -639,7 +549,7 @@ const DashboardHome: React.FC = () => {
         >
           <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
-              className={`text-sm font-semibold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Quick Access
             </CardTitle>
@@ -647,6 +557,52 @@ const DashboardHome: React.FC = () => {
           <CardContent className="flex-1 min-h-0 px-4 pt-2 pb-2">
             <div className="grid grid-cols-2 gap-2 h-full">
               {quickAccess.map((action, idx) => {
+                if ("split" in action) {
+                  return (
+                    <div
+                      key={idx}
+                      className={`w-full h-full flex rounded-md border overflow-hidden ${
+                        isLight
+                          ? "bg-purple-50 border-purple-200"
+                          : "bg-white/5 border-white/10"
+                      }`}
+                    >
+                      {action.split.map((sub, subIdx) => {
+                        const SubIcon = sub.icon;
+                        return (
+                          <React.Fragment key={sub.label}>
+                            {subIdx === 1 && (
+                              <div
+                                className={`w-px shrink-0 ${isLight ? "bg-purple-200" : "bg-white/10"}`}
+                              />
+                            )}
+                            <button
+                              onClick={() => router.push(sub.route)}
+                              className={`flex-1 h-full flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
+                                isLight
+                                  ? "text-gray-800 hover:bg-purple-100 hover:text-purple-900"
+                                  : "text-white hover:bg-purple-500/20"
+                              }`}
+                            >
+                              <div
+                                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                                  isLight
+                                    ? "bg-purple-100 text-purple-700"
+                                    : "bg-purple-500/20 text-purple-300"
+                                }`}
+                              >
+                                <SubIcon className="h-3 w-3" />
+                              </div>
+                              <span className="text-sm font-medium text-center leading-tight">
+                                {sub.label}
+                              </span>
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  );
+                }
                 const Icon = action.icon;
                 return (
                   <Button
@@ -668,7 +624,7 @@ const DashboardHome: React.FC = () => {
                     >
                       <Icon className="h-3 w-3" />
                     </div>
-                    <span className="text-[11px] font-medium text-center leading-tight">
+                    <span className="text-sm font-medium text-center leading-tight">
                       {action.label}
                     </span>
                   </Button>
