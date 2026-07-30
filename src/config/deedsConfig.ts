@@ -43,7 +43,7 @@ export const deedsConfig: ModuleConfig = {
     field.select(
       "interestType",
       "Interest Type",
-      ["Mineral", "Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
+      ["Mineral", "Royalty", "Mineral and Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
       {
         required: true,
         tab: "basic",
@@ -52,27 +52,13 @@ export const deedsConfig: ModuleConfig = {
     ),
 
     // ========== BASIC TAB — parties ==========
-    // interests first, then free-form textareas side by side below
-    field.text("grantorInterestConveyed", "Grantor Interest Conveyed", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      placeholder: "e.g. 1/2 or 0.5",
-    }),
-
-    field.text("granteeInterestReceived", "Grantee Interest Received", {
-      required: true,
-      tab: "basic",
-      section: "parties",
-      placeholder: "e.g. 1/2 or 0.5",
-    }),
-
+    // Backend stores these as title_document_conveyance_party rows (multi-grantee).
+    // FE still uses flat grantor + grantee display fields until a multi-party control ships.
     field.textarea("grantor", "Grantor", {
       required: true,
       tab: "basic",
       section: "parties",
       rows: 2,
-      helpText: "Free form — no more than 2 pages",
     }),
 
     field.textarea("grantee", "Grantee", {
@@ -80,7 +66,19 @@ export const deedsConfig: ModuleConfig = {
       tab: "basic",
       section: "parties",
       rows: 2,
-      helpText: "Free form — no more than 2 pages",
+      helpText: "Multiple grantees with interest are supported in the API; UI multi-entry coming next",
+    }),
+
+    field.text("grantorInterestConveyed", "Grantor Interest Conveyed", {
+      tab: "basic",
+      section: "parties",
+      placeholder: "e.g. 1/2 or 0.5",
+    }),
+
+    field.text("granteeInterestReceived", "Grantee Interest Received", {
+      tab: "basic",
+      section: "parties",
+      placeholder: "e.g. 1/2 or 0.5",
     }),
 
     // ========== BASIC TAB — dates ==========
