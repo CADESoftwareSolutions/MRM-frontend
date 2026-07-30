@@ -21,14 +21,32 @@ const normalizeCounty = (value: string) =>
 
 const countyLabel = (county: CountyReference) => county.fullName || county.name;
 
+/** 3-digit county FIPS (e.g. Reeves → 389). */
+const countyFips = (county: CountyReference) => county.fipsCounty || null;
+
+const fullFipsCode = (county: CountyReference) =>
+  county.fipsState && county.fipsCounty
+    ? `${county.fipsState}${county.fipsCounty}`
+    : countyFips(county);
+
 const filterCounties = (counties: CountyReference[], input: string) => {
   const query = normalizeCounty(input);
-  if (!query) return counties.slice(0, 25);
+  const fipsQuery = input.trim();
+  if (!query && !fipsQuery) return counties.slice(0, 25);
 
   const scored = counties
     .map((county) => {
       const name = normalizeCounty(county.name);
       const label = normalizeCounty(countyLabel(county));
+      const fips = countyFips(county) ?? "";
+      const fullFips = fullFipsCode(county) ?? "";
+
+      if (fipsQuery && (fips === fipsQuery || fullFips === fipsQuery)) {
+        return { county, score: 0 };
+      }
+      if (fipsQuery && (fips.startsWith(fipsQuery) || fullFips.startsWith(fipsQuery))) {
+        return { county, score: 1 };
+      }
       if (name === query || label === query) return { county, score: 0 };
       if (name.startsWith(query) || label.startsWith(query)) return { county, score: 1 };
       if (name.includes(query) || label.includes(query)) return { county, score: 2 };
@@ -149,8 +167,15 @@ export const CountyCombobox: React.FC<CountyComboboxProps> = ({
                       : "hover:bg-purple-400/30",
                   )}
                 >
-                  <span>{countyLabel(county)}</span>
-                  {selected && <Check className="size-4" />}
+                  <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                    <span className="truncate">{countyLabel(county)}</span>
+                    {countyFips(county) && (
+                      <span className="shrink-0 text-xs text-white/50">
+                        FIPS {countyFips(county)}
+                      </span>
+                    )}
+                  </span>
+                  {selected && <Check className="size-4 shrink-0" />}
                 </button>
               );
             })
