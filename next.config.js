@@ -11,6 +11,7 @@ const nextConfig = {
       { source: "/Dashboard/documents",  destination: "/Dashboard/DashboardDirectory/Documents" },
       { source: "/Dashboard/wells",      destination: "/Dashboard/DashboardDirectory/Wells" },
       { source: "/Dashboard/deeds",      destination: "/Dashboard/DashboardDirectory/Deeds" },
+      { source: "/Dashboard/tracts",     destination: "/Dashboard/DashboardDirectory/Tracts" },
       { source: "/Dashboard/reports",    destination: "/Dashboard/DashboardDirectory/Reports" },
       { source: "/Dashboard/settings",   destination: "/Dashboard/Settings" },
     ];

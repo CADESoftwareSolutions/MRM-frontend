@@ -123,9 +123,11 @@ export const Form: React.FC<FormProps> = ({
   const shouldShowField = (field: FieldConfig): boolean => {
     if (!field.dependsOn) return true;
     const val = watchedValues[field.dependsOn];
+    // dependsOnValue may be a single value or an array of values to OR-match against.
+    const targets = Array.isArray(field.dependsOnValue) ? field.dependsOnValue : [field.dependsOnValue];
     return Array.isArray(val)
-      ? val.includes(field.dependsOnValue)
-      : val === field.dependsOnValue;
+      ? val.some((v) => targets.includes(v))
+      : targets.includes(val);
   };
 
   const getFieldRules = (f: FieldConfig) => {
@@ -396,7 +398,17 @@ export const Form: React.FC<FormProps> = ({
         </TabsList>
 
         {config.tabs.map((tab) => (
-          <TabsContent key={tab.id} value={tab.id} className="mt-4">
+          // forceMount + hidden (rather than Radix's default unmount-when-inactive) keeps every
+          // tab's fields registered with react-hook-form at all times. Otherwise a required field
+          // on a tab the user never clicks into (e.g. "Lease Type" on Terms & Payments) never
+          // registers, its validation never runs, and it silently submits as undefined.
+          <TabsContent
+            key={tab.id}
+            value={tab.id}
+            forceMount
+            hidden={activeTab !== tab.id}
+            className="mt-4"
+          >
             {tab.id === "vendor" && (
               <div className="flex items-center gap-2 mb-6 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-blue-300" />
@@ -407,20 +419,24 @@ export const Form: React.FC<FormProps> = ({
               </div>
             )}
             {tab.id === "contacts" ? (
-              <ContactsTab
-                partyId={partyId}
-                contacts={contacts}
-                onAdd={onAddContact!}
-                onUpdate={onUpdateContact!}
-                onDelete={onDeleteContact!}
-              />
+              activeTab === "contacts" && (
+                <ContactsTab
+                  partyId={partyId}
+                  contacts={contacts}
+                  onAdd={onAddContact!}
+                  onUpdate={onUpdateContact!}
+                  onDelete={onDeleteContact!}
+                />
+              )
             ) : tab.id === "netting" ? (
-              <NettingTab
-                partyId={partyId}
-                entries={nettingEntries}
-                allParties={allParties}
-                onChange={onNettingChange ?? (() => {})}
-              />
+              activeTab === "netting" && (
+                <NettingTab
+                  partyId={partyId}
+                  entries={nettingEntries}
+                  allParties={allParties}
+                  onChange={onNettingChange ?? (() => {})}
+                />
+              )
             ) : (
               renderTabContent(tab.id)
             )}
