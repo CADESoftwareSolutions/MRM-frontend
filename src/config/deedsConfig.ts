@@ -11,16 +11,17 @@ export const deedsConfig: ModuleConfig = {
     { id: "documents", label: "Documents" },
   ],
   listFields: [
-    "typeOfDeed",
+    "documentType",
     "grantor",
     "grantee",
     "effectiveDate",
+    "interestType",
   ],
   fields: [
     // ========== BASIC TAB — identification ==========
-    // typeOfDeed + interestType share a row
+    // documentType + interestType share a row
     field.select(
-      "typeOfDeed",
+      "documentType",
       "Type of Deed",
       [
         "Mineral",
@@ -83,7 +84,7 @@ export const deedsConfig: ModuleConfig = {
     }),
 
     // ========== BASIC TAB — dates ==========
-    // effectiveDate + acres share a row
+    // effectiveDate + executedDate + acres share the section
     {
       id: "effectiveDate",
       label: "Effective Date",
@@ -94,6 +95,15 @@ export const deedsConfig: ModuleConfig = {
       gridColumn: "span 1",
     },
 
+    {
+      id: "executedDate",
+      label: "Executed Date",
+      type: "date" as const,
+      tab: "basic",
+      section: "dates",
+      gridColumn: "span 1" as const,
+    },
+
     field.number("acres", "Acres", {
       tab: "basic",
       section: "dates",
@@ -101,7 +111,14 @@ export const deedsConfig: ModuleConfig = {
     }),
 
     // ========== BASIC TAB — details ==========
-    field.textarea("reservationsBurdens", "Reservations/Burdens", {
+    field.number("consideration", "Consideration ($)", {
+      tab: "basic",
+      section: "details",
+      gridColumn: "span 2",
+      placeholder: "0.00",
+    }),
+
+    field.textarea("reservations", "Reservations/Burdens", {
       tab: "basic",
       section: "details",
       gridColumn: "span 2",
@@ -109,7 +126,7 @@ export const deedsConfig: ModuleConfig = {
       helpText: "Free form — no more than 4 pages",
     }),
 
-    field.textarea("comments", "Comments", {
+    field.textarea("notes", "Comments", {
       tab: "basic",
       section: "details",
       gridColumn: "span 2",
@@ -119,8 +136,8 @@ export const deedsConfig: ModuleConfig = {
 
     // ========== LEGAL DESCRIPTION TAB ==========
     {
-      id: "legalDescriptions",
-      label: "Legal Descriptions",
+      id: "tractLinks",
+      label: "Tracts",
       type: "custom" as const,
       tab: "legal",
       section: "default",
@@ -150,88 +167,3 @@ export const deedsConfig: ModuleConfig = {
 };
 
 export default deedsConfig;
-
-export const MOCK_DEEDS: Record<string, any>[] = [
-  {
-    id: "1",
-    deedId: "D-TX-B010-S012",
-    typeOfDeed: "Mineral",
-    grantor: "Smith Family Trust",
-    grantorInterestConveyed: "1/2",
-    grantee: "Acme Minerals LLC",
-    granteeInterestReceived: "1/2",
-    effectiveDate: "2023-03-15",
-    interestType: "Mineral",
-    state: "TX",
-    county: "Reeves",
-    acres: 320.0,
-    reservationsBurdens: "",
-    comments: "Standard mineral deed with no reservations.",
-    _legalDescriptions: [
-      {
-        id: "ld-1",
-        type: "Block/Section/Survey",
-        block: "10",
-        township: "5S",
-        section: "12",
-        abstract: "A-123",
-        survey: "Smith Survey",
-        quarterCalls: "NW/4",
-        upi: "",
-      },
-    ],
-    _recordation: [
-      {
-        id: "rec-1",
-        county: "Reeves",
-        state: "TX",
-        volume: "1234",
-        page: "567",
-        instrumentId: "DOC-2023-0156",
-        recordingDate: "2023-03-20",
-      },
-    ],
-    _attachments: [],
-  },
-  {
-    id: "2",
-    deedId: "D-OK-2023-002",
-    typeOfDeed: "Royalty",
-    grantor: "Jane Doe",
-    grantorInterestConveyed: "0.25",
-    grantee: "Pioneer Royalties Inc",
-    granteeInterestReceived: "0.25",
-    effectiveDate: "2023-06-01",
-    interestType: "Royalty",
-    state: "OK",
-    county: "Canadian",
-    acres: 160.5,
-    reservationsBurdens: "Grantor reserves NPRI of 1/128.",
-    comments: "",
-    _legalDescriptions: [
-      {
-        id: "ld-2",
-        type: "Rectangular (STR)",
-        lot: "1",
-        block: "8",
-        section: "14",
-        township: "12N",
-        range: "8W",
-        quarterCalls: "SE/4",
-        upi: "",
-      },
-    ],
-    _recordation: [
-      {
-        id: "rec-2",
-        county: "Canadian",
-        state: "OK",
-        volume: "2456",
-        page: "123",
-        instrumentId: "REC-2023-8901",
-        recordingDate: "2023-06-10",
-      },
-    ],
-    _attachments: [],
-  },
-];

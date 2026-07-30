@@ -1,26 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { LeaseAttachmentsTab, LeaseAttachment } from "../../../../components/FormComponents/LeaseAttachmentsTab";
-import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
-import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
-import leasesConfig from "@/config/leasesConfig";
-import { useLeases } from "@/hooks/useLeases";
+import tractsConfig from "@/config/tractsConfig";
+import { useTracts } from "@/hooks/useTracts";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
 import { useStateCountyReference } from "@/hooks/useStateCountyReference";
 
-const Leases = () => {
+const Tracts = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
-  const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
-  const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
   const { data: stateCountyReference = [] } = useStateCountyReference();
 
   const dynamicOptions = useMemo(
@@ -42,20 +36,19 @@ const Leases = () => {
     searchTerm,
     selectedItem,
     filteredData,
-    availableTracts,
     saveError,
     clearSaveError,
     pendingDeleteItem,
     confirmDelete,
     cancelDelete,
     setSearchTerm,
-    handleAdd: _handleAdd,
-    handleEdit: _handleEdit,
+    handleAdd,
+    handleEdit,
     handleSave,
     handleDelete,
     handleCancel,
-  } = useLeases({
-    config: leasesConfig,
+  } = useTracts({
+    config: tractsConfig,
     accountId: userProfile?.account?.id ?? 0,
   });
 
@@ -66,28 +59,14 @@ const Leases = () => {
   useEffect(() => {
     const count = filteredData.length;
     setPageHeader({
-      title: "Leases",
-      subtitle: `${count} ${count === 1 ? "lease" : "leases"}`,
+      title: "Tracts",
+      subtitle: `${count} ${count === 1 ? "tract" : "tracts"}`,
     });
     return () => setPageHeader({});
   }, [filteredData.length]);
 
-  const handleAdd = () => {
-    setTractLinks([]);
-    setRecordation([]);
-    setAttachments([]);
-    _handleAdd();
-  };
-
-  const handleEdit = (item: any) => {
-    setTractLinks(item._tractLinks || []);
-    setRecordation(item._recordation || []);
-    setAttachments(item._attachments || []);
-    _handleEdit(item);
-  };
-
   const onSave = (formData: any) => {
-    handleSave(formData, recordation, tractLinks);
+    handleSave(formData);
   };
 
   return (
@@ -101,14 +80,14 @@ const Leases = () => {
                 className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add New Lease
+                Add New Tract
               </Button>
             </div>
           )}
 
           {view === "list" && (
             <List
-              config={leasesConfig}
+              config={tractsConfig}
               data={filteredData}
               loading={loading}
               searchTerm={searchTerm}
@@ -120,7 +99,7 @@ const Leases = () => {
 
           {(view === "add" || view === "edit") && (
             <Form
-              config={leasesConfig}
+              config={tractsConfig}
               initialData={selectedItem}
               onSave={onSave}
               onCancel={handleCancel}
@@ -129,27 +108,6 @@ const Leases = () => {
               onClearSaveError={clearSaveError}
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
-              customContent={{
-                tractLinks: (
-                  <TractPickerField
-                    availableTracts={availableTracts}
-                    value={tractLinks}
-                    onChange={setTractLinks}
-                  />
-                ),
-                recordation: (
-                  <MultiRecordationField
-                    value={recordation}
-                    onChange={setRecordation}
-                  />
-                ),
-                attachments: (
-                  <LeaseAttachmentsTab
-                    value={attachments}
-                    onChange={setAttachments}
-                  />
-                ),
-              }}
             />
           )}
         </div>
@@ -157,7 +115,10 @@ const Leases = () => {
 
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
-        itemName={pendingDeleteItem?.lessor || `Lease #${pendingDeleteItem?.id}`}
+        itemName={
+          pendingDeleteItem?.label ||
+          `Tract #${pendingDeleteItem?.id}`
+        }
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
@@ -165,4 +126,4 @@ const Leases = () => {
   );
 };
 
-export default Leases;
+export default Tracts;

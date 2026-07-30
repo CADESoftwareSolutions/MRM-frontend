@@ -67,6 +67,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         { text: "Leases",    route: "/Dashboard/leases" },
         { text: "Wells",     route: "/Dashboard/wells" },
         { text: "Deeds",     route: "/Dashboard/deeds" },
+        { text: "Tracts",    route: "/Dashboard/tracts" },
       ],
     },
     {

@@ -115,7 +115,7 @@ export const field = {
   select: (
     id: string,
     label: string,
-    options: string[],
+    options: string[] | { value: string; label: string }[],
     opts: Partial<FieldConfig> = {},
   ): FieldConfig => ({
     id,

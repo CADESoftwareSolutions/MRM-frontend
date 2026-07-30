@@ -5,7 +5,7 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab, LeaseAttachment } from "../../../../components/FormComponents/LeaseAttachmentsTab";
-import { MultiLegalDescriptionField, LegalDescriptionEntry } from "../../../../components/FormComponents/MultiLegalDescriptionField";
+import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import deedsConfig from "@/config/deedsConfig";
 import { useDeeds } from "@/hooks/useDeeds";
@@ -18,9 +18,8 @@ const Deeds = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
-  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
+  const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
-  const [showLegalValidation, setShowLegalValidation] = useState(false);
 
   const {
     view,
@@ -28,6 +27,7 @@ const Deeds = () => {
     searchTerm,
     selectedItem,
     filteredData,
+    availableTracts,
     saveError,
     clearSaveError,
     pendingDeleteItem,
@@ -58,28 +58,21 @@ const Deeds = () => {
   }, [filteredData.length]);
 
   const handleAdd = () => {
-    setLegalDescriptions([]);
+    setTractLinks([]);
     setRecordation([]);
     setAttachments([]);
-    setShowLegalValidation(false);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
-    setLegalDescriptions(item._legalDescriptions || []);
+    setTractLinks(item._tractLinks || []);
     setRecordation(item._recordation || []);
     setAttachments(item._attachments || []);
-    setShowLegalValidation(false);
     _handleEdit(item);
   };
 
   const onSave = (formData: any) => {
-    if (legalDescriptions.length === 0) {
-      setShowLegalValidation(true);
-      return;
-    }
-    setShowLegalValidation(false);
-    handleSave(formData, legalDescriptions, recordation, attachments);
+    handleSave(formData, recordation, tractLinks);
   };
 
   return (
@@ -120,11 +113,11 @@ const Deeds = () => {
               saveError={saveError}
               onClearSaveError={clearSaveError}
               customContent={{
-                legalDescriptions: (
-                  <MultiLegalDescriptionField
-                    value={legalDescriptions}
-                    onChange={setLegalDescriptions}
-                    showValidation={showLegalValidation}
+                tractLinks: (
+                  <TractPickerField
+                    availableTracts={availableTracts}
+                    value={tractLinks}
+                    onChange={setTractLinks}
                   />
                 ),
                 recordation: (
@@ -147,11 +140,7 @@ const Deeds = () => {
 
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
-        itemName={
-          pendingDeleteItem?.deedId ||
-          pendingDeleteItem?.grantor ||
-          "this deed"
-        }
+        itemName={pendingDeleteItem?.grantor || `Deed #${pendingDeleteItem?.id}`}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />

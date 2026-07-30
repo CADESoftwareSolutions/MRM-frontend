@@ -24,27 +24,12 @@ import { AddressEntry } from "../../components/FormComponents/MultiAddressField"
 import { PhoneEntry } from "../../components/FormComponents/MultiPhoneField";
 import { Contact } from "../../components/FormComponents/ContactsTab";
 
-import { API_URL } from "../lib/api";
-
-const GRAPHQL_ENDPOINT = `${API_URL}/graphql`;
+import { executeGraphQL } from "../lib/api";
 
 interface UseDirectoryDataProps {
   config: ModuleConfig;
   accountId: number;
 }
-
-const executeGraphQL = async (query: string, variables: any = {}) => {
-  const response = await fetch(GRAPHQL_ENDPOINT, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-  });
-  const result = await response.json();
-  if (response.status === 401) throw new Error("Authentication required");
-  if (result.errors) throw new Error(result.errors[0].message);
-  return result.data;
-};
 
 const getGraphQLValue = (obj: any, path: string): any =>
   path.split(".").reduce((acc: any, k) => acc?.[k], obj);
