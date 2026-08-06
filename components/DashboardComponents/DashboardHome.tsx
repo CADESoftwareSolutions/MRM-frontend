@@ -108,7 +108,7 @@ const DashboardHome: React.FC = () => {
   const contentCardStyle = isLight
     ? {
         background: "white",
-        borderColor: "rgb(216 180 254 / 0.5)",
+        borderColor: "rgb(147 51 234 / 0.5)",
       }
     : {
         background: "rgba(255,255,255,0.09)",
@@ -121,8 +121,8 @@ const DashboardHome: React.FC = () => {
 
   const statCardStyle = isLight
     ? {
-        background: "linear-gradient(135deg, #ffffff 0%, #f5eefc 100%)",
-        borderColor: "rgb(196 145 255 / 0.55)",
+        background: "white",
+        borderColor: "rgb(147 51 234 / 0.5)",
       }
     : {
         background:
