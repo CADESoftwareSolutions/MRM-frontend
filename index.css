@@ -112,13 +112,22 @@ body {
 .light-theme .border-purple-300\/20,
 .light-theme .border-purple-300\/10 { border-color: rgb(167 139 250 / 0.5); }
 
-/* Inputs & selects */
+/* Inputs & selects — bolder, more visible borders in both themes.
+   Unlayered here beats Tailwind's @layer utilities automatically, so this
+   overrides whatever border-* class each component happens to pass in. */
+input,
+textarea,
+[data-slot="select-trigger"] {
+  border-width: 1.5px;
+  border-color: rgb(196 181 253 / 0.75);
+}
+
 .light-theme input,
 .light-theme textarea,
 .light-theme [data-slot="select-trigger"] {
   background-color: rgb(248 245 255);
   color: rgb(17 24 39);
-  border-color: rgb(196 181 253);
+  border-color: rgb(124 58 237);
 }
 .light-theme input::placeholder,
 .light-theme textarea::placeholder { color: rgb(167 139 250 / 0.6); }

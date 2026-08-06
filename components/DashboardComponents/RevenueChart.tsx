@@ -23,7 +23,7 @@ const RevenueChart: React.FC<{ data: RevenuePoint[]; isLight: boolean }> = ({
     .join(" ");
   const areaPath = `${linePath} L ${points[points.length - 1].x} ${H - padY} L ${points[0].x} ${H - padY} Z`;
   const stroke = "#9333ea";
-  const labelColor = isLight ? "#6b7280" : "rgba(255,255,255,0.45)";
+  const labelColor = isLight ? "#374151" : "rgba(255,255,255,0.85)";
   const gridColor = isLight ? "rgba(147,51,234,0.1)" : "rgba(255,255,255,0.06)";
   const yTicks = [1, 2, 3, 4, 5].map((n) => Math.round((max / 5) * n));
 
@@ -69,6 +69,7 @@ const RevenueChart: React.FC<{ data: RevenuePoint[]; isLight: boolean }> = ({
           y={H + 16}
           textAnchor="middle"
           fontSize="10"
+          fontWeight="600"
           fill={labelColor}
         >
           {d.label}
@@ -83,6 +84,7 @@ const RevenueChart: React.FC<{ data: RevenuePoint[]; isLight: boolean }> = ({
             y={toY(t) + 4}
             textAnchor="end"
             fontSize="9"
+            fontWeight="600"
             fill={labelColor}
           >
             ${(t / 1000).toFixed(0)}k

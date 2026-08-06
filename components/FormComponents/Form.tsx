@@ -161,16 +161,22 @@ export const Form: React.FC<FormProps> = ({
     return (
       <div
         key={field.id}
-        className={field.gridColumn === "span 2" ? "col-span-2" : ""}
+        className={
+          field.gridColumn === "span 3"
+            ? "col-span-3"
+            : field.gridColumn === "span 2"
+              ? "col-span-2"
+              : ""
+        }
       >
-        <Label className="text-white font-semibold flex items-center gap-1 mb-1.5 text-sm">
+        <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
           {field.label}
           {field.required && (
             <span className="text-red-500 text-sm font-bold">*</span>
           )}
         </Label>
         {field.helpText && (
-          <p className="form-help-text text-xs mb-2">{field.helpText}</p>
+          <p className="form-help-text text-xs mb-1">{field.helpText}</p>
         )}
 
         {INPUT_TYPES[field.type] !== undefined && (
@@ -353,22 +359,29 @@ export const Form: React.FC<FormProps> = ({
     const tabFields = config.fields.filter((field) => field.tab === tabId);
     const sections = groupFieldsBySection(tabFields);
     return (
-      <div className="space-y-5">
+      <div className="space-y-3">
         {Object.entries(sections).map(([sectionId, fields]) => (
           <div
             key={sectionId}
             className={
               sectionId !== "default"
-                ? "border-t border-purple-300/30 pt-4"
+                ? "border-t border-purple-300/30 pt-2"
                 : ""
             }
           >
             {sectionId !== "default" && (
-              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-3">
+              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1.5">
                 {sectionId.replace(/-/g, " ")}
               </h3>
             )}
-            <div className={`grid gap-x-4 gap-y-3 ${fields.every((f) => f.type === "boolean") ? "grid-cols-3" : "grid-cols-2"}`}>
+            <div
+              className={`grid gap-x-4 gap-y-2 ${
+                fields.some((f) => f.sectionColumns === 3) ||
+                fields.every((f) => f.type === "boolean")
+                  ? "grid-cols-3"
+                  : "grid-cols-2"
+              }`}
+            >
               {fields.map((field) => renderField(field))}
             </div>
           </div>
@@ -380,22 +393,24 @@ export const Form: React.FC<FormProps> = ({
   const formBody = (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-full bg-white/5 border border-purple-300/20 rounded-xl gap-1 h-auto p-1">
-          {config.tabs.map((tab) => {
-            const classifications = watchedValues.classifications ?? [];
-            if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
-            if (tab.id === "netting" && watchedValues.ownerNettingApplies !== "Yes") return null;
-            return (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-100 hover:text-white hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
-              >
-                {tab.label}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+        {config.tabs.length > 1 && (
+          <TabsList className="flex w-full bg-white/5 border border-purple-300/20 rounded-xl gap-1 h-auto p-1">
+            {config.tabs.map((tab) => {
+              const classifications = watchedValues.classifications ?? [];
+              if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
+              if (tab.id === "netting" && watchedValues.ownerNettingApplies !== "Yes") return null;
+              return (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-100 hover:text-white hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        )}
 
         {config.tabs.map((tab) => (
           // forceMount + hidden (rather than Radix's default unmount-when-inactive) keeps every
@@ -407,10 +422,10 @@ export const Form: React.FC<FormProps> = ({
             value={tab.id}
             forceMount
             hidden={activeTab !== tab.id}
-            className="mt-4"
+            className="mt-2"
           >
             {tab.id === "vendor" && (
-              <div className="flex items-center gap-2 mb-6 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-3 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-blue-300" />
                 <p className="text-sm text-blue-200">
                   A/P Vendor information only appears for contacts with VENDOR
@@ -445,7 +460,7 @@ export const Form: React.FC<FormProps> = ({
       </Tabs>
 
       {saveError && (
-        <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
+        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-center justify-between">
           <p className="text-sm text-red-300">{saveError}</p>
           <button
             onClick={onClearSaveError}
@@ -457,7 +472,7 @@ export const Form: React.FC<FormProps> = ({
       )}
 
       {isSubmitted && Object.keys(errors).length > 0 && (
-        <div className="mt-6 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
+        <div className="mt-3 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm text-red-300 font-medium">
@@ -478,7 +493,7 @@ export const Form: React.FC<FormProps> = ({
       )}
 
       {showOuterSave && (
-        <div className="flex gap-3 mt-5 pt-4 border-t border-purple-300/30">
+        <div className="flex gap-3 mt-3 pt-3 border-t border-purple-300/30">
           <Button
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
@@ -504,7 +519,7 @@ export const Form: React.FC<FormProps> = ({
   }
 
   return (
-    <Card className="bg-white/10 backdrop-blur-md border-purple-300/30">
+    <Card className="bg-white/10 backdrop-blur-md border-purple-300/30 gap-3 py-4">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-white flex items-center gap-2">

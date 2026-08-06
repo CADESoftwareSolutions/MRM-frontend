@@ -23,6 +23,8 @@ export interface FieldConfig {
   placeholder?: string;
   rows?: number;
   gridColumn?: "span 1" | "span 2" | "span 3";
+  /** Opt a section into a denser 3-column layout (default is 2, or 3 automatically when every field in the section is type "boolean"). */
+  sectionColumns?: 3;
   defaultValue?: any;
   dependsOn?: string; // Show field only if another field has certain value
   dependsOnValue?: any;

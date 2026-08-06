@@ -108,21 +108,21 @@ const DashboardHome: React.FC = () => {
   const contentCardStyle = isLight
     ? {
         background: "white",
-        borderColor: "rgb(167 139 250 / 0.5)",
-        boxShadow: "0 2px 16px 0 rgb(139 92 246 / 0.08)",
+        borderColor: "rgb(216 180 254 / 0.5)",
       }
     : {
         background: "rgba(255,255,255,0.09)",
         borderColor: "rgba(255,255,255,0.18)",
         boxShadow: "0 2px 16px 0 rgba(0,0,0,0.3)",
       };
+  const contentCardShadow = isLight
+    ? "shadow-[0_2px_12px_0_rgba(139,92,246,0.08)] hover:shadow-[0_10px_32px_0_rgba(139,92,246,0.22)]"
+    : "";
 
   const statCardStyle = isLight
     ? {
-        background:
-          "linear-gradient(135deg, rgb(243 232 255) 0%, rgb(233 213 255) 100%)",
-        borderColor: "rgb(216 180 254 / 0.6)",
-        boxShadow: "0 2px 12px 0 rgb(139 92 246 / 0.1)",
+        background: "linear-gradient(135deg, #ffffff 0%, #f5eefc 100%)",
+        borderColor: "rgb(196 145 255 / 0.55)",
       }
     : {
         background:
@@ -130,6 +130,9 @@ const DashboardHome: React.FC = () => {
         borderColor: "rgba(147, 51, 234, 0.4)",
         boxShadow: "0 2px 16px 0 rgba(0,0,0,0.3)",
       };
+  const statCardShadow = isLight
+    ? "shadow-[0_2px_14px_0_rgba(147,51,234,0.12)] hover:shadow-[0_12px_36px_0_rgba(147,51,234,0.3)]"
+    : "";
 
   return (
     <div className="flex flex-col gap-4 p-4" style={{ marginTop: 64 }}>
@@ -137,9 +140,9 @@ const DashboardHome: React.FC = () => {
       <div className="flex items-center justify-end gap-2">
         <Select value={dateRange} onValueChange={setDateRange}>
           <SelectTrigger
-            className={`h-4 text-xs w-30 cursor-pointer ${
+            className={`h-4 text-xs w-30 cursor-pointer font-medium ${
               isLight
-                ? "bg-white border-purple-200 text-gray-700"
+                ? "bg-white border-purple-200 text-gray-800"
                 : "bg-white/10 border-purple-300/30 text-white"
             }`}
           >
@@ -154,9 +157,9 @@ const DashboardHome: React.FC = () => {
               <SelectItem
                 key={r.value}
                 value={r.value}
-                className={`text-xs cursor-pointer ${
+                className={`text-xs cursor-pointer font-medium ${
                   isLight
-                    ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                    ? "text-gray-800 hover:bg-purple-50 focus:bg-purple-50"
                     : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
                 }`}
               >
@@ -169,10 +172,10 @@ const DashboardHome: React.FC = () => {
         <div className="relative" ref={pickerRef}>
           <button
             onClick={() => setShowPicker((s) => !s)}
-            className={`flex items-center justify-center gap-1.5 text-xs rounded-lg border w-30 h-9 cursor-pointer transition-colors ${
+            className={`flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg border w-30 h-9 cursor-pointer transition-colors ${
               isLight
-                ? "border-purple-200 bg-white text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-                : "border-purple-300/30 bg-white/5 text-white/60 hover:bg-purple-500/20 hover:text-white"
+                ? "border-purple-200 bg-white text-gray-800 hover:bg-purple-50 hover:text-purple-700"
+                : "border-purple-300/30 bg-white/5 text-white/85 hover:bg-purple-500/20 hover:text-white"
             }`}
           >
             <Settings className="h-3.5 w-3.5" />
@@ -189,7 +192,7 @@ const DashboardHome: React.FC = () => {
             >
               <div className="flex items-center justify-between px-4 pb-2 pt-1">
                 <p
-                  className={`text-xs font-semibold uppercase tracking-wider ${isLight ? "text-gray-500" : "text-purple-300/80"}`}
+                  className={`text-xs font-bold uppercase tracking-wider ${isLight ? "text-gray-700" : "text-purple-200"}`}
                 >
                   Visible metrics
                 </p>
@@ -197,13 +200,13 @@ const DashboardHome: React.FC = () => {
                   {selectedMetrics.length > 0 && (
                     <button
                       onClick={() => setSelectedMetrics([])}
-                      className={`text-xs cursor-pointer transition-colors ${isLight ? "text-gray-400 hover:text-red-600" : "text-white/40 hover:text-red-400"}`}
+                      className={`text-xs font-medium cursor-pointer transition-colors ${isLight ? "text-gray-600 hover:text-red-600" : "text-white/70 hover:text-red-400"}`}
                     >
                       Deselect all
                     </button>
                   )}
                   <p
-                    className={`text-xs ${atMax ? "text-amber-500 font-medium" : isLight ? "text-gray-400" : "text-white/40"}`}
+                    className={`text-xs font-medium ${atMax ? "text-amber-600" : isLight ? "text-gray-600" : "text-white/70"}`}
                   >
                     {selectedMetrics.length}/{MAX_METRICS}
                   </p>
@@ -218,13 +221,13 @@ const DashboardHome: React.FC = () => {
                     key={m.id}
                     onClick={() => !disabled && toggleMetric(m.id)}
                     disabled={disabled}
-                    className={`w-full flex items-center justify-between px-4 py-2 text-sm transition-colors ${
+                    className={`w-full flex items-center justify-between px-4 py-2 text-sm font-medium transition-colors ${
                       disabled
                         ? isLight
-                          ? "text-gray-300 cursor-not-allowed"
-                          : "text-white/25 cursor-not-allowed"
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-white/50 cursor-not-allowed"
                         : isLight
-                          ? "text-gray-700 hover:bg-purple-50 cursor-pointer"
+                          ? "text-gray-800 hover:bg-purple-50 cursor-pointer"
                           : "text-white hover:bg-purple-500/20 cursor-pointer"
                     }`}
                   >
@@ -249,7 +252,7 @@ const DashboardHome: React.FC = () => {
               })}
               {atMax && (
                 <p
-                  className={`px-4 pt-2 pb-1 text-xs ${isLight ? "text-gray-400" : "text-white/35"}`}
+                  className={`px-4 pt-2 pb-1 text-xs font-medium ${isLight ? "text-gray-600" : "text-white/70"}`}
                 >
                   Uncheck one to swap in another
                 </p>
@@ -282,12 +285,12 @@ const DashboardHome: React.FC = () => {
             <Card
               key={stat.id}
               onClick={isLink ? () => router.push(stat.route) : undefined}
-              className={`backdrop-blur-lg hover:transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col overflow-hidden ${isLink ? "cursor-pointer" : ""}`}
+              className={`backdrop-blur-lg transition-all duration-300 hover:-translate-y-1 flex flex-col overflow-hidden ${statCardShadow} ${isLink ? "cursor-pointer" : ""}`}
               style={statCardStyle}
             >
               <CardHeader className="pb-2 flex-none">
                 <CardTitle
-                  className={`text-lg font-bold ${isLight ? "text-gray-700" : "text-white"}`}
+                  className={`text-lg font-bold ${isLight ? "text-gray-900" : "text-white"}`}
                 >
                   {stat.title}
                 </CardTitle>
@@ -303,9 +306,9 @@ const DashboardHome: React.FC = () => {
                       }
                     >
                       <SelectTrigger
-                        className={`h-6 text-[10px] w-[92px] px-2 cursor-pointer ${
+                        className={`h-6 text-[10px] font-semibold w-[92px] px-2 cursor-pointer ${
                           isLight
-                            ? "bg-white border-purple-200 text-gray-700"
+                            ? "bg-white border-purple-200 text-gray-800"
                             : "bg-white/10 border-purple-300/30 text-white"
                         }`}
                       >
@@ -320,9 +323,9 @@ const DashboardHome: React.FC = () => {
                           <SelectItem
                             key={o.value}
                             value={o.value}
-                            className={`text-xs cursor-pointer ${
+                            className={`text-xs font-medium cursor-pointer ${
                               isLight
-                                ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                                ? "text-gray-800 hover:bg-purple-50 focus:bg-purple-50"
                                 : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
                             }`}
                           >
@@ -391,12 +394,12 @@ const DashboardHome: React.FC = () => {
       {/* ── Row 2: Revenue chart + Map ── */}
       <div className="grid grid-cols-2 gap-3" style={{ height: 320 }}>
         <Card
-          className="border flex flex-col overflow-hidden"
+          className={`border flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 ${contentCardShadow}`}
           style={contentCardStyle}
         >
           <CardHeader className="pb-1 flex-none">
             <CardTitle
-              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-lg font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Revenue Overview
             </CardTitle>
@@ -406,9 +409,9 @@ const DashboardHome: React.FC = () => {
                 onValueChange={(v) => setRevenueView(v as RevenueViewKey)}
               >
                 <SelectTrigger
-                  className={`h-7 text-xs w-28 cursor-pointer ${
+                  className={`h-7 text-xs font-semibold w-28 cursor-pointer ${
                     isLight
-                      ? "bg-white border-purple-200 text-gray-700"
+                      ? "bg-white border-purple-200 text-gray-800"
                       : "bg-white/10 border-purple-300/30 text-white"
                   }`}
                 >
@@ -423,9 +426,9 @@ const DashboardHome: React.FC = () => {
                     <SelectItem
                       key={o.value}
                       value={o.value}
-                      className={`text-xs cursor-pointer ${
+                      className={`text-xs font-medium cursor-pointer ${
                         isLight
-                          ? "text-gray-700 hover:bg-purple-50 focus:bg-purple-50"
+                          ? "text-gray-800 hover:bg-purple-50 focus:bg-purple-50"
                           : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
                       }`}
                     >
@@ -441,22 +444,25 @@ const DashboardHome: React.FC = () => {
           </CardContent>
         </Card>
 
-        <Card className="border overflow-hidden p-0" style={contentCardStyle}>
+        <Card
+          className={`border overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1 ${contentCardShadow}`}
+          style={contentCardStyle}
+        >
           <div className="flex items-center justify-between px-4 py-2 flex-none">
             <span
-              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-lg font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Wells &amp; Deeds
             </span>
             <div className="flex items-center gap-3 text-xs">
               <span
-                className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}
+                className={`flex items-center gap-1 font-medium ${isLight ? "text-gray-800" : "text-white/85"}`}
               >
                 <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />{" "}
                 Wells
               </span>
               <span
-                className={`flex items-center gap-1 ${isLight ? "text-gray-600" : "text-white/60"}`}
+                className={`flex items-center gap-1 font-medium ${isLight ? "text-gray-800" : "text-white/85"}`}
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />{" "}
                 Deeds
@@ -480,12 +486,12 @@ const DashboardHome: React.FC = () => {
       {/* ── Row 3: Alerts + Quick Access ── */}
       <div className="grid grid-cols-2 gap-3" style={{ height: 220 }}>
         <Card
-          className="border flex flex-col overflow-hidden py-0 gap-0"
+          className={`border flex flex-col overflow-hidden py-0 gap-0 transition-all duration-300 hover:-translate-y-1 ${contentCardShadow}`}
           style={contentCardStyle}
         >
           <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
-              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-lg font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Alerts
             </CardTitle>
@@ -511,12 +517,12 @@ const DashboardHome: React.FC = () => {
                     </div>
                     <div className="text-left">
                       <p
-                        className={`text-sm font-medium leading-tight ${isLight ? "text-gray-900" : "text-white"}`}
+                        className={`text-sm font-semibold leading-tight ${isLight ? "text-gray-900" : "text-white"}`}
                       >
                         {alert.title}
                       </p>
                       <p
-                        className={`text-xs ${isLight ? "text-gray-700" : "text-white/80"}`}
+                        className={`text-xs font-medium ${isLight ? "text-gray-800" : "text-white/90"}`}
                       >
                         {alert.detail}
                       </p>
@@ -531,7 +537,7 @@ const DashboardHome: React.FC = () => {
                       </span>
                     )}
                     <span
-                      className={`text-xs flex items-center gap-0.5 ${isLight ? "text-gray-600" : "text-white/70"}`}
+                      className={`text-xs font-medium flex items-center gap-0.5 ${isLight ? "text-gray-700" : "text-white/85"}`}
                     >
                       <Clock className="h-3 w-3" />
                       {alert.time}
@@ -544,12 +550,12 @@ const DashboardHome: React.FC = () => {
         </Card>
 
         <Card
-          className="border flex flex-col overflow-hidden py-0 gap-0"
+          className={`border flex flex-col overflow-hidden py-0 gap-0 transition-all duration-300 hover:-translate-y-1 ${contentCardShadow}`}
           style={contentCardStyle}
         >
           <CardHeader className="px-4 pt-3 pb-0 flex-none">
             <CardTitle
-              className={`text-base font-bold ${isLight ? "text-gray-900" : "text-white"}`}
+              className={`text-lg font-bold ${isLight ? "text-gray-900" : "text-white"}`}
             >
               Quick Access
             </CardTitle>
