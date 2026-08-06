@@ -74,10 +74,10 @@ const AboutUs = () => {
           <p className="mb-4 text-gray-600">
             At CADE Solutions, we simplify the complex world of mineral
             management. Backed by over 95 years of combined experience in oil
-            and gas management and software development, our team is committed
-            to delivering quality and proven results. Our platform streamlines
-            revenue tracking, as well as lease, surface and document management
-            so you can focus on what matters most.
+            land, and gas management and software development, our team is
+            committed to delivering quality and proven results. Our platform
+            streamlines revenue tracking, as well as lease, surface and document
+            management so you can focus on what matters most.
           </p>
           <div className="mb-4 flex items-center text-gray-600">
             <Droplet className="mr-2 h-5 w-5" fill="currentColor" />
@@ -122,13 +122,23 @@ const AboutUs = () => {
           />
           <div className="relative mx-auto max-w-7xl">
             {/* Card backgrounds sized by the shared grid below */}
-            <div className="absolute inset-y-0 left-0 w-[calc(50%-20px)] overflow-hidden rounded-3xl pointer-events-none"
-              style={{ background: "linear-gradient(135deg, #faf5ff 100%, #f3e8ff 50%, #e9d5ff 50%)" }}>
+            <div
+              className="absolute inset-y-0 left-0 w-[calc(50%-20px)] overflow-hidden rounded-3xl pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(135deg, #faf5ff 100%, #f3e8ff 50%, #e9d5ff 50%)",
+              }}
+            >
               <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-red-200/30 blur-3xl" />
               <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
             </div>
-            <div className="absolute inset-y-0 right-0 w-[calc(50%-20px)] overflow-hidden rounded-3xl pointer-events-none"
-              style={{ background: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)" }}>
+            <div
+              className="absolute inset-y-0 right-0 w-[calc(50%-20px)] overflow-hidden rounded-3xl pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)",
+              }}
+            >
               <div className="absolute left-1/4 top-10 h-48 w-48 rounded-full bg-green-200/40 blur-3xl" />
               <div className="absolute right-1/4 bottom-10 h-64 w-64 rounded-full bg-purple-300/30 blur-3xl" />
             </div>
@@ -168,7 +178,9 @@ const AboutUs = () => {
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-100 transition-colors group-hover:bg-red-200">
                         <X className="h-4 w-4 text-red-600" />
                       </div>
-                      <p className="text-sm font-medium text-gray-800">{pair.problem}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {pair.problem}
+                      </p>
                     </div>
                   </div>
                   <div className="mx-4 group flex items-center rounded-2xl border-2 border-green-100 bg-white/90 p-3 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-green-200 hover:shadow-xl hover:-translate-y-0.5">
@@ -176,7 +188,9 @@ const AboutUs = () => {
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-green-100 transition-colors group-hover:bg-green-200">
                         <Check className="h-4 w-4 text-green-700" />
                       </div>
-                      <p className="text-sm font-medium text-gray-800">{pair.solution}</p>
+                      <p className="text-sm font-medium text-gray-800">
+                        {pair.solution}
+                      </p>
                     </div>
                   </div>
                 </React.Fragment>
