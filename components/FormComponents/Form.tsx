@@ -19,6 +19,7 @@ import { FieldConfig, ModuleConfig } from "../../src/config/directoryConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 import { NettingTab, NettingEntry } from "./NettingTab";
 import { CountyCombobox } from "./CountyCombobox";
+import { Combobox } from "./Combobox";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 
 interface FormProps {
@@ -143,9 +144,9 @@ export const Form: React.FC<FormProps> = ({
 
   const commonClasses = "bg-white/5 border-purple-300/30 text-white h-9";
 
+  // Callers (renderTabContent) already filter to visibleFields via shouldShowField before
+  // calling this, so it can assume field is visible rather than re-checking.
   const renderField = (field: FieldConfig) => {
-    if (!shouldShowField(field)) return null;
-
     // Custom content injected from parent
     if (field.type === "custom") {
       return (
@@ -240,7 +241,10 @@ export const Form: React.FC<FormProps> = ({
                   />
                 </SelectTrigger>
                 <SelectContent
-                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto z-50"
+                  // Higher than TractFormModal's z-[10000] — Select portals to <body> as its
+                  // own top-level sibling, so a plain z-50 here would render invisibly behind
+                  // any full-viewport modal instead of on top of it.
+                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto z-[10001]"
                   position="popper"
                   sideOffset={4}
                 >
@@ -291,6 +295,29 @@ export const Form: React.FC<FormProps> = ({
                 />
               );
             }}
+          />
+        )}
+
+        {field.type === "combobox" && (
+          <Controller
+            name={field.id}
+            control={control}
+            rules={getFieldRules(field)}
+            render={({ field: f }) => (
+              <Combobox
+                value={f.value ?? ""}
+                onChange={f.onChange}
+                onBlur={f.onBlur}
+                // Same {value,label}[] | string[] normalization the select branch above uses —
+                // dynamicOptions can hand either shape, so this can't assume plain strings.
+                options={getFieldOptions(field).map((option) =>
+                  typeof option === "string" ? option : option.value,
+                )}
+                placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`}
+                className={`${commonClasses} cursor-pointer ${errors[field.id] ? "border-red-500" : ""}`}
+                invalid={Boolean(errors[field.id])}
+              />
+            )}
           />
         )}
 
@@ -360,32 +387,39 @@ export const Form: React.FC<FormProps> = ({
     const sections = groupFieldsBySection(tabFields);
     return (
       <div className="space-y-3">
-        {Object.entries(sections).map(([sectionId, fields]) => (
-          <div
-            key={sectionId}
-            className={
-              sectionId !== "default"
-                ? "border-t border-purple-300/30 pt-2"
-                : ""
-            }
-          >
-            {sectionId !== "default" && (
-              <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1.5">
-                {sectionId.replace(/-/g, " ")}
-              </h3>
-            )}
+        {Object.entries(sections).map(([sectionId, fields]) => {
+          // A section whose fields are all conditionally hidden (dependsOn didn't match)
+          // would otherwise render as a bare header over an empty body.
+          const visibleFields = fields.filter(shouldShowField);
+          if (visibleFields.length === 0) return null;
+
+          return (
             <div
-              className={`grid gap-x-4 gap-y-2 ${
-                fields.some((f) => f.sectionColumns === 3) ||
-                fields.every((f) => f.type === "boolean")
-                  ? "grid-cols-3"
-                  : "grid-cols-2"
-              }`}
+              key={sectionId}
+              className={
+                sectionId !== "default"
+                  ? "border-t border-purple-300/30 pt-2"
+                  : ""
+              }
             >
-              {fields.map((field) => renderField(field))}
+              {sectionId !== "default" && (
+                <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1.5">
+                  {sectionId.replace(/-/g, " ")}
+                </h3>
+              )}
+              <div
+                className={`grid gap-x-4 gap-y-2 ${
+                  visibleFields.some((f) => f.sectionColumns === 3) ||
+                  visibleFields.every((f) => f.type === "boolean")
+                    ? "grid-cols-3"
+                    : "grid-cols-2"
+                }`}
+              >
+                {visibleFields.map((field) => renderField(field))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };

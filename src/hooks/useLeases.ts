@@ -56,16 +56,24 @@ const PROVISION_TYPE_TO_LABEL: Record<string, string> = Object.fromEntries(
 );
 
 // The BE stores one row per provision type with a shared set of generic detail columns —
-// not a dedicated boolean/field-set per provision type. Only the five types listed here carry
-// any extra detail; the rest (horizontal/vertical pugh, mother hubbard, pooling, title records)
-// are pure enabled flags with no fields of their own.
+// not a dedicated boolean/field-set per provision type. Pooling and Title Records are pure
+// enabled flags with no fields of their own; the rest listed here carry extra detail.
 const PROVISION_DETAIL_FIELDS: Record<string, string[]> = {
   shut_in: ["periodValue", "periodUnit", "paymentPerAcre", "paymentFrequency"],
   option_to_extend: ["extendDurationValue", "extendDurationUnit"],
   continuous_development: ["timeBetweenCompletionValue", "timeBetweenCompletionUnit"],
   offset: ["offsetDistance"],
   consent_to_assign: ["consentType"],
+  horizontal_pugh: ["horizontalPughNotes"],
+  vertical_pugh: ["verticalPughNotes"],
+  mother_hubbard: ["motherHubbardNotes"],
 };
+
+// Horizontal/Vertical Pugh and Mother Hubbard don't have dedicated BE columns — they each
+// share the generic per-provision `notes` column, keyed off their own row's provisionType so
+// the three don't collide with each other or with the lease-level `notes` field.
+const NOTES_ALIASED_FIELDS = new Set(["horizontalPughNotes", "verticalPughNotes", "motherHubbardNotes"]);
+const columnFor = (fieldId: string) => (NOTES_ALIASED_FIELDS.has(fieldId) ? "notes" : fieldId);
 
 const NUMERIC_PROVISION_FIELDS = new Set([
   "periodValue",
@@ -84,7 +92,7 @@ const transformProvisions = (provisions: any[]) => {
     if (label) enabledLabels.push(label);
 
     for (const fieldId of PROVISION_DETAIL_FIELDS[provision.provisionType] || []) {
-      formValues[fieldId] = provision[fieldId] ?? "";
+      formValues[fieldId] = provision[columnFor(fieldId)] ?? "";
     }
   }
 
@@ -102,7 +110,7 @@ const buildProvisionInputs = (formData: Record<string, any>): object[] => {
     const detail: Record<string, any> = {};
     for (const fieldId of PROVISION_DETAIL_FIELDS[provisionType] || []) {
       const raw = formData[fieldId];
-      detail[fieldId] = raw ? (NUMERIC_PROVISION_FIELDS.has(fieldId) ? Number(raw) : raw) : null;
+      detail[columnFor(fieldId)] = raw ? (NUMERIC_PROVISION_FIELDS.has(fieldId) ? Number(raw) : raw) : null;
     }
     return { provisionType, isEnabled: true, ...detail };
   });

@@ -1,6 +1,8 @@
+import { useAtom } from "jotai";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { STATES } from "@/config/directoryConfig";
+import { themeAtom } from "@/atoms/NavigationAtom";
 
 export interface RecordationEntry {
   id: string;
@@ -31,6 +33,9 @@ export const MultiRecordationField = ({
   value,
   onChange,
 }: MultiRecordationFieldProps) => {
+  const [theme] = useAtom(themeAtom);
+  const isLight = theme === "light";
+
   const update = (id: string, patch: Partial<RecordationEntry>) => {
     onChange(value.map((e) => (e.id === id ? { ...e, ...patch } : e)));
   };
@@ -136,7 +141,11 @@ export const MultiRecordationField = ({
         type="button"
         variant="outline"
         onClick={() => onChange([...value, newEntry()])}
-        className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 hover:text-white cursor-pointer"
+        className={`cursor-pointer ${
+          isLight
+            ? "border-purple-600 text-purple-600 hover:bg-purple-50"
+            : "border-purple-400 text-purple-300 hover:bg-purple-500/20"
+        }`}
       >
         <Plus className="w-4 h-4 mr-2" />
         Add Recordation

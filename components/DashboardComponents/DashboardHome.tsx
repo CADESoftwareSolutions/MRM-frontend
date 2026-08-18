@@ -306,7 +306,7 @@ const DashboardHome: React.FC = () => {
                       }
                     >
                       <SelectTrigger
-                        className={`h-6 text-[10px] font-semibold w-[92px] px-2 cursor-pointer ${
+                        className={`h-7 text-xs font-semibold w-40 px-2 cursor-pointer ${
                           isLight
                             ? "bg-white border-purple-200 text-gray-800"
                             : "bg-white/10 border-purple-300/30 text-white"
@@ -409,7 +409,7 @@ const DashboardHome: React.FC = () => {
                 onValueChange={(v) => setRevenueView(v as RevenueViewKey)}
               >
                 <SelectTrigger
-                  className={`h-7 text-xs font-semibold w-28 cursor-pointer ${
+                  className={`h-7 text-xs font-semibold w-[132px] cursor-pointer ${
                     isLight
                       ? "bg-white border-purple-200 text-gray-800"
                       : "bg-white/10 border-purple-300/30 text-white"

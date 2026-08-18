@@ -49,7 +49,7 @@ body {
 /* Text colours */
 .light-theme .text-white          { color: rgb(17 24 39); }
 .light-theme .text-white\/90,
-.light-theme .text-white\/80      { color: white; }
+.light-theme .text-white\/80      { color: rgb(17 24 39); }
 .light-theme .text-white\/70      { color: rgb(75 85 99); }
 .light-theme .text-white\/60,
 .light-theme .text-white\/50      { color: rgb(107 114 128); }
@@ -122,10 +122,13 @@ textarea,
   border-color: rgb(196 181 253 / 0.75);
 }
 
-.light-theme input,
-.light-theme textarea,
+/* Matched via [data-slot] (not the bare `input`/`textarea` type selector) so every
+   field type ties the .bg-white/5 override on specificity — source order then makes
+   this win consistently, keeping text fields and selects the same shade. */
+.light-theme [data-slot="input"],
+.light-theme [data-slot="textarea"],
 .light-theme [data-slot="select-trigger"] {
-  background-color: rgb(248 245 255);
+  background-color: rgb(252 250 255);
   color: rgb(17 24 39);
   border-color: rgb(124 58 237);
 }

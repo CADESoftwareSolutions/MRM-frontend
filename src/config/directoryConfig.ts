@@ -10,6 +10,7 @@ export type FieldType =
   | "phone"
   | "date"
   | "county-combobox"
+  | "combobox"
   | "custom";
 
 export interface FieldConfig {
@@ -123,6 +124,22 @@ export const field = {
     id,
     label,
     type: "select",
+    options,
+    tab: "basic",
+    gridColumn: "span 1",
+    ...opts,
+  }),
+
+  /** Same as select, but the dropdown also accepts free text — pick a listed option or type a new one. */
+  combobox: (
+    id: string,
+    label: string,
+    options: string[],
+    opts: Partial<FieldConfig> = {},
+  ): FieldConfig => ({
+    id,
+    label,
+    type: "combobox",
     options,
     tab: "basic",
     gridColumn: "span 1",

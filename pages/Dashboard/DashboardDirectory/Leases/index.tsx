@@ -135,6 +135,7 @@ const Leases = () => {
                     availableTracts={availableTracts}
                     value={tractLinks}
                     onChange={setTractLinks}
+                    accountId={userProfile?.account?.id ?? 0}
                   />
                 ),
                 recordation: (

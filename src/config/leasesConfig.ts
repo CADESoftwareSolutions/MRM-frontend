@@ -145,11 +145,10 @@ export const leasesConfig: ModuleConfig = {
     },
 
     // ========== TERMS & PAYMENTS TAB ==========
-    field.select("paymentType", "Lease Type", ["Paid Up", "Delay Rental"], {
+    field.select("paymentType", "Lease Payment Type", ["Paid Up", "Delay Rental"], {
       required: true,
       tab: "terms",
       section: "lease-type",
-      gridColumn: "span 2",
     }),
 
     // Paid Up Lease fields
@@ -231,9 +230,10 @@ export const leasesConfig: ModuleConfig = {
       },
     ),
 
-    // Shut-In — Horizontal/Vertical Pugh, Mother Hubbard, Pooling, and Title Records have no
-    // detail fields at all: the BE records them as an enabled provision row with no extra data,
-    // so the badge selection alone is the complete signal for those five.
+    // Pooling and Title Records have no detail fields at all: the BE records them as an
+    // enabled provision row with no extra data, so the badge selection alone is the complete
+    // signal for those two. Horizontal/Vertical Pugh and Mother Hubbard each get a free-form
+    // notes field below — badge selected is treated as "yes", so there's no separate toggle.
     field.number("periodValue", "Shut-In Period", {
       tab: "provisions",
       section: "shut-in",
@@ -241,7 +241,7 @@ export const leasesConfig: ModuleConfig = {
       dependsOnValue: "Shut-In",
     }),
 
-    field.select(
+    field.combobox(
       "periodUnit",
       "Shut-In Period Unit",
       ["Days", "Months", "Years"],
@@ -261,7 +261,7 @@ export const leasesConfig: ModuleConfig = {
       placeholder: "$0.00",
     }),
 
-    field.select(
+    field.combobox(
       "paymentFrequency",
       "Shut-In Frequency of Payment",
       ["Paid Annually", "Paid Monthly", "One-Time Payment"],
@@ -284,7 +284,7 @@ export const leasesConfig: ModuleConfig = {
     field.select(
       "extendDurationUnit",
       "Extension Duration Unit",
-      ["Days", "Months", "Years"],
+      ["Months", "Years"],
       {
         tab: "provisions",
         section: "extend-option",
@@ -292,6 +292,32 @@ export const leasesConfig: ModuleConfig = {
         dependsOnValue: "Option to Extend",
       },
     ),
+
+    // Horizontal Pugh / Vertical Pugh / Mother Hubbard — each is its own badge; selecting it
+    // is the "yes", and the note below is the only extra detail captured for it.
+    field.textarea("horizontalPughNotes", "Horizontal Pugh Notes", {
+      tab: "provisions",
+      section: "horizontal-pugh",
+      dependsOn: "provisions",
+      dependsOnValue: "Horizontal Pugh",
+      rows: 2,
+    }),
+
+    field.textarea("verticalPughNotes", "Vertical Pugh Notes", {
+      tab: "provisions",
+      section: "vertical-pugh",
+      dependsOn: "provisions",
+      dependsOnValue: "Vertical Pugh",
+      rows: 2,
+    }),
+
+    field.textarea("motherHubbardNotes", "Mother Hubbard Notes", {
+      tab: "provisions",
+      section: "mother-hubbard",
+      dependsOn: "provisions",
+      dependsOnValue: "Mother Hubbard",
+      rows: 2,
+    }),
 
     // Continuous Development
     field.number(
@@ -305,9 +331,9 @@ export const leasesConfig: ModuleConfig = {
       },
     ),
 
-    field.select(
+    field.combobox(
       "timeBetweenCompletionUnit",
-      "Time Unit",
+      "Length of Time Unit",
       ["Days", "Months", "Years"],
       {
         tab: "provisions",
@@ -327,7 +353,7 @@ export const leasesConfig: ModuleConfig = {
     }),
 
     // Consent to Assign
-    field.select(
+    field.combobox(
       "consentType",
       "Type of Consent",
       [

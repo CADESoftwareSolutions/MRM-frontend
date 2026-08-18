@@ -47,7 +47,9 @@ const transformTract = (tract: any): Record<string, any> => ({
   netAcres: tract.netAcres ?? "",
 });
 
-const buildTractInput = (formData: Record<string, any>) => ({
+// Exported so TractFormModal (the inline add/edit-tract flow embedded in the lease/deed
+// legal-description tab) can build the same GraphQL input without duplicating this mapping.
+export const buildTractInput = (formData: Record<string, any>) => ({
   tractType: formData.tractType || null,
   tractNo: formData.tractNo || null,
   stateCode: formData.stateCode || null,

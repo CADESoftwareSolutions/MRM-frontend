@@ -95,7 +95,13 @@ export const List: React.FC<ListProps> = ({
     } catch { return {}; }
   });
 
-  const getColWidth = (col: string) => colWidths[col] ?? 160;
+  const thRefs = useRef<Record<string, HTMLTableCellElement | null>>({});
+
+  // Only resized columns get a locked pixel width; the rest stay "auto" so
+  // table-layout:fixed divides the remaining space evenly and the table
+  // never has to spill into a horizontal scrollbar to fit its columns.
+  const getColWidth = (col: string) =>
+    colWidths[col] ?? thRefs.current[col]?.getBoundingClientRect().width ?? 160;
 
   const startResize = (col: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -309,15 +315,18 @@ export const List: React.FC<ListProps> = ({
         <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
           <colgroup>
             {columns.map((col) => (
-              <col key={col} style={{ width: getColWidth(col) }} />
+              <col key={col} style={colWidths[col] ? { width: colWidths[col] } : undefined} />
             ))}
-            <col style={{ width: 72 }} />
+            <col style={{ width: 96 }} />
           </colgroup>
           <thead>
             <tr className="border-b" style={{ borderColor: dividerColor }}>
               {columns.map((col) => (
                 <th
                   key={col}
+                  ref={(el) => {
+                    thRefs.current[col] = el;
+                  }}
                   className={`relative text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden ${
                     isLight ? "text-gray-500" : "text-purple-200/80"
                   }`}
@@ -333,7 +342,7 @@ export const List: React.FC<ListProps> = ({
                   </div>
                 </th>
               ))}
-              <th className="px-5 py-3" />
+              <th className="px-3 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -370,29 +379,29 @@ export const List: React.FC<ListProps> = ({
                       {renderCell(col, item[col], item)}
                     </td>
                   ))}
-                  <td className="px-5 py-3 h-12 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <td className="px-3 py-3 h-12 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => onEdit(item)}
-                        className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                           isLight
-                            ? "text-gray-400 hover:text-purple-600 hover:bg-purple-100"
-                            : "text-purple-300/50 hover:text-purple-200 hover:bg-purple-500/20"
+                            ? "text-purple-600 hover:text-purple-800 hover:bg-purple-100"
+                            : "text-purple-300 hover:text-purple-100 hover:bg-purple-500/20"
                         }`}
                       >
-                        <Edit className="w-3.5 h-3.5" />
+                        <Edit className="w-3.5 h-3.5" strokeWidth={2.5} />
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete(item)}
-                        className={`p-1.5 rounded transition-colors cursor-pointer ${
+                        className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                           isLight
-                            ? "text-red-400 hover:text-red-600 hover:bg-red-50"
-                            : "text-red-400/60 hover:text-red-300 hover:bg-red-500/20"
+                            ? "text-red-600 hover:text-red-800 hover:bg-red-50"
+                            : "text-red-400 hover:text-red-200 hover:bg-red-500/20"
                         }`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3.5 h-3.5" strokeWidth={2.5} />
                       </button>
                     </div>
                   </td>
