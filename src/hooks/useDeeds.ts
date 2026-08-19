@@ -38,39 +38,70 @@ const transformRecordation = (rec: any): RecordationEntry => ({
   recordingDate: rec.recordingDate || "",
 });
 
-const transformDeed = (deed: any): Record<string, any> => ({
-  id: deed.id,
-  documentType: deed.documentType || "",
-  interestType: deed.interestType || "",
-  grantor: deed.grantor || "",
-  grantorInterestConveyed: deed.grantorInterestConveyed || "",
-  grantee: deed.grantee || "",
-  granteeInterestReceived: deed.granteeInterestReceived || "",
-  effectiveDate: deed.effectiveDate || "",
-  executedDate: deed.executedDate || "",
-  consideration: deed.consideration ?? "",
-  acres: deed.acres ?? "",
-  reservations: deed.reservations || "",
-  notes: deed.notes || "",
-  _recordation: (deed.recordations || []).map(transformRecordation),
-  _tractLinks: transformTractLinks(deed.tracts),
-});
+// Backend stores grantor/grantee as title_document_conveyance_party rows (multi-grantee).
+// FE still edits a single flat grantor + grantee pair, so we surface the first row per role
+// and keep the raw list around in _conveyanceParties to avoid dropping extra rows on save.
+const sortByOrder = (parties: any[]) =>
+  [...parties].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+const partyByRole = (parties: any[], role: string) =>
+  sortByOrder(parties.filter((p) => p.role === role));
+
+const transformDeed = (deed: any): Record<string, any> => {
+  const parties = deed.conveyanceParties || [];
+  const grantors = partyByRole(parties, "grantor");
+  const grantees = partyByRole(parties, "grantee");
+  return {
+    id: deed.id,
+    documentType: deed.documentType || "",
+    interestType: deed.interestType || "",
+    grantor: grantors[0]?.name || "",
+    grantorInterestConveyed: grantors[0]?.interest || "",
+    grantee: grantees[0]?.name || "",
+    granteeInterestReceived: grantees[0]?.interest || "",
+    consideration: deed.consideration ?? "",
+    acres: deed.acres ?? "",
+    reservations: deed.reservations || "",
+    notes: deed.notes || "",
+    _recordation: (deed.recordations || []).map(transformRecordation),
+    _tractLinks: transformTractLinks(deed.tracts),
+    _conveyanceParties: parties,
+  };
+};
+
+// Only index 0 of each role is editable via the flat form fields; any additional
+// rows (multi-grantee deeds) are passed through unchanged so saving doesn't delete them.
+const buildConveyancePartyInputs = (
+  formData: Record<string, any>,
+  existingParties: any[],
+) => {
+  const buildRole = (role: string, name: string, interest: string) => {
+    const rest = partyByRole(existingParties, role).slice(1);
+    const entries: any[] = [];
+    if (name) entries.push({ role, name, interest: interest || null, sortOrder: 0 });
+    rest.forEach((p, i) =>
+      entries.push({ role, name: p.name, interest: p.interest || null, sortOrder: i + 1 })
+    );
+    return entries;
+  };
+
+  return [
+    ...buildRole("grantor", formData.grantor, formData.grantorInterestConveyed),
+    ...buildRole("grantee", formData.grantee, formData.granteeInterestReceived),
+  ];
+};
 
 const buildDeedMutationVariables = (
   formData: Record<string, any>,
   recordation: RecordationEntry[],
   tractLinks: TractLinkEntry[],
   accountId: number,
+  existingParties: any[],
 ) => ({
   accountId,
   documentType: formData.documentType || null,
   interestType: formData.interestType || null,
-  grantor: formData.grantor || null,
-  grantorInterestConveyed: formData.grantorInterestConveyed || null,
-  grantee: formData.grantee || null,
-  granteeInterestReceived: formData.granteeInterestReceived || null,
-  effectiveDate: formData.effectiveDate || null,
-  executedDate: formData.executedDate || null,
+  conveyanceParties: buildConveyancePartyInputs(formData, existingParties),
   consideration: formData.consideration ? Number(formData.consideration) : null,
   acres: formData.acres ? Number(formData.acres) : null,
   reservations: formData.reservations || null,
@@ -106,7 +137,7 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
 
   const deeds = useMemo(() => rawDeeds.map(transformDeed), [rawDeeds]);
 
-  const SEARCH_FIELDS = ["documentType", "grantor", "grantee", "interestType", "effectiveDate"];
+  const SEARCH_FIELDS = ["documentType", "grantor", "grantee", "interestType"];
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return deeds;
@@ -126,7 +157,13 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     tractLinks: TractLinkEntry[],
   ) => {
     try {
-      const variables = buildDeedMutationVariables(formData, recordation, tractLinks, accountId);
+      const variables = buildDeedMutationVariables(
+        formData,
+        recordation,
+        tractLinks,
+        accountId,
+        selectedItem?._conveyanceParties || [],
+      );
       if (view === "add") {
         await executeGraphQL(CREATE_DEED_MUTATION, variables);
       } else {

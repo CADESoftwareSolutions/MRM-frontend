@@ -4,7 +4,7 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { LeaseAttachmentsTab, LeaseAttachment } from "../../../../components/FormComponents/LeaseAttachmentsTab";
+import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
 import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import leasesConfig from "@/config/leasesConfig";
@@ -18,7 +18,6 @@ import { useStateCountyReference } from "@/hooks/useStateCountyReference";
 const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [attachments, setAttachments] = useState<LeaseAttachment[]>([]);
   const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
   const { data: stateCountyReference = [] } = useStateCountyReference();
@@ -75,14 +74,12 @@ const Leases = () => {
   const handleAdd = () => {
     setTractLinks([]);
     setRecordation([]);
-    setAttachments([]);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
     setTractLinks(item._tractLinks || []);
     setRecordation(item._recordation || []);
-    setAttachments(item._attachments || []);
     _handleEdit(item);
   };
 
@@ -146,8 +143,8 @@ const Leases = () => {
                 ),
                 attachments: (
                   <LeaseAttachmentsTab
-                    value={attachments}
-                    onChange={setAttachments}
+                    entityType="lease"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />
                 ),
               }}

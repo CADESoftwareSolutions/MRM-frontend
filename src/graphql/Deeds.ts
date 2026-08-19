@@ -4,12 +4,12 @@ export const FETCH_DEEDS = `
       id
       documentType
       interestType
-      grantor
-      grantorInterestConveyed
-      grantee
-      granteeInterestReceived
-      effectiveDate
-      executedDate
+      conveyanceParties {
+        role
+        name
+        interest
+        sortOrder
+      }
       consideration
       acres
       reservations
@@ -45,12 +45,7 @@ export const CREATE_DEED_MUTATION = `
     $accountId: Int!
     $documentType: String
     $interestType: String
-    $grantor: String
-    $grantorInterestConveyed: String
-    $grantee: String
-    $granteeInterestReceived: String
-    $effectiveDate: Date
-    $executedDate: Date
+    $conveyanceParties: [ConveyancePartyInput]
     $consideration: Float
     $acres: Float
     $reservations: String
@@ -62,12 +57,7 @@ export const CREATE_DEED_MUTATION = `
       accountId: $accountId
       documentType: $documentType
       interestType: $interestType
-      grantor: $grantor
-      grantorInterestConveyed: $grantorInterestConveyed
-      grantee: $grantee
-      granteeInterestReceived: $granteeInterestReceived
-      effectiveDate: $effectiveDate
-      executedDate: $executedDate
+      conveyanceParties: $conveyanceParties
       consideration: $consideration
       acres: $acres
       reservations: $reservations
@@ -85,12 +75,7 @@ export const UPDATE_DEED_MUTATION = `
     $id: Int!
     $documentType: String
     $interestType: String
-    $grantor: String
-    $grantorInterestConveyed: String
-    $grantee: String
-    $granteeInterestReceived: String
-    $effectiveDate: Date
-    $executedDate: Date
+    $conveyanceParties: [ConveyancePartyInput]
     $consideration: Float
     $acres: Float
     $reservations: String
@@ -102,12 +87,7 @@ export const UPDATE_DEED_MUTATION = `
       id: $id
       documentType: $documentType
       interestType: $interestType
-      grantor: $grantor
-      grantorInterestConveyed: $grantorInterestConveyed
-      grantee: $grantee
-      granteeInterestReceived: $granteeInterestReceived
-      effectiveDate: $effectiveDate
-      executedDate: $executedDate
+      conveyanceParties: $conveyanceParties
       consideration: $consideration
       acres: $acres
       reservations: $reservations

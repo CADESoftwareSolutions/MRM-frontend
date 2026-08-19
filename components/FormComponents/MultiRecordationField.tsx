@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { STATES } from "@/config/directoryConfig";
 import { themeAtom } from "@/atoms/NavigationAtom";
 
@@ -126,10 +127,9 @@ export const MultiRecordationField = ({
 
             <div>
               <label className={labelCls}>Recording Date</label>
-              <input
-                type="date"
+              <DatePicker
                 value={entry.recordingDate ?? ""}
-                onChange={(e) => update(entry.id, { recordingDate: e.target.value })}
+                onChange={(recordingDate) => update(entry.id, { recordingDate })}
                 className={inputCls}
               />
             </div>

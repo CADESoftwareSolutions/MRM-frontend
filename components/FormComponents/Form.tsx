@@ -20,6 +20,7 @@ import { ContactsTab, Contact } from "./ContactsTab";
 import { NettingTab, NettingEntry } from "./NettingTab";
 import { CountyCombobox } from "./CountyCombobox";
 import { Combobox } from "./Combobox";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 import { Z_INDEX } from "@/lib/zIndex";
 
@@ -54,7 +55,6 @@ const INPUT_TYPES: Record<string, string> = {
   email: "email",
   phone: "tel",
   number: "number",
-  date: "date",
 };
 
 export const Form: React.FC<FormProps> = ({
@@ -194,6 +194,24 @@ export const Form: React.FC<FormProps> = ({
                 onBlur={f.onBlur}
                 placeholder={field.placeholder}
                 className={`${commonClasses} ${errors[field.id] ? "border-red-500" : ""}`}
+              />
+            )}
+          />
+        )}
+
+        {field.type === "date" && (
+          <Controller
+            name={field.id}
+            control={control}
+            rules={getFieldRules(field)}
+            render={({ field: f }) => (
+              <DatePicker
+                value={f.value ?? ""}
+                onChange={f.onChange}
+                onBlur={f.onBlur}
+                placeholder={field.placeholder}
+                className={commonClasses}
+                invalid={Boolean(errors[field.id])}
               />
             )}
           />

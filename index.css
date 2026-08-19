@@ -151,6 +151,52 @@ textarea,
   color: rgb(88 28 135);
 }
 
+/* Date picker (Popover + Calendar) — portals to <body> same as Select above, so it's themed
+   via [data-slot="popover-content"] rather than a .light-theme ancestor. The cal-* classes
+   are the calendar's own hooks (see calendar.tsx); colors live entirely here rather than as
+   Tailwind utilities for the same reason select-content's do. */
+.light-theme [data-slot="popover-content"],
+:root[data-theme="light"] [data-slot="popover-content"] {
+  background-color: rgb(250 247 255);
+  border-color: rgb(196 181 253);
+}
+[data-slot="popover-content"] .cal-caption { color: rgb(255 255 255); }
+.light-theme [data-slot="popover-content"] .cal-caption,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-caption { color: rgb(17 24 39); }
+
+[data-slot="popover-content"] .cal-weekday { color: rgb(196 181 253 / 0.7); }
+.light-theme [data-slot="popover-content"] .cal-weekday,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-weekday { color: rgb(124 58 237 / 0.8); }
+
+[data-slot="popover-content"] .cal-nav-btn { color: rgb(216 180 254); }
+[data-slot="popover-content"] .cal-nav-btn:hover { background-color: rgb(147 51 234 / 0.2); color: white; }
+.light-theme [data-slot="popover-content"] .cal-nav-btn,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-nav-btn { color: rgb(124 58 237); }
+.light-theme [data-slot="popover-content"] .cal-nav-btn:hover,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-nav-btn:hover {
+  background-color: rgb(147 51 234 / 0.12);
+  color: rgb(88 28 135);
+}
+
+[data-slot="popover-content"] .cal-day-btn { color: rgb(255 255 255 / 0.9); }
+[data-slot="popover-content"] .cal-day-btn:hover { background-color: rgb(147 51 234 / 0.2); }
+.light-theme [data-slot="popover-content"] .cal-day-btn,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-day-btn { color: rgb(17 24 39); }
+.light-theme [data-slot="popover-content"] .cal-day-btn:hover,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-day-btn:hover { background-color: rgb(147 51 234 / 0.12); }
+
+[data-slot="popover-content"] .cal-day-today > .cal-day-btn { border: 1px solid rgb(196 181 253 / 0.6); }
+[data-slot="popover-content"] .cal-day-outside > .cal-day-btn { color: rgb(255 255 255 / 0.3); }
+.light-theme [data-slot="popover-content"] .cal-day-outside > .cal-day-btn,
+:root[data-theme="light"] [data-slot="popover-content"] .cal-day-outside > .cal-day-btn { color: rgb(17 24 39 / 0.35); }
+[data-slot="popover-content"] .cal-day-disabled > .cal-day-btn { opacity: 0.3; pointer-events: none; }
+
+[data-slot="popover-content"] .cal-day-selected > .cal-day-btn,
+[data-slot="popover-content"] .cal-day-selected > .cal-day-btn:hover {
+  background-color: rgb(147 51 234);
+  color: white;
+}
+
 /* Cards */
 .light-theme [data-slot="card"] {
   background-color: white;

@@ -14,7 +14,6 @@ export const deedsConfig: ModuleConfig = {
     "documentType",
     "grantor",
     "grantee",
-    "effectiveDate",
     "interestType",
   ],
   fields: [
@@ -81,30 +80,11 @@ export const deedsConfig: ModuleConfig = {
       placeholder: "e.g. 1/2 or 0.5",
     }),
 
-    // ========== BASIC TAB — dates ==========
-    // effectiveDate + executedDate + acres share the section
-    {
-      id: "effectiveDate",
-      label: "Effective Date",
-      type: "date",
-      required: true,
-      tab: "basic",
-      section: "dates",
-      gridColumn: "span 1",
-    },
-
-    {
-      id: "executedDate",
-      label: "Executed Date",
-      type: "date" as const,
-      tab: "basic",
-      section: "dates",
-      gridColumn: "span 1" as const,
-    },
-
+    // ========== BASIC TAB — acreage ==========
+    // Backend dropped effective_date/executed_date from title_document; no longer collected here.
     field.number("acres", "Acres", {
       tab: "basic",
-      section: "dates",
+      section: "acreage",
       placeholder: "0.0000",
     }),
 
