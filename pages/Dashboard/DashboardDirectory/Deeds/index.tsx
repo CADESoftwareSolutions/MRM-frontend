@@ -5,10 +5,12 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
+import { DeedCrossReferencesTab } from "../../../../components/FormComponents/DeedCrossReferencesTab";
 import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import deedsConfig from "@/config/deedsConfig";
 import { useDeeds } from "@/hooks/useDeeds";
+import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
@@ -19,6 +21,7 @@ const Deeds = () => {
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
+  const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
     view,
@@ -109,6 +112,8 @@ const Deeds = () => {
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
+              dynamicOptions={dynamicOptions}
+              stateCountyReference={stateCountyReference}
               customContent={{
                 tractLinks: (
                   <TractPickerField
@@ -128,6 +133,12 @@ const Deeds = () => {
                   <LeaseAttachmentsTab
                     entityType="title_document"
                     entityId={selectedItem?.id ? Number(selectedItem.id) : null}
+                  />
+                ),
+                crossReferences: (
+                  <DeedCrossReferencesTab
+                    deedId={selectedItem?.id ? Number(selectedItem.id) : null}
+                    accountId={userProfile?.account?.id ?? 0}
                   />
                 ),
               }}

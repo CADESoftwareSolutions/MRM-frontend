@@ -4,18 +4,16 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import wellsConfig from "@/config/wellsConfig";
-import { useWells } from "@/hooks/useWells";
-import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
+import acquisitionsConfig from "@/config/acquisitionsConfig";
+import { useAcquisitions } from "@/hooks/useAcquisitions";
 import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
 
-const Wells = () => {
+const Acquisitions = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
     view,
@@ -34,8 +32,8 @@ const Wells = () => {
     handleSave,
     handleDelete,
     handleCancel,
-  } = useWells({
-    config: wellsConfig,
+  } = useAcquisitions({
+    config: acquisitionsConfig,
     accountId: userProfile?.account?.id ?? 0,
   });
 
@@ -46,8 +44,8 @@ const Wells = () => {
   useEffect(() => {
     const count = filteredData.length;
     setPageHeader({
-      title: "Wells",
-      subtitle: `${count} ${count === 1 ? "well" : "wells"}`,
+      title: "Acquisitions",
+      subtitle: `${count} ${count === 1 ? "acquisition" : "acquisitions"}`,
     });
     return () => setPageHeader({});
   }, [filteredData.length]);
@@ -67,14 +65,14 @@ const Wells = () => {
                 className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add New Well
+                Add New Acquisition
               </Button>
             </div>
           )}
 
           {view === "list" && (
             <List
-              config={wellsConfig}
+              config={acquisitionsConfig}
               data={filteredData}
               loading={loading}
               searchTerm={searchTerm}
@@ -86,15 +84,13 @@ const Wells = () => {
 
           {(view === "add" || view === "edit") && (
             <Form
-              config={wellsConfig}
+              config={acquisitionsConfig}
               initialData={selectedItem}
               onSave={onSave}
               onCancel={handleCancel}
               mode={view}
               saveError={saveError}
               onClearSaveError={clearSaveError}
-              dynamicOptions={dynamicOptions}
-              stateCountyReference={stateCountyReference}
             />
           )}
         </div>
@@ -102,8 +98,8 @@ const Wells = () => {
 
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
-        itemName={pendingDeleteItem?.name || `Well #${pendingDeleteItem?.id}`}
-        itemType="Well"
+        itemName={pendingDeleteItem?.name || `Acquisition #${pendingDeleteItem?.id}`}
+        itemType="Acquisition"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
@@ -111,4 +107,4 @@ const Wells = () => {
   );
 };
 
-export default Wells;
+export default Acquisitions;

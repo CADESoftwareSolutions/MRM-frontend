@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
+import { LeaseCrossReferencesTab } from "../../../../components/FormComponents/LeaseCrossReferencesTab";
 import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import leasesConfig from "@/config/leasesConfig";
@@ -13,27 +14,14 @@ import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
-import { useStateCountyReference } from "@/hooks/useStateCountyReference";
+import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
 
 const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
-  const { data: stateCountyReference = [] } = useStateCountyReference();
-
-  const dynamicOptions = useMemo(
-    () =>
-      stateCountyReference.length
-        ? {
-            stateCode: stateCountyReference.map((state) => ({
-              value: state.code,
-              label: state.name,
-            })),
-          }
-        : {},
-    [stateCountyReference],
-  );
+  const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
     view,
@@ -145,6 +133,12 @@ const Leases = () => {
                   <LeaseAttachmentsTab
                     entityType="lease"
                     entityId={selectedItem?.id ? Number(selectedItem.id) : null}
+                  />
+                ),
+                crossReferences: (
+                  <LeaseCrossReferencesTab
+                    leaseId={selectedItem?.id ? Number(selectedItem.id) : null}
+                    accountId={userProfile?.account?.id ?? 0}
                   />
                 ),
               }}

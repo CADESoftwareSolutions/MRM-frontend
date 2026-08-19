@@ -1,4 +1,4 @@
-import { field, ModuleConfig } from "./directoryConfig";
+import { field, ModuleConfig, locationFields } from "./directoryConfig";
 
 export const deedsConfig: ModuleConfig = {
   name: "deeds",
@@ -8,6 +8,7 @@ export const deedsConfig: ModuleConfig = {
     { id: "basic", label: "Basic Information" },
     { id: "legal", label: "Legal Description" },
     { id: "recordation", label: "Recordation" },
+    { id: "crossReferences", label: "Cross-References" },
     { id: "documents", label: "Documents" },
   ],
   listFields: [
@@ -58,6 +59,7 @@ export const deedsConfig: ModuleConfig = {
       tab: "basic",
       section: "parties",
       rows: 2,
+      textareaMinHeight: 56,
     }),
 
     field.textarea("grantee", "Grantee", {
@@ -65,7 +67,7 @@ export const deedsConfig: ModuleConfig = {
       tab: "basic",
       section: "parties",
       rows: 2,
-      helpText: "Multiple grantees with interest are supported in the API; UI multi-entry coming next",
+      textareaMinHeight: 56,
     }),
 
     field.text("grantorInterestConveyed", "Grantor Interest Conveyed", {
@@ -80,37 +82,38 @@ export const deedsConfig: ModuleConfig = {
       placeholder: "e.g. 1/2 or 0.5",
     }),
 
-    // ========== BASIC TAB — acreage ==========
+    // ========== BASIC TAB — acreage & details ==========
     // Backend dropped effective_date/executed_date from title_document; no longer collected here.
     field.number("acres", "Acres", {
       tab: "basic",
-      section: "acreage",
+      section: "acreage-details",
       placeholder: "0.0000",
     }),
 
-    // ========== BASIC TAB — details ==========
     field.number("consideration", "Consideration ($)", {
       tab: "basic",
-      section: "details",
-      gridColumn: "span 2",
+      section: "acreage-details",
       placeholder: "0.00",
     }),
 
     field.textarea("reservations", "Reservations/Burdens", {
       tab: "basic",
-      section: "details",
-      gridColumn: "span 2",
+      section: "acreage-details",
+      gridColumn: "span 1",
       rows: 3,
-      helpText: "Free form — no more than 4 pages",
+      textareaMinHeight: 72,
     }),
 
     field.textarea("notes", "Comments", {
       tab: "basic",
-      section: "details",
-      gridColumn: "span 2",
+      section: "acreage-details",
+      gridColumn: "span 1",
       rows: 3,
-      helpText: "Free form — no more than 3 pages",
+      textareaMinHeight: 72,
     }),
+
+    // ========== BASIC TAB — location ==========
+    ...locationFields("location"),
 
     // ========== LEGAL DESCRIPTION TAB ==========
     {
@@ -128,6 +131,16 @@ export const deedsConfig: ModuleConfig = {
       label: "Recordation",
       type: "custom" as const,
       tab: "recordation",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
+
+    // ========== CROSS-REFERENCES TAB ==========
+    {
+      id: "crossReferences",
+      label: "Cross-References",
+      type: "custom" as const,
+      tab: "crossReferences",
       section: "default",
       gridColumn: "span 2" as const,
     },

@@ -1,4 +1,4 @@
-import { field, ModuleConfig, STATES } from "./directoryConfig";
+import { field, ModuleConfig, locationFields } from "./directoryConfig";
 
 export const leasesConfig: ModuleConfig = {
   name: "leases",
@@ -9,7 +9,8 @@ export const leasesConfig: ModuleConfig = {
     { id: "legal", label: "Legal Description" },
     { id: "terms", label: "Terms & Payments" },
     { id: "provisions", label: "Provisions" },
-    { id: "recordation", label: "Recordation & References" },
+    { id: "recordation", label: "Recordation" },
+    { id: "crossReferences", label: "Cross-References" },
     { id: "documents", label: "Documents" },
   ],
   listFields: [
@@ -105,23 +106,7 @@ export const leasesConfig: ModuleConfig = {
       },
     ),
 
-    field.select("stateCode", "State", STATES, {
-      required: true,
-      tab: "basic",
-      section: "location",
-    }),
-
-    {
-      id: "countyName",
-      label: "County",
-      type: "county-combobox" as const,
-      required: true,
-      tab: "basic",
-      section: "location",
-      gridColumn: "span 1" as const,
-      countyStateField: "stateCode",
-      placeholder: "Select county",
-    },
+    ...locationFields("location"),
 
     field.boolean("costFree", "Cost Free", {
       tab: "basic",
@@ -370,7 +355,7 @@ export const leasesConfig: ModuleConfig = {
       },
     ),
 
-    // ========== RECORDATION & REFERENCES TAB ==========
+    // ========== RECORDATION TAB ==========
     {
       id: "recordation",
       label: "Recordation",
@@ -387,6 +372,16 @@ export const leasesConfig: ModuleConfig = {
       rows: 8,
       helpText: "Free form - no more than 3 pages",
     }),
+
+    // ========== CROSS-REFERENCES TAB ==========
+    {
+      id: "crossReferences",
+      label: "Cross-References",
+      type: "custom" as const,
+      tab: "crossReferences",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
 
     // ========== DOCUMENTS TAB ==========
     {

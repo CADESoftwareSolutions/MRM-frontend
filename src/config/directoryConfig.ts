@@ -23,6 +23,8 @@ export interface FieldConfig {
   options?: string[] | { value: string; label: string }[];
   placeholder?: string;
   rows?: number;
+  /** Overrides the shared textarea's default 100px min-height (px). Opt-in — omit to keep current sizing. */
+  textareaMinHeight?: number;
   gridColumn?: "span 1" | "span 2" | "span 3";
   /** Opt a section into a denser 3-column layout (default is 2, or 3 automatically when every field in the section is type "boolean"). */
   sectionColumns?: 3;
@@ -267,6 +269,35 @@ export const STATES = [
   "WI",
   "WY",
 ];
+
+/**
+ * State + county field pair for a "location" section — same pattern used by Leases and Deeds.
+ * Pairs with `useLocationFieldOptions` (src/hooks/useStateCountyReference.ts) for the state
+ * dropdown options, and relies on `stateCountyReference` being passed into <Form> for counties.
+ */
+export const locationFields = (
+  section: string,
+  opts: { stateId?: string; countyId?: string; tab?: string; required?: boolean } = {},
+): FieldConfig[] => {
+  const stateId = opts.stateId ?? "stateCode";
+  const countyId = opts.countyId ?? "countyName";
+  const tab = opts.tab ?? "basic";
+  const required = opts.required ?? true;
+  return [
+    field.select(stateId, "State", STATES, { required, tab, section }),
+    {
+      id: countyId,
+      label: "County",
+      type: "county-combobox",
+      required,
+      tab,
+      section,
+      gridColumn: "span 1",
+      countyStateField: stateId,
+      placeholder: "Select county",
+    },
+  ];
+};
 
 export const directoryConfig: ModuleConfig = {
   name: "directory",

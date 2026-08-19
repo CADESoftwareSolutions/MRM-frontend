@@ -229,6 +229,7 @@ export const Form: React.FC<FormProps> = ({
                 rows={field.rows || 4}
                 placeholder={field.placeholder}
                 className="bg-white/5 border-purple-300/30 text-white min-h-[100px]"
+                style={field.textareaMinHeight ? { minHeight: `${field.textareaMinHeight}px` } : undefined}
               />
             )}
           />

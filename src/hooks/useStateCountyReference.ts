@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { FETCH_STATE_COUNTY_REFERENCE } from "@/graphql/ReferenceData";
@@ -27,3 +28,27 @@ export const useStateCountyReference = () =>
     staleTime: Infinity,
     gcTime: Infinity,
   });
+
+/**
+ * Bundles the reference query with the `dynamicOptions` shape <Form> expects for a
+ * `locationFields()` state select — pass straight through as `dynamicOptions` + `stateCountyReference`.
+ */
+export const useLocationFieldOptions = (stateFieldId: string = "stateCode") => {
+  const query = useStateCountyReference();
+  const stateCountyReference = query.data ?? [];
+
+  const dynamicOptions = useMemo(
+    () =>
+      stateCountyReference.length
+        ? {
+            [stateFieldId]: stateCountyReference.map((state) => ({
+              value: state.code,
+              label: state.name,
+            })),
+          }
+        : {},
+    [stateCountyReference, stateFieldId],
+  );
+
+  return { ...query, stateCountyReference, dynamicOptions };
+};

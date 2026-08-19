@@ -67,6 +67,35 @@ export const FETCH_LEASES = `
           countyName
         }
       }
+      wellLinks {
+        id
+        notes
+        well {
+          id
+          name
+        }
+      }
+      acquisitionLinks {
+        id
+        allocatedCost
+        acquisition {
+          id
+          name
+        }
+      }
+      titleDocumentLinks {
+        id
+        notes
+        titleDocument {
+          id
+          documentType
+          conveyanceParties {
+            role
+            name
+            sortOrder
+          }
+        }
+      }
     }
   }
 `;
@@ -218,6 +247,63 @@ export const UPDATE_LEASE_MUTATION = `
 export const DELETE_LEASE_MUTATION = `
   mutation DeleteLease($id: Int!) {
     deleteLease(id: $id) {
+      success
+    }
+  }
+`;
+
+// ── Cross-reference links (Cross-References tab) ──
+// Same immediate-mutation shape as the Deeds equivalents in Deeds.ts — Deed cross-references
+// reuse CREATE_DEED_LEASE_MUTATION/DELETE_DEED_LEASE_MUTATION from there directly (it's the
+// same title_document_lease row either way, just created with this lease's id as leaseId).
+
+export const CREATE_LEASE_WELL_MUTATION = `
+  mutation CreateLeaseWell($accountId: Int!, $leaseId: Int!, $wellId: Int!, $notes: String) {
+    createLeaseWell(accountId: $accountId, leaseId: $leaseId, wellId: $wellId, notes: $notes) {
+      leaseWell {
+        id
+        notes
+        well { id name }
+      }
+    }
+  }
+`;
+
+export const DELETE_LEASE_WELL_MUTATION = `
+  mutation DeleteLeaseWell($id: Int!) {
+    deleteLeaseWell(id: $id) {
+      success
+    }
+  }
+`;
+
+export const CREATE_LEASE_ACQUISITION_MUTATION = `
+  mutation CreateLeaseAcquisition($accountId: Int!, $leaseId: Int!, $acquisitionId: Int!, $allocatedCost: Float) {
+    createLeaseAcquisition(accountId: $accountId, leaseId: $leaseId, acquisitionId: $acquisitionId, allocatedCost: $allocatedCost) {
+      leaseAcquisition {
+        id
+        allocatedCost
+        acquisition { id name }
+      }
+    }
+  }
+`;
+
+export const UPDATE_LEASE_ACQUISITION_MUTATION = `
+  mutation UpdateLeaseAcquisition($id: Int!, $allocatedCost: Float) {
+    updateLeaseAcquisition(id: $id, allocatedCost: $allocatedCost) {
+      leaseAcquisition {
+        id
+        allocatedCost
+        acquisition { id name }
+      }
+    }
+  }
+`;
+
+export const DELETE_LEASE_ACQUISITION_MUTATION = `
+  mutation DeleteLeaseAcquisition($id: Int!) {
+    deleteLeaseAcquisition(id: $id) {
       success
     }
   }

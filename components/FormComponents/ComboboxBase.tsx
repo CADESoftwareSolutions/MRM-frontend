@@ -45,7 +45,22 @@ export function ComboboxBase<T>({
 }: ComboboxBaseProps<T>) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
+  const [openUpward, setOpenUpward] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
+
+  // Plain absolutely-positioned dropdown (no portal, no Radix collision detection) — near
+  // the bottom of a card it would otherwise hang off the card into the page below it, which
+  // (since it's still in the document's scrollable overflow) shows up as blank space past
+  // the card's own background. Flip it above the input when there isn't room below.
+  const DROPDOWN_MAX_HEIGHT = 256; // matches max-h-64
+  const openDropdown = () => {
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (rect) {
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUpward(spaceBelow < DROPDOWN_MAX_HEIGHT && rect.top > spaceBelow);
+    }
+    setOpen(true);
+  };
 
   React.useEffect(() => {
     setActiveIndex(0);
@@ -69,7 +84,7 @@ export function ComboboxBase<T>({
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      setOpen(true);
+      openDropdown();
       setActiveIndex((index) => Math.min(index + 1, items.length - 1));
     } else if (event.key === "ArrowUp") {
       event.preventDefault();
@@ -92,9 +107,9 @@ export function ComboboxBase<T>({
           value={inputValue}
           onChange={(event) => {
             onInputChange(event.target.value);
-            setOpen(true);
+            openDropdown();
           }}
-          onFocus={() => !disabled && setOpen(true)}
+          onFocus={() => !disabled && openDropdown()}
           onBlur={onBlur}
           onKeyDown={handleKeyDown}
           disabled={disabled}
@@ -107,7 +122,10 @@ export function ComboboxBase<T>({
       {open && !disabled && (
         <div
           role="listbox"
-          className="absolute z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-md border border-purple-300/30 bg-[#1a1a2e] p-1 shadow-lg"
+          className={cn(
+            "absolute z-50 max-h-64 w-full overflow-y-auto rounded-md border border-purple-300/30 bg-[#1a1a2e] p-1 shadow-lg",
+            openUpward ? "bottom-full mb-1" : "mt-1",
+          )}
         >
           {items.length === 0 ? (
             <div className="px-2 py-2 text-sm text-white/60">{emptyMessage}</div>

@@ -65,10 +65,11 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Land",
       icon: Layers,
       items: [
-        { text: "Leases",    route: "/Dashboard/leases" },
-        { text: "Wells",     route: "/Dashboard/wells" },
-        { text: "Deeds",     route: "/Dashboard/deeds" },
-        { text: "Tracts",    route: "/Dashboard/tracts" },
+        { text: "Leases",       route: "/Dashboard/leases" },
+        { text: "Wells",        route: "/Dashboard/wells" },
+        { text: "Deeds",        route: "/Dashboard/deeds" },
+        { text: "Tracts",       route: "/Dashboard/tracts" },
+        { text: "Acquisitions", route: "/Dashboard/acquisitions" },
       ],
     },
     {

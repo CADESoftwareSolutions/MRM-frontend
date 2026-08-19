@@ -144,7 +144,7 @@ export const MultiRecordationField = ({
         className={`cursor-pointer ${
           isLight
             ? "border-purple-600 text-purple-600 hover:bg-purple-50"
-            : "border-purple-400 text-purple-300 hover:bg-purple-500/20"
+            : "bg-white/5 border-purple-400 text-purple-300 hover:bg-purple-500/20"
         }`}
       >
         <Plus className="w-4 h-4 mr-2" />

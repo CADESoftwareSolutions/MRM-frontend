@@ -59,6 +59,8 @@ const transformDeed = (deed: any): Record<string, any> => {
     grantorInterestConveyed: grantors[0]?.interest || "",
     grantee: grantees[0]?.name || "",
     granteeInterestReceived: grantees[0]?.interest || "",
+    stateCode: deed.stateCode || "",
+    countyName: deed.countyName || "",
     consideration: deed.consideration ?? "",
     acres: deed.acres ?? "",
     reservations: deed.reservations || "",
@@ -102,6 +104,8 @@ const buildDeedMutationVariables = (
   documentType: formData.documentType || null,
   interestType: formData.interestType || null,
   conveyanceParties: buildConveyancePartyInputs(formData, existingParties),
+  stateCode: formData.stateCode || null,
+  countyName: formData.countyName || null,
   consideration: formData.consideration ? Number(formData.consideration) : null,
   acres: formData.acres ? Number(formData.acres) : null,
   reservations: formData.reservations || null,
@@ -137,7 +141,7 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
 
   const deeds = useMemo(() => rawDeeds.map(transformDeed), [rawDeeds]);
 
-  const SEARCH_FIELDS = ["documentType", "grantor", "grantee", "interestType"];
+  const SEARCH_FIELDS = ["documentType", "grantor", "grantee", "interestType", "stateCode", "countyName"];
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return deeds;

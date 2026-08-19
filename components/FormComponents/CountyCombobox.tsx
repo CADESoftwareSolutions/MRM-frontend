@@ -32,7 +32,10 @@ const fullFipsCode = (county: CountyReference) =>
 const filterCounties = (counties: CountyReference[], input: string) => {
   const query = normalizeCounty(input);
   const fipsQuery = input.trim();
-  if (!query && !fipsQuery) return counties.slice(0, 25);
+  // Backend already returns counties alphabetically — capping this at 25 like the
+  // scored/matched branch below made the initial no-query list look like it only had
+  // A/B counties for most states, since that's just the alphabetically-first slice.
+  if (!query && !fipsQuery) return counties;
 
   const scored = counties
     .map((county) => {
