@@ -5,16 +5,16 @@ import { themeAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
 import { TractFormModal } from "../modals/TractFormModal";
 
-export interface TractOption {
-  id: number;
+// The single source of truth for "what fields does a tract have" — matches FETCH_TRACTS
+// (src/graphql/Tracts.ts) and TractInput on the BE. src/hooks/useTracts.ts builds its
+// read (transformTract) and write (buildTractInput) shapes from this instead of each
+// hand-listing the same ~15 field names, so a field rename here is a compile error at both
+// call sites instead of something that can silently drift out of sync.
+export interface TractFields {
   tractNo?: string | null;
   tractLabel?: string | null;
   stateCode: string;
   countyName: string;
-  // The rest of the tract's fields, present on the raw FETCH_TRACTS rows the lease/deed
-  // hooks already hold in memory — carried here so the picker can open the full tract in
-  // TractFormModal without a second fetch. Optional since callers/tests may pass a bare
-  // TractOption without them.
   tractType?: string | null;
   upi?: string | null;
   subSurvey?: string | null;
@@ -30,6 +30,12 @@ export interface TractOption {
   quarterCalls?: string | null;
   grossAcres?: number | null;
   netAcres?: number | null;
+}
+
+// A tract as the lease/deed pickers see it: TractFields plus its id. Optional fields stay
+// optional since callers/tests may pass a bare id + display fields without the rest.
+export interface TractOption extends TractFields {
+  id: number;
 }
 
 export interface TractLinkEntry {

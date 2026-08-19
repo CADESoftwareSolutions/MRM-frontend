@@ -119,6 +119,7 @@ const Tracts = () => {
           pendingDeleteItem?.label ||
           `Tract #${pendingDeleteItem?.id}`
         }
+        itemType="Tract"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />

@@ -193,6 +193,7 @@ const AddressDirectory = () => {
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
         itemName={pendingDeleteItem?.name || "this contact"}
+        itemType="Contact"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />

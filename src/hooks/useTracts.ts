@@ -10,7 +10,7 @@ import {
   UPDATE_TRACT_MUTATION,
   DELETE_TRACT_MUTATION,
 } from "../graphql/Tracts";
-import { tractDisplayLabel } from "../../components/FormComponents/TractPickerField";
+import { TractFields, TractOption, tractDisplayLabel } from "../../components/FormComponents/TractPickerField";
 import { executeGraphQL } from "../lib/api";
 
 interface UseTractsProps {
@@ -22,10 +22,10 @@ const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   TRACT_TYPE_OPTIONS.map((option) => [option.value, option.label])
 );
 
-const transformTract = (tract: any): Record<string, any> => ({
+const transformTract = (tract: TractOption): Record<string, any> => ({
   id: tract.id,
   label: tractDisplayLabel(tract),
-  tractTypeLabel: TRACT_TYPE_LABELS[tract.tractType] || tract.tractType || "",
+  tractTypeLabel: TRACT_TYPE_LABELS[tract.tractType ?? ""] || tract.tractType || "",
   tractType: tract.tractType || "",
   tractNo: tract.tractNo || "",
   stateCode: tract.stateCode || "",
@@ -49,7 +49,9 @@ const transformTract = (tract: any): Record<string, any> => ({
 
 // Exported so TractFormModal (the inline add/edit-tract flow embedded in the lease/deed
 // legal-description tab) can build the same GraphQL input without duplicating this mapping.
-export const buildTractInput = (formData: Record<string, any>) => ({
+// Typed to return exactly TractFields' keys — a field added/renamed there is a compile error
+// here instead of a mutation silently missing (or carrying a stray extra) value.
+export const buildTractInput = (formData: Record<string, any>): Record<keyof TractFields, string | number | null> => ({
   tractType: formData.tractType || null,
   tractNo: formData.tractNo || null,
   stateCode: formData.stateCode || null,
@@ -88,7 +90,7 @@ export const useTracts = ({ config: _config, accountId }: UseTractsProps) => {
     queryKey,
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_TRACTS);
-      return result.tracts as any[];
+      return result.tracts as TractOption[];
     },
   });
 

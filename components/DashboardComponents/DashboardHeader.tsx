@@ -13,6 +13,7 @@ import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { themeAtom, pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { useQueryClient } from "@tanstack/react-query";
+import { Z_INDEX } from "@/lib/zIndex";
 
 type DashboardHeaderProps = {
   sidebarWidth: number;
@@ -41,8 +42,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
 
   return (
     <header
-      className="fixed z-[1100] flex items-center justify-between px-6 backdrop-blur-lg border-b"
+      className="fixed flex items-center justify-between px-6 backdrop-blur-lg border-b"
       style={{
+        zIndex: Z_INDEX.header,
         width: `calc(100% - ${sidebarWidth}px)`,
         left: `${sidebarWidth}px`,
         height: 64,
@@ -98,7 +100,8 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
           <DropdownMenuContent
             align="end"
             sideOffset={8}
-            className={`w-48 border z-[9999] ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/20"}`}
+            style={{ zIndex: Z_INDEX.headerMenu }}
+            className={`w-48 border ${isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/20"}`}
           >
             <DropdownMenuItem
               onClick={handleLogout}

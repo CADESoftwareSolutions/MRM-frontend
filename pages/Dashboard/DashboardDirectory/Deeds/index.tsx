@@ -142,6 +142,7 @@ const Deeds = () => {
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
         itemName={pendingDeleteItem?.grantor || `Deed #${pendingDeleteItem?.id}`}
+        itemType="Deed"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />

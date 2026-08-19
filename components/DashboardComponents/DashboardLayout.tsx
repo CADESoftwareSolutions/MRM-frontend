@@ -16,6 +16,7 @@ import { openAccordionsAtom, sidebarOpenAtom, themeAtom } from "@/atoms/Navigati
 import { useQuery } from "@tanstack/react-query";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { API_URL } from "@/lib/api";
+import { Z_INDEX } from "@/lib/zIndex";
 
 const fullWidth = 240;
 const collapsedWidth = 60;
@@ -111,8 +112,9 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       }}
     >
       <aside
-        className="fixed flex h-screen flex-col backdrop-blur-lg border-r transition-all duration-300 ease-in-out z-[1300]"
+        className="fixed flex h-screen flex-col backdrop-blur-lg border-r transition-all duration-300 ease-in-out"
         style={{
+          zIndex: Z_INDEX.sidebar,
           width: `${sidebarWidth}px`,
           background: isLight
             ? "linear-gradient(180deg, #e8e0f5 0%, #ede8f7 100%)"

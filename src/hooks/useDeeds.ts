@@ -11,7 +11,7 @@ import {
 } from "../graphql/Deeds";
 import { FETCH_TRACTS } from "../graphql/Tracts";
 import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
-import { TractLinkEntry, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
+import { TractLinkEntry, TractOption, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
 import { executeGraphQL } from "../lib/api";
 
 interface UseDeedsProps {
@@ -100,7 +100,7 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     queryKey: ["tracts"],
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_TRACTS);
-      return result.tracts as any[];
+      return result.tracts as TractOption[];
     },
   });
 

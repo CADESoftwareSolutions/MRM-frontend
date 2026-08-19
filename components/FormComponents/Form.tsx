@@ -21,6 +21,7 @@ import { NettingTab, NettingEntry } from "./NettingTab";
 import { CountyCombobox } from "./CountyCombobox";
 import { Combobox } from "./Combobox";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
+import { Z_INDEX } from "@/lib/zIndex";
 
 interface FormProps {
   config: ModuleConfig;
@@ -241,10 +242,11 @@ export const Form: React.FC<FormProps> = ({
                   />
                 </SelectTrigger>
                 <SelectContent
-                  // Higher than TractFormModal's z-[10000] — Select portals to <body> as its
-                  // own top-level sibling, so a plain z-50 here would render invisibly behind
-                  // any full-viewport modal instead of on top of it.
-                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto z-[10001]"
+                  // Select portals to <body> as its own top-level sibling, so a plain z-50
+                  // here would render invisibly behind any full-viewport modal (Z_INDEX.modal)
+                  // instead of on top of it — Z_INDEX.modalDropdown is defined to always clear it.
+                  style={{ zIndex: Z_INDEX.modalDropdown }}
+                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto"
                   position="popper"
                   sideOffset={4}
                 >

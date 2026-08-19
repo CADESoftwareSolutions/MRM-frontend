@@ -159,6 +159,7 @@ const Leases = () => {
       <DeleteConfirmModal
         isOpen={!!pendingDeleteItem}
         itemName={pendingDeleteItem?.lessor || `Lease #${pendingDeleteItem?.id}`}
+        itemType="Lease"
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />

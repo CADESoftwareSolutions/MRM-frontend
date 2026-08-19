@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { createPortal } from "react-dom";
 import { useAtom } from "jotai";
 import { useQueryClient } from "@tanstack/react-query";
-import { MapPin, X } from "lucide-react";
+import { MapPin } from "lucide-react";
 import Form from "../FormComponents/Form";
 import tractsConfig from "@/config/tractsConfig";
 import { buildTractInput } from "@/hooks/useTracts";
@@ -10,6 +9,7 @@ import { useStateCountyReference } from "@/hooks/useStateCountyReference";
 import { CREATE_TRACT_MUTATION, UPDATE_TRACT_MUTATION } from "@/graphql/Tracts";
 import { executeGraphQL } from "@/lib/api";
 import { themeAtom } from "@/atoms/NavigationAtom";
+import { Modal, ModalHeader } from "./Modal";
 
 interface TractFormModalProps {
   mode: "add" | "edit";
@@ -70,61 +70,35 @@ export const TractFormModal = ({
     }
   };
 
-  // Portaled straight to <body> — this is a page-level modal, not something scoped to
-  // wherever it happens to be mounted in the lease/deed form's tree. Rendering it in place
-  // would leave it `position: fixed` relative to any ancestor that sets a transform/filter
-  // (Radix's tab/animation wrappers do), which anchors it inside the form instead of the
-  // viewport. z-[10000] clears the sidebar (z-[1300]) and header dropdown (z-[9999]) alike.
-  //
-  // The portal also lands outside DashboardLayout's `.light-theme` wrapper div, so the theme
-  // class has to be reapplied here for the Form fields inside to pick up light-mode styling.
-  return createPortal(
-    <div
-      className={`fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 p-4 ${isLight ? "light-theme" : ""}`}
-    >
-      <div
-        className={`rounded-xl w-full max-w-6xl h-[90vh] shadow-2xl flex flex-col border ${
-          isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"
-        }`}
-      >
-        <div
-          className={`flex items-center justify-between p-6 border-b shrink-0 ${
-            isLight ? "border-purple-100" : "border-purple-300/20"
-          }`}
-        >
-          <h2
-            className={`text-xl font-bold flex items-center gap-2 ${isLight ? "text-gray-900" : "text-white"}`}
-          >
-            <MapPin className={`w-5 h-5 ${isLight ? "text-purple-600" : "text-purple-300"}`} />
-            {mode === "add" ? "Add New Tract" : "Tract Details"}
-          </h2>
-          <button
-            onClick={onClose}
-            className={`transition-colors cursor-pointer ${
-              isLight ? "text-gray-400 hover:text-gray-700" : "text-purple-300 hover:text-white"
-            }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+  return (
+    // portal: this is mounted deep inside the lease/deed form's Tabs content, which sets a
+    // transform on its active panel (Radix's tab animation) — that would anchor a plain
+    // `position: fixed` modal to the form instead of the viewport, so it has to escape via
+    // portal straight to <body>. isLight: the portal lands outside DashboardLayout's
+    // `.light-theme` wrapper, so Modal has to be told the theme explicitly to reapply it.
+    <Modal onClose={onClose} portal isLight={isLight} maxWidthClassName="max-w-6xl" heightClassName="h-[90vh]">
+      <ModalHeader
+        title={mode === "add" ? "Add New Tract" : "Tract Details"}
+        icon={<MapPin className={`w-5 h-5 ${isLight ? "text-purple-600" : "text-purple-300"}`} />}
+        onClose={onClose}
+        isLight={isLight}
+      />
 
-        <div className="p-6 overflow-y-auto flex-1">
-          <Form
-            config={tractsConfig}
-            initialData={initialData ?? undefined}
-            onSave={handleSave}
-            onCancel={onClose}
-            mode={mode}
-            saveError={saveError}
-            onClearSaveError={() => setSaveError(null)}
-            dynamicOptions={dynamicOptions}
-            stateCountyReference={stateCountyReference}
-            bare
-          />
-        </div>
+      <div className="p-6 overflow-y-auto flex-1">
+        <Form
+          config={tractsConfig}
+          initialData={initialData ?? undefined}
+          onSave={handleSave}
+          onCancel={onClose}
+          mode={mode}
+          saveError={saveError}
+          onClearSaveError={() => setSaveError(null)}
+          dynamicOptions={dynamicOptions}
+          stateCountyReference={stateCountyReference}
+          bare
+        />
       </div>
-    </div>,
-    document.body,
+    </Modal>
   );
 };
 

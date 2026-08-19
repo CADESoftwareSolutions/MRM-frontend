@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { Modal } from "./Modal";
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
   itemName: string;
+  /** Noun shown in the title ("Delete {itemType}") and confirmation text — defaults to
+   * "Item" since every caller should really be passing what it's actually deleting. */
+  itemType?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -10,16 +14,16 @@ interface DeleteConfirmModalProps {
 export const DeleteConfirmModal = ({
   isOpen,
   itemName,
+  itemType = "Item",
   onConfirm,
   onCancel,
 }: DeleteConfirmModalProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onCancel} />
-      <div className="relative bg-[#1a1a2e] border border-purple-300/30 rounded-xl p-6 w-full max-w-md shadow-xl">
-        <h2 className="text-white text-lg font-semibold mb-2">Delete Contact</h2>
+    <Modal onClose={onCancel} closeOnBackdropClick maxWidthClassName="max-w-md">
+      <div className="p-6">
+        <h2 className="text-white text-lg font-semibold mb-2">Delete {itemType}</h2>
         <p className="text-purple-200 text-sm mb-6">
           Are you sure you want to delete{" "}
           <span className="text-white font-medium">{itemName}</span>? This
@@ -41,6 +45,6 @@ export const DeleteConfirmModal = ({
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };

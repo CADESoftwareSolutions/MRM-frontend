@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Modal, ModalHeader } from "./Modal";
 
 interface UploadLeasesModalProps {
   onClose: () => void;
@@ -59,99 +60,90 @@ export const UploadLeasesModal = ({ onClose, onImport }: UploadLeasesModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="bg-[#1a1a2e] border border-purple-300/30 rounded-xl w-full max-w-lg mx-4 shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-purple-300/20">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Upload className="w-5 h-5 text-purple-300" />
-            Upload Leases from Spreadsheet
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-purple-300 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Modal onClose={onClose} maxWidthClassName="max-w-lg">
+      <ModalHeader
+        title="Upload Leases from Spreadsheet"
+        icon={<Upload className="w-5 h-5 text-purple-300" />}
+        onClose={onClose}
+      />
+
+      <div className="p-6 space-y-4">
+        <p className="text-purple-200/70 text-sm">
+          Upload a CSV file to bulk import leases. Column headers should match lease
+          field names such as{" "}
+          <code className="text-purple-300 bg-purple-900/40 px-1 rounded">lessor</code>,{" "}
+          <code className="text-purple-300 bg-purple-900/40 px-1 rounded">lessee</code>,{" "}
+          <code className="text-purple-300 bg-purple-900/40 px-1 rounded">state</code>,{" "}
+          <code className="text-purple-300 bg-purple-900/40 px-1 rounded">county</code>,{" "}
+          <code className="text-purple-300 bg-purple-900/40 px-1 rounded">effectiveDate</code>.
+        </p>
+
+        <div
+          className="border-2 border-dashed border-purple-300/30 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400/50 hover:bg-white/5 transition-all"
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
+          <FileText className="w-10 h-10 text-purple-300/50 mx-auto mb-3" />
+          {file ? (
+            <div>
+              <p className="text-white font-medium">{file.name}</p>
+              {rows.length > 0 && (
+                <p className="text-purple-300/70 text-sm mt-1">
+                  {rows.length} row{rows.length !== 1 ? "s" : ""} detected
+                </p>
+              )}
+            </div>
+          ) : (
+            <div>
+              <p className="text-purple-200">Click or drag a CSV file here</p>
+              <p className="text-purple-300/50 text-sm mt-1">.csv files supported</p>
+            </div>
+          )}
         </div>
 
-        <div className="p-6 space-y-4">
-          <p className="text-purple-200/70 text-sm">
-            Upload a CSV file to bulk import leases. Column headers should match lease
-            field names such as{" "}
-            <code className="text-purple-300 bg-purple-900/40 px-1 rounded">lessor</code>,{" "}
-            <code className="text-purple-300 bg-purple-900/40 px-1 rounded">lessee</code>,{" "}
-            <code className="text-purple-300 bg-purple-900/40 px-1 rounded">state</code>,{" "}
-            <code className="text-purple-300 bg-purple-900/40 px-1 rounded">county</code>,{" "}
-            <code className="text-purple-300 bg-purple-900/40 px-1 rounded">effectiveDate</code>.
-          </p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleFile(f);
+          }}
+        />
 
-          <div
-            className="border-2 border-dashed border-purple-300/30 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400/50 hover:bg-white/5 transition-all"
-            onClick={() => inputRef.current?.click()}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-          >
-            <FileText className="w-10 h-10 text-purple-300/50 mx-auto mb-3" />
-            {file ? (
-              <div>
-                <p className="text-white font-medium">{file.name}</p>
-                {rows.length > 0 && (
-                  <p className="text-purple-300/70 text-sm mt-1">
-                    {rows.length} row{rows.length !== 1 ? "s" : ""} detected
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div>
-                <p className="text-purple-200">Click or drag a CSV file here</p>
-                <p className="text-purple-300/50 text-sm mt-1">.csv files supported</p>
-              </div>
-            )}
+        {error && (
+          <div className="flex items-start gap-2 text-red-400 text-sm">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{error}</span>
           </div>
+        )}
 
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handleFile(f);
-            }}
-          />
-
-          {error && (
-            <div className="flex items-start gap-2 text-red-400 text-sm">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {rows.length > 0 && (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
-              <CheckCircle className="w-4 h-4 shrink-0" />
-              Ready to import {rows.length} lease{rows.length !== 1 ? "s" : ""}
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-3 p-6 pt-0">
-          <Button
-            className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer disabled:opacity-50"
-            disabled={rows.length === 0}
-            onClick={() => onImport(rows)}
-          >
-            Import {rows.length > 0 ? `${rows.length} Lease${rows.length !== 1 ? "s" : ""}` : "Leases"}
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 border-purple-300/30 text-purple-200 hover:bg-purple-500/20 cursor-pointer"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-        </div>
+        {rows.length > 0 && (
+          <div className="flex items-center gap-2 text-green-400 text-sm">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            Ready to import {rows.length} lease{rows.length !== 1 ? "s" : ""}
+          </div>
+        )}
       </div>
-    </div>
+
+      <div className="flex gap-3 p-6 pt-0">
+        <Button
+          className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer disabled:opacity-50"
+          disabled={rows.length === 0}
+          onClick={() => onImport(rows)}
+        >
+          Import {rows.length > 0 ? `${rows.length} Lease${rows.length !== 1 ? "s" : ""}` : "Leases"}
+        </Button>
+        <Button
+          variant="outline"
+          className="flex-1 border-purple-300/30 text-purple-200 hover:bg-purple-500/20 cursor-pointer"
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+      </div>
+    </Modal>
   );
 };
