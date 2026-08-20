@@ -52,6 +52,12 @@ interface UseDeedCrossReferencesProps {
 const leaseLabel = (lease: any): string =>
   [lease?.lessor, lease?.lessee].filter(Boolean).join(" / ") || `Lease #${lease?.id}`;
 
+// GraphQL's ID scalar (what party/lease/well/acquisition ids are declared as) serializes over
+// the wire as a string even though the underlying column is an int — same reason TractPickerField
+// keeps its own toTractId. Route every id through here so options/linked ids are actually numbers,
+// not just typed as one, or Int-typed mutation variables like $wellId reject them at request time.
+const toId = (id: unknown): number => Number(id);
+
 // Deeds are already loaded on this page via useDeeds' identical ["deeds"] query — reusing the
 // same key/queryFn just subscribes to that cache instead of firing a second request, and
 // invalidating it here keeps both in sync without threading state back up through the page.
@@ -116,7 +122,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
     () =>
       (currentDeed?.parties || []).map((p: any) => ({
         id: String(p.id),
-        partyId: p.party?.id,
+        partyId: toId(p.party?.id),
         name: p.party?.nameFull || `Party #${p.party?.id}`,
       })),
     [currentDeed],
@@ -126,7 +132,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
     () =>
       (currentDeed?.leaseLinks || []).map((l: any) => ({
         id: String(l.id),
-        leaseId: l.lease?.id,
+        leaseId: toId(l.lease?.id),
         name: leaseLabel(l.lease),
       })),
     [currentDeed],
@@ -136,7 +142,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
     () =>
       (currentDeed?.wellLinks || []).map((w: any) => ({
         id: String(w.id),
-        wellId: w.well?.id,
+        wellId: toId(w.well?.id),
         name: w.well?.name || `Well #${w.well?.id}`,
       })),
     [currentDeed],
@@ -146,7 +152,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
     () =>
       (currentDeed?.acquisitionLinks || []).map((a: any) => ({
         id: String(a.id),
-        acquisitionId: a.acquisition?.id,
+        acquisitionId: toId(a.acquisition?.id),
         name: a.acquisition?.name || `Acquisition #${a.acquisition?.id}`,
         cost: a.allocatedCost ?? null,
       })),
@@ -154,19 +160,19 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
   );
 
   const partyOptions: CrossRefOption[] = useMemo(
-    () => parties.map((p: any) => ({ id: p.id, label: p.nameFull })),
+    () => parties.map((p: any) => ({ id: toId(p.id), label: p.nameFull })),
     [parties],
   );
   const leaseOptions: CrossRefOption[] = useMemo(
-    () => leases.map((l: any) => ({ id: l.id, label: leaseLabel(l) })),
+    () => leases.map((l: any) => ({ id: toId(l.id), label: leaseLabel(l) })),
     [leases],
   );
   const wellOptions: CrossRefOption[] = useMemo(
-    () => wells.map((w: any) => ({ id: w.id, label: w.name })),
+    () => wells.map((w: any) => ({ id: toId(w.id), label: w.name })),
     [wells],
   );
   const acquisitionOptions: CrossRefOption[] = useMemo(
-    () => acquisitions.map((a: any) => ({ id: a.id, label: a.name })),
+    () => acquisitions.map((a: any) => ({ id: toId(a.id), label: a.name })),
     [acquisitions],
   );
 
@@ -185,7 +191,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
       await executeGraphQL(CREATE_DEED_PARTY_MUTATION, {
         accountId,
         deedId,
-        partyId,
+        partyId: toId(partyId),
         role: "cross_reference",
       });
     });
@@ -197,7 +203,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
 
   const addLease = (leaseId: number) =>
     guardedRun(async () => {
-      await executeGraphQL(CREATE_DEED_LEASE_MUTATION, { accountId, deedId, leaseId });
+      await executeGraphQL(CREATE_DEED_LEASE_MUTATION, { accountId, deedId, leaseId: toId(leaseId) });
     });
 
   const removeLease = (id: string) =>
@@ -207,7 +213,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
 
   const addWell = (wellId: number) =>
     guardedRun(async () => {
-      await executeGraphQL(CREATE_DEED_WELL_MUTATION, { accountId, deedId, wellId });
+      await executeGraphQL(CREATE_DEED_WELL_MUTATION, { accountId, deedId, wellId: toId(wellId) });
     });
 
   const removeWell = (id: string) =>
@@ -220,7 +226,7 @@ export const useDeedCrossReferences = ({ deedId, accountId }: UseDeedCrossRefere
       await executeGraphQL(CREATE_DEED_ACQUISITION_MUTATION, {
         accountId,
         deedId,
-        acquisitionId,
+        acquisitionId: toId(acquisitionId),
         allocatedCost: cost,
       });
     });
