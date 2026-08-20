@@ -143,6 +143,12 @@ export const Form: React.FC<FormProps> = ({
     return { required: `${f.label} is required` };
   };
 
+  // A required field on a tab the user isn't looking at (e.g. Basic Information's State/County
+  // while they're on Recordation) fails silently into the bottom error summary otherwise —
+  // nothing on the tab strip itself points back to which tab it's actually on.
+  const tabHasError = (tabId: string) =>
+    isSubmitted && config.fields.some((f) => f.tab === tabId && errors[f.id]);
+
   const commonClasses = "bg-white/5 border-purple-300/30 text-white h-9";
 
   // Callers (renderTabContent) already filter to visibleFields via shouldShowField before
@@ -454,13 +460,21 @@ export const Form: React.FC<FormProps> = ({
               const classifications = watchedValues.classifications ?? [];
               if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
               if (tab.id === "netting" && watchedValues.ownerNettingApplies !== "Yes") return null;
+              const hasError = tabHasError(tab.id);
               return (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="flex-1 rounded-lg px-4 py-2 text-sm font-medium text-purple-100 hover:text-white hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+                  className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium hover:text-white hover:bg-purple-500/30 cursor-pointer transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-none ${
+                    hasError ? "text-red-400" : "text-purple-100"
+                  }`}
                 >
-                  {tab.label}
+                  <span className="inline-flex items-center gap-1.5">
+                    {tab.label}
+                    {hasError && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" aria-hidden="true" />
+                    )}
+                  </span>
                 </TabsTrigger>
               );
             })}

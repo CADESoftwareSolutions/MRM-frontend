@@ -2,8 +2,18 @@ import { useAtom } from "jotai";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CountyCombobox } from "./CountyCombobox";
 import { STATES } from "@/config/directoryConfig";
 import { themeAtom } from "@/atoms/NavigationAtom";
+import type { StateCountyReference } from "@/hooks/useStateCountyReference";
+import { Z_INDEX } from "@/lib/zIndex";
 
 export interface RecordationEntry {
   id: string;
@@ -18,6 +28,9 @@ export interface RecordationEntry {
 interface MultiRecordationFieldProps {
   value: RecordationEntry[];
   onChange: (entries: RecordationEntry[]) => void;
+  /** Same reference data Basic Information's State/County pair uses, so recordation entries
+   * get the identical validated county list instead of a free-text field. */
+  stateCountyReference: StateCountyReference[];
 }
 
 const newEntry = (): RecordationEntry => ({
@@ -33,6 +46,7 @@ const labelCls = "block text-xs font-medium text-purple-200 mb-1";
 export const MultiRecordationField = ({
   value,
   onChange,
+  stateCountyReference,
 }: MultiRecordationFieldProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
@@ -42,6 +56,9 @@ export const MultiRecordationField = ({
   };
 
   const remove = (id: string) => onChange(value.filter((e) => e.id !== id));
+
+  const countiesForState = (state: string) =>
+    stateCountyReference.find((s) => s.code === state)?.counties ?? [];
 
   return (
     <div className="space-y-4">
@@ -66,30 +83,50 @@ export const MultiRecordationField = ({
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className={labelCls}>County</label>
-              <input
-                type="text"
-                value={entry.county}
-                onChange={(e) => update(entry.id, { county: e.target.value })}
-                placeholder="County"
-                className={inputCls}
-              />
+              <label className={labelCls}>State</label>
+              <Select
+                value={entry.state || undefined}
+                onValueChange={(state) => {
+                  // A county belonging to the old state wouldn't necessarily exist in the
+                  // new one — same reset Basic Information's State/County pair does.
+                  if (state !== entry.state) update(entry.id, { state, county: "" });
+                }}
+              >
+                <SelectTrigger
+                  style={{ width: "100%" }}
+                  className={`${inputCls} cursor-pointer data-[placeholder]:text-white/70`}
+                >
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent
+                  style={{ zIndex: Z_INDEX.modalDropdown }}
+                  className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto"
+                  position="popper"
+                  sideOffset={4}
+                >
+                  {STATES.map((s) => (
+                    <SelectItem
+                      key={s}
+                      value={s}
+                      className="hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer text-white"
+                    >
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <label className={labelCls}>State</label>
-              <select
-                value={entry.state}
-                onChange={(e) => update(entry.id, { state: e.target.value })}
-                className="w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white outline-none focus:border-purple-400 cursor-pointer"
-              >
-                <option value="" className="bg-[#1a1a2e]">Select state</option>
-                {STATES.map((s) => (
-                  <option key={s} value={s} className="bg-[#1a1a2e]">
-                    {s}
-                  </option>
-                ))}
-              </select>
+              <label className={labelCls}>County</label>
+              <CountyCombobox
+                value={entry.county}
+                onChange={(county) => update(entry.id, { county })}
+                counties={countiesForState(entry.state)}
+                disabled={!entry.state}
+                placeholder={entry.state ? "Select county" : "Select state first"}
+                className={inputCls}
+              />
             </div>
 
             <div>

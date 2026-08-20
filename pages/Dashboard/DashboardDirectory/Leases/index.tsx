@@ -127,6 +127,7 @@ const Leases = () => {
                   <MultiRecordationField
                     value={recordation}
                     onChange={setRecordation}
+                    stateCountyReference={stateCountyReference}
                   />
                 ),
                 attachments: (
