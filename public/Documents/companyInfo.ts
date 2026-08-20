@@ -188,6 +188,102 @@ export const ourFeatures = [
     active: false,
     path: "/pages/Services/TaxManagement",
     slug: "deed-lease-surface-management",
+    sections: [
+      {
+        title: "Deed Management",
+        description: "Track and organize deed records across your portfolio",
+        features: [
+          {
+            title: "Import/Export Deed Records",
+            description:
+              "Quickly bring in deed data from county records, title companies or manual entry.",
+          },
+          {
+            title: "Chain of Title Tracking",
+            description:
+              "Maintain a clear chain of title history for every tract, from original grant to present ownership.",
+          },
+          {
+            title: "Deed Document Storage",
+            description:
+              "Attach and store scanned deed documents directly to the corresponding tract for instant reference.",
+          },
+          {
+            title: "Custom Deed Reports",
+            description:
+              "Generate reports on deed type, acreage, county or grantor/grantee to analyze your holdings.",
+          },
+        ],
+      },
+      {
+        title: "Lease Management",
+        description: "Manage lease terms, obligations and expirations in one place",
+        features: [
+          {
+            title: "Lease Calendar & Expiration Tracking",
+            description:
+              "Automatically track primary terms, extensions and expiration dates with upcoming lease notifications.",
+          },
+          {
+            title: "Track Royalty and Bonus Terms",
+            description:
+              "Record royalty rates, bonus payments and delay rental obligations for every lease.",
+          },
+          {
+            title: "Held-By-Production Monitoring",
+            description:
+              "Monitor HBP status across leases to identify leases at risk of expiring.",
+          },
+          {
+            title: "Lease Document Management",
+            description:
+              "Store and access executed leases, amendments and ratifications alongside the lease record.",
+          },
+        ],
+      },
+      {
+        title: "Surface Management",
+        description: "Track surface ownership and agreements independent of mineral rights",
+        features: [
+          {
+            title: "Surface Use Agreements",
+            description:
+              "Manage surface use agreements, damages and compensation tied to each tract.",
+          },
+          {
+            title: "Right of Way & Easement Tracking",
+            description:
+              "Track pipeline, road and utility easements crossing your acreage.",
+          },
+          {
+            title: "Surface Owner Contacts",
+            description:
+              "Maintain up-to-date surface owner contact information separate from mineral owners.",
+          },
+        ],
+      },
+      {
+        title: "Tract and Ownership Mapping",
+        description: "Visualize ownership across your entire acreage position",
+        features: [
+          {
+            title: "Tract-Level Ownership Detail",
+            description:
+              "Drill down into net mineral acres, working interest and royalty interest by tract.",
+          },
+          {
+            title: "Ownership Change Tracking",
+            description:
+              "Record conveyances, assignments and probate transfers as ownership changes hands.",
+          },
+          {
+            title: "Custom Tract Reports",
+            description:
+              "Create reports summarizing acreage, ownership percentage and interest type by county, section or tract.",
+          },
+        ],
+      },
+    ],
   },
   {
     title: "Well and Division Order Management",
@@ -197,6 +293,81 @@ export const ourFeatures = [
     active: true,
     path: "/pages/Services/TaxManagement",
     slug: "well-division-order-management",
+    sections: [
+      {
+        title: "Well Management",
+        description: "Monitor well status and performance across your assets",
+        features: [
+          {
+            title: "Well Header & API Tracking",
+            description:
+              "Maintain complete well records including API number, location, operator and status.",
+          },
+          {
+            title: "Production History",
+            description:
+              "Access historical production volumes by well, product type and reporting period.",
+          },
+          {
+            title: "Well Status Monitoring",
+            description:
+              "Track well status changes — drilling, completion, producing, shut-in or plugged — as they happen.",
+          },
+          {
+            title: "Custom Well Reports",
+            description:
+              "Build reports on well performance, production trends or status by operator, county or field.",
+          },
+        ],
+      },
+      {
+        title: "Division Order Management",
+        description: "Confirm ownership and interest before revenue starts flowing",
+        features: [
+          {
+            title: "Decimal Interest Calculator",
+            description:
+              "Confirm decimal interests are correct with the built-in calculator before a division order is signed.",
+          },
+          {
+            title: "Division Order Tracking",
+            description:
+              "Track outstanding, signed and pending division orders across all wells.",
+          },
+          {
+            title: "Interest Type Breakdown",
+            description:
+              "Break down ownership by royalty, working, override and other interest types for every well.",
+          },
+          {
+            title: "Division Order Document Storage",
+            description:
+              "Store signed division orders directly alongside the well and owner record.",
+          },
+        ],
+      },
+      {
+        title: "Ownership & Payee Management",
+        description: "Keep owner records accurate as interests change hands",
+        features: [
+          {
+            title: "Owner Decimal Verification",
+            description:
+              "Cross-check owner decimal interests against title and lease records to catch errors early.",
+          },
+          {
+            title: "Payee Setup and Changes",
+            description:
+              "Manage payee information and process ownership changes without disrupting revenue distribution.",
+          },
+          {
+            title: "Suspense Tracking",
+            description:
+              "Identify and track interests held in suspense pending title resolution.",
+          },
+        ],
+      },
+    ],
   },
   {
     title: "Acquisition/Divestiture/Operator Management",
@@ -206,6 +377,70 @@ export const ourFeatures = [
     active: false,
     path: "/pages/Services/TaxManagement",
     slug: "acquisition-divestiture-management",
+    sections: [
+      {
+        title: "Acquisition Management",
+        description: "Bring newly acquired assets into your portfolio without missing a beat",
+        features: [
+          {
+            title: "Acquisition Data Import",
+            description:
+              "Import acquired assets — wells, leases and ownership — directly into your portfolio.",
+          },
+          {
+            title: "Purchase Price Allocation",
+            description:
+              "Track purchase price allocation by well, lease or tract for accurate cost basis reporting.",
+          },
+          {
+            title: "Effective Date Accounting",
+            description:
+              "Manage effective date adjustments and true-ups between closing and effective date.",
+          },
+        ],
+      },
+      {
+        title: "Divestiture Management",
+        description: "Manage assets from listing through closing and beyond",
+        features: [
+          {
+            title: "Divestiture Tracking",
+            description: "Track assets marked for sale from listing through closing.",
+          },
+          {
+            title: "Data Room Reporting",
+            description:
+              "Generate reports and exports to support due diligence and data room requests.",
+          },
+          {
+            title: "Post-Sale Reconciliation",
+            description:
+              "Reconcile revenue and expenses for divested assets through the closing date.",
+          },
+        ],
+      },
+      {
+        title: "Operator and Purchaser Management",
+        description: "Keep operator and purchaser relationships current across every well",
+        features: [
+          {
+            title: "Operator Change Tracking",
+            description:
+              "Record operator changes as they occur and maintain historical operator history by well.",
+          },
+          {
+            title: "Purchaser Management",
+            description:
+              "Track crude and gas purchasers by well, along with contract and pricing details.",
+          },
+          {
+            title: "Operator Contact Directory",
+            description:
+              "Maintain a centralized directory of operator contacts, addresses and remittance information.",
+          },
+        ],
+      },
+    ],
   },
   {
     title: "Document Management/PDF Conversion",
@@ -215,6 +450,66 @@ export const ourFeatures = [
     active: false,
     path: "/pages/Services/TaxManagement",
     slug: "document-management",
+    sections: [
+      {
+        title: "Document Storage",
+        description: "One secure home for every document tied to your properties",
+        features: [
+          {
+            title: "Centralized Document Repository",
+            description:
+              "Securely store deeds, leases, division orders and correspondence in one searchable location.",
+          },
+          {
+            title: "Document Linking",
+            description:
+              "Attach documents directly to the related party, tract, well or lease record for instant access.",
+          },
+          {
+            title: "Access Controls",
+            description:
+              "Control who can view, upload or edit documents across your organization.",
+          },
+        ],
+      },
+      {
+        title: "PDF Conversion Tools",
+        description: "Turn static PDFs into usable, analyzable data",
+        features: [
+          {
+            title: "Check Detail to Excel Conversion",
+            description:
+              "Convert PDF revenue check details into Excel for easy analysis and reporting.",
+          },
+          {
+            title: "Bulk Document Conversion",
+            description:
+              "Convert and process large batches of PDF statements at once to save time.",
+          },
+          {
+            title: "Data Validation",
+            description:
+              "Automatically validate converted data against source documents to catch conversion errors.",
+          },
+        ],
+      },
+      {
+        title: "Search and Retrieval",
+        description: "Find any document in seconds",
+        features: [
+          {
+            title: "Full-Text Document Search",
+            description:
+              "Search across your entire document library by owner, well, tract or keyword.",
+          },
+          {
+            title: "Version History",
+            description:
+              "Track document revisions and access prior versions when documents are updated.",
+          },
+        ],
+      },
+    ],
   },
   {
     title: "Tax Management",
@@ -224,6 +519,66 @@ export const ourFeatures = [
     active: false,
     path: "/pages/Services/TaxManagement",
     slug: "tax-management",
+    sections: [
+      {
+        title: "Ad Valorem Tax Management",
+        description: "Stay ahead of ad valorem assessments across every property",
+        features: [
+          {
+            title: "Ad Valorem Tax Tracking",
+            description:
+              "Track ad valorem tax assessments and payments by well, tract or county.",
+          },
+          {
+            title: "Tax Analysis Reports",
+            description:
+              "Analyze tax burden trends across your portfolio to identify assessment discrepancies.",
+          },
+          {
+            title: "Payment Due Notifications",
+            description:
+              "Receive notifications ahead of upcoming ad valorem tax deadlines.",
+          },
+        ],
+      },
+      {
+        title: "Year-End Tax Reporting",
+        description: "Simplify year-end filings for owners and regulators alike",
+        features: [
+          {
+            title: "1099 Reporting",
+            description:
+              "Generate 1099 forms for royalty and working interest owners at year end.",
+          },
+          {
+            title: "Severance Tax Reporting",
+            description:
+              "Track and report severance tax withheld and remitted by state and product type.",
+          },
+          {
+            title: "Custom Tax Summary Reports",
+            description:
+              "Create custom reports summarizing tax obligations across your properties for accounting and audit purposes.",
+          },
+        ],
+      },
+      {
+        title: "Compliance Tracking",
+        description: "Keep tax calculations audit-ready across every state you operate in",
+        features: [
+          {
+            title: "Multi-State Tax Rules",
+            description:
+              "Manage differing tax rules and rates across the states where you operate.",
+          },
+          {
+            title: "Audit Trail",
+            description:
+              "Maintain a complete audit trail of tax calculations and filings for compliance review.",
+          },
+        ],
+      },
+    ],
   },
   {
     title: "Reports Management",
@@ -233,5 +588,64 @@ export const ourFeatures = [
     active: false,
     path: "/pages/Services/TaxManagement",
     slug: "reports-management",
+    sections: [
+      {
+        title: "Canned Reports",
+        description: "A full library of ready-to-run reports, no setup required",
+        features: [
+          {
+            title: "Standard Report Library",
+            description:
+              "Access a full library of pre-built reports covering revenue, JIB, wells, leases and ownership.",
+          },
+          {
+            title: "One-Click Reporting",
+            description: "Run any canned report instantly at the click of a button.",
+          },
+          {
+            title: "Scheduled Report Delivery",
+            description:
+              "Schedule reports to run automatically and deliver to your inbox on a recurring basis.",
+          },
+        ],
+      },
+      {
+        title: "Custom Reports",
+        description: "Build the exact report you need, then save it for next time",
+        features: [
+          {
+            title: "Custom Report Builder",
+            description:
+              "Build your own reports by selecting the fields, filters and grouping that matter to you.",
+          },
+          {
+            title: "Save and Reuse Filters",
+            description:
+              "Save custom filters and report layouts to reuse whenever you need them.",
+          },
+          {
+            title: "Export to Excel and PDF",
+            description:
+              "Export any report to Excel or PDF for sharing or further analysis.",
+          },
+        ],
+      },
+      {
+        title: "Dashboard Reporting",
+        description: "See the whole portfolio at a glance, then drill into the details",
+        features: [
+          {
+            title: "Portfolio-Wide Summaries",
+            description:
+              "View summarized reporting across your entire portfolio from a single dashboard.",
+          },
+          {
+            title: "Drill-Down Detail",
+            description:
+              "Click into any summary report to drill down to the underlying transaction detail.",
+          },
+        ],
+      },
+    ],
   },
 ];

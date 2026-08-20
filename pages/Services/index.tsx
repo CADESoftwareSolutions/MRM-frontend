@@ -9,26 +9,23 @@ import {
   Layers,
   ClipboardList,
   GitPullRequest,
+  ArrowRight,
 } from "lucide-react";
 import { useRouter } from "next/router";
 import { ourFeatures } from "../../public/Documents/companyInfo";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "Account Management": <DollarSign className="w-12 h-12 text-white" />,
-  "Deed, Lease and Surface Management": (
-    <Layers className="w-12 h-12 text-white" />
+  "accounting-management": <DollarSign className="h-7 w-7 text-white" />,
+  "deed-lease-surface-management": <Layers className="h-7 w-7 text-white" />,
+  "well-division-order-management": (
+    <TrendingUp className="h-7 w-7 text-white" />
   ),
-  "Well and Division Order Management": (
-    <TrendingUp className="w-12 h-12 text-white" />
+  "acquisition-divestiture-management": (
+    <GitPullRequest className="h-7 w-7 text-white" />
   ),
-  "Acquisition/Divestiture/Operator Management": (
-    <GitPullRequest className="w-12 h-12 text-white" />
-  ),
-  "Document Management/PDF Conversion": (
-    <FileText className="w-12 h-12 text-white" />
-  ),
-  "Tax Management": <ClipboardList className="w-12 h-12 text-white" />,
-  "Reports Management": <Box className="w-12 h-12 text-white" />,
+  "document-management": <FileText className="h-7 w-7 text-white" />,
+  "tax-management": <ClipboardList className="h-7 w-7 text-white" />,
+  "reports-management": <Box className="h-7 w-7 text-white" />,
 };
 
 const Services: React.FC = () => {
@@ -36,58 +33,57 @@ const Services: React.FC = () => {
 
   return (
     <Layout>
-      <section className="bg-gray-100 py-16 px-4 md:px-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Services
-          </h1>
-          <p className="mt-3 text-lg md:text-xl text-gray-600">
-            Explore the suite of services CADE offers for Oil & Gas management.
-          </p>
-        </div>
+      <section
+        className="px-4 py-20 md:px-16"
+        style={{
+          background:
+            "linear-gradient(135deg, #ffffff 0%, #faf5ff 50%, #f3e8ff 100%)",
+        }}
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-16 text-center">
+            <div className="mb-6 inline-block rounded-full bg-purple-100 px-6 py-2">
+              <span className="text-sm font-semibold uppercase tracking-wider text-purple-700">
+                What We Offer
+              </span>
+            </div>
+            <h1 className="text-4xl font-extrabold text-gray-900 md:text-5xl">
+              Our Services
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
+              Explore the suite of services CADE offers for Oil &amp; Gas
+              management.
+            </p>
+          </div>
 
-        <div className="flex flex-wrap justify-center gap-10">
-          {ourFeatures.map((service, index) => (
-            <Card
-              key={service.slug}
-              onClick={() => router.push(`/Services/${service.slug}`)}
-              className={`relative overflow-hidden rounded-2xl bg-white shadow-2xl border-0 transition-transform transform hover:-translate-y-2 hover:shadow-3xl cursor-pointer w-full md:w-[350px] h-[420px] ${
-                index % 2 === 1 ? "mt-12 md:mt-20" : ""
-              }`}
-            >
-              <div
-                className="absolute top-0 left-0 w-full h-full z-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(128, 90, 213, 0.8) 0%, rgba(128, 90, 213, 0.2) 60%, rgba(255,255,255,0) 100%)",
-                }}
-              ></div>
-
-              <CardContent className="relative flex flex-col h-full p-6 z-10 justify-between">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center break-words">
-                  {service.title}
-                </h3>
-
-                <div className="flex flex-col items-center my-4 w-full">
-                  <div className="flex justify-center mb-4">
-                    {iconMap[service.title]}
+          <div className="flex flex-wrap justify-center gap-8">
+            {ourFeatures.map((service) => (
+              <Card
+                key={service.slug}
+                onClick={() => router.push(`/Services/${service.slug}`)}
+                className="group w-full cursor-pointer overflow-hidden rounded-3xl border-0 bg-white shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl sm:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]"
+              >
+                <CardContent className="flex h-full flex-col p-8">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                    {iconMap[service.slug]}
                   </div>
 
-                  <div
-                    className="w-[80%] h-[2px] rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(to right, rgba(128,90,213,0), rgba(128,90,213,0.6), rgba(128,90,213,0))",
-                    }}
-                  ></div>
-                </div>
+                  <h3 className="mb-3 text-xl font-bold text-gray-900">
+                    {service.title}
+                  </h3>
 
-                <p className="text-gray-700 text-base md:text-lg text-center mt-4">
-                  {service.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                  <p className="flex-1 text-base leading-relaxed text-gray-600">
+                    {service.description}
+                  </p>
+
+                  <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-purple-600">
+                    Learn more
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
     </Layout>
