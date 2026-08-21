@@ -10,7 +10,6 @@ import {
   UPDATE_TRACT_MUTATION,
   DELETE_TRACT_MUTATION,
 } from "../graphql/Tracts";
-import { TractFields, TractOption, tractDisplayLabel } from "../../components/FormComponents/TractPickerField";
 import { executeGraphQL } from "../lib/api";
 
 interface UseTractsProps {
@@ -18,11 +17,81 @@ interface UseTractsProps {
   accountId: number;
 }
 
+// The single source of truth for "what fields does a tract have" — matches FETCH_TRACTS
+// above and TractInput on the BE. buildTractInput (below) and transformTract build their
+// write/read shapes from this instead of each hand-listing the same ~15 field names, so a
+// field rename here is a compile error at both call sites instead of something that can
+// silently drift out of sync. Also used by useLegalDescriptions.ts, which resolves each
+// Deed/Lease/Well legal-description entry to a Tract row via the same buildTractInput.
+export interface TractFields {
+  tractNo?: string | null;
+  tractLabel?: string | null;
+  stateCode: string;
+  countyName: string;
+  tractType?: string | null;
+  upi?: string | null;
+  subSurvey?: string | null;
+  legalDescription?: string | null;
+  lotNo?: string | null;
+  blockNo?: string | null;
+  township?: string | null;
+  surveyTownship?: string | null;
+  section?: string | null;
+  range?: string | null;
+  abstract?: string | null;
+  survey?: string | null;
+  quarterCalls?: string | null;
+  grossAcres?: number | null;
+  netAcres?: number | null;
+}
+
+// A tract as loaded from FETCH_TRACTS: TractFields plus its id.
+export interface TractOption extends TractFields {
+  id: number;
+}
+
+// Tract has no single "name" column — build a display label from whatever identifying fields
+// are set. Used by the standalone Tracts screen's list/search.
+export const tractDisplayLabel = (tract: { id: number; tractNo?: string | null; tractLabel?: string | null; stateCode?: string | null; countyName?: string | null }): string =>
+  tract.tractNo ||
+  tract.tractLabel ||
+  [tract.countyName, tract.stateCode].filter(Boolean).join(", ") ||
+  `Tract #${tract.id}`;
+
 const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   TRACT_TYPE_OPTIONS.map((option) => [option.value, option.label])
 );
 
-const transformTract = (tract: TractOption): Record<string, any> => ({
+// A tract's own cross-references are read-only: the link is actually created from the
+// Deed/Lease/Well side's Legal Description tab, not from here. FETCH_TRACTS carries these two
+// relationships purely for display — same shape useDeedCrossReferences.ts /
+// useLeaseCrossReferences.ts already read off Deed/Lease, just walked in reverse off Tract.
+interface RawTract extends TractOption {
+  leaseLinks?: { id: string | number; lease: { id: number; lessor?: string | null; lessee?: string | null } | null }[];
+  titleDocumentLinks?: {
+    id: string | number;
+    titleDocument: {
+      id: number;
+      documentType?: string | null;
+      conveyanceParties?: { role: string; name: string; sortOrder: number }[];
+    } | null;
+  }[];
+}
+
+const leaseLabel = (lease: any): string =>
+  [lease?.lessor, lease?.lessee].filter(Boolean).join(" / ") || `Lease #${lease?.id}`;
+
+// Mirrors useLeaseCrossReferences.ts's deedLabel: first grantor row (by sortOrder) named on
+// the instrument, since title_document has no single "name" column of its own.
+const deedLabel = (deed: any): string => {
+  const grantor = (deed?.conveyanceParties || [])
+    .filter((p: any) => p.role === "grantor")
+    .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0];
+  const type = deed?.documentType || "Deed";
+  return grantor ? `${type} — ${grantor.name}` : `${type} #${deed?.id}`;
+};
+
+const transformTract = (tract: RawTract): Record<string, any> => ({
   id: tract.id,
   label: tractDisplayLabel(tract),
   tractTypeLabel: TRACT_TYPE_LABELS[tract.tractType ?? ""] || tract.tractType || "",
@@ -45,10 +114,18 @@ const transformTract = (tract: TractOption): Record<string, any> => ({
   quarterCalls: tract.quarterCalls || "",
   grossAcres: tract.grossAcres ?? "",
   netAcres: tract.netAcres ?? "",
+  _leaseLinks: (tract.leaseLinks || []).map((link) => ({
+    id: String(link.id),
+    name: leaseLabel(link.lease),
+  })),
+  _titleDocumentLinks: (tract.titleDocumentLinks || []).map((link) => ({
+    id: String(link.id),
+    name: deedLabel(link.titleDocument),
+  })),
 });
 
-// Exported so TractFormModal (the inline add/edit-tract flow embedded in the lease/deed
-// legal-description tab) can build the same GraphQL input without duplicating this mapping.
+// Exported so resolveLegalDescriptionLinks (useLegalDescriptions.ts) can build the same
+// GraphQL input for each inline-authored legal description without duplicating this mapping.
 // Typed to return exactly TractFields' keys — a field added/renamed there is a compile error
 // here instead of a mutation silently missing (or carrying a stray extra) value.
 export const buildTractInput = (formData: Record<string, any>): Record<keyof TractFields, string | number | null> => ({

@@ -117,8 +117,8 @@ export const deedsConfig: ModuleConfig = {
 
     // ========== LEGAL DESCRIPTION TAB ==========
     {
-      id: "tractLinks",
-      label: "Tracts",
+      id: "legalDescriptions",
+      label: "Legal Descriptions",
       type: "custom" as const,
       tab: "legal",
       section: "default",

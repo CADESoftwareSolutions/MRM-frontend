@@ -9,6 +9,8 @@ import {
   UPDATE_WELL_MUTATION,
   DELETE_WELL_MUTATION,
 } from "../graphql/Wells";
+import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDescriptionListField";
+import { transformLegalDescriptions, buildLegalDescriptionInputs } from "./useLegalDescriptions";
 import { executeGraphQL } from "../lib/api";
 
 interface UseWellsProps {
@@ -28,9 +30,14 @@ const transformWell = (well: any): Record<string, any> => ({
   stateCode: well.stateCode || "",
   countyName: well.countyName || "",
   notes: well.notes || "",
+  _legalDescriptions: transformLegalDescriptions(well.legalDescriptions),
 });
 
-const buildWellMutationVariables = (formData: Record<string, any>, accountId: number) => ({
+const buildWellMutationVariables = (
+  formData: Record<string, any>,
+  legalDescriptions: LegalDescriptionEntry[],
+  accountId: number,
+) => ({
   accountId,
   name: formData.name || null,
   leaseName: formData.leaseName || null,
@@ -42,6 +49,7 @@ const buildWellMutationVariables = (formData: Record<string, any>, accountId: nu
   stateCode: formData.stateCode || null,
   countyName: formData.countyName || null,
   notes: formData.notes || null,
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
 });
 
 export const useWells = ({ config: _config, accountId }: UseWellsProps) => {
@@ -76,9 +84,9 @@ export const useWells = ({ config: _config, accountId }: UseWellsProps) => {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
-  const handleSave = async (formData: Record<string, any>) => {
+  const handleSave = async (formData: Record<string, any>, legalDescriptions: LegalDescriptionEntry[]) => {
     try {
-      const variables = buildWellMutationVariables(formData, accountId);
+      const variables = buildWellMutationVariables(formData, legalDescriptions, accountId);
       if (view === "add") {
         await executeGraphQL(CREATE_WELL_MUTATION, variables);
       } else {

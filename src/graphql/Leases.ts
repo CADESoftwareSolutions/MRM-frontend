@@ -54,18 +54,24 @@ export const FETCH_LEASES = `
         consentType
         notes
       }
-      tracts {
-        tractId
+      legalDescriptions {
+        id
         sortOrder
+        stateCode
+        countyName
+        tractType
+        tractLabel
+        legalDescription
+        lotNo
+        blockNo
+        township
+        section
+        range
+        abstract
+        survey
+        quarterCalls
         grossAcres
         netAcres
-        tract {
-          id
-          tractNo
-          tractLabel
-          stateCode
-          countyName
-        }
       }
       wellLinks {
         id
@@ -132,7 +138,7 @@ export const CREATE_LEASE_MUTATION = `
     $notes: String
     $recordations: [RecordationInput]
     $provisions: [LeaseProvisionInput]
-    $tractLinks: [LeaseTractLinkInput]
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     createLease(
       accountId: $accountId
@@ -165,7 +171,7 @@ export const CREATE_LEASE_MUTATION = `
       notes: $notes
       recordations: $recordations
       provisions: $provisions
-      tractLinks: $tractLinks
+      legalDescriptions: $legalDescriptions
     ) {
       lease { id }
     }
@@ -204,7 +210,7 @@ export const UPDATE_LEASE_MUTATION = `
     $notes: String
     $recordations: [RecordationInput]
     $provisions: [LeaseProvisionInput]
-    $tractLinks: [LeaseTractLinkInput]
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     updateLease(
       id: $id
@@ -237,7 +243,7 @@ export const UPDATE_LEASE_MUTATION = `
       notes: $notes
       recordations: $recordations
       provisions: $provisions
-      tractLinks: $tractLinks
+      legalDescriptions: $legalDescriptions
     ) {
       lease { id }
     }

@@ -21,6 +21,26 @@ export const FETCH_TRACTS = `
       quarterCalls
       grossAcres
       netAcres
+      leaseLinks {
+        id
+        lease {
+          id
+          lessor
+          lessee
+        }
+      }
+      titleDocumentLinks {
+        id
+        titleDocument {
+          id
+          documentType
+          conveyanceParties {
+            role
+            name
+            sortOrder
+          }
+        }
+      }
     }
   }
 `;

@@ -9,9 +9,9 @@ import {
   UPDATE_LEASE_MUTATION,
   DELETE_LEASE_MUTATION,
 } from "../graphql/Leases";
-import { FETCH_TRACTS } from "../graphql/Tracts";
 import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
-import { TractLinkEntry, TractOption, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
+import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDescriptionListField";
+import { transformLegalDescriptions, buildLegalDescriptionInputs } from "./useLegalDescriptions";
 import { executeGraphQL } from "../lib/api";
 
 interface UseLeasesProps {
@@ -149,14 +149,14 @@ const transformLease = (lease: any): Record<string, any> => {
     notes: lease.notes || "",
     ...provisionFormValues,
     _recordation: (lease.recordations || []).map(transformRecordation),
-    _tractLinks: transformTractLinks(lease.tracts),
+    _legalDescriptions: transformLegalDescriptions(lease.legalDescriptions),
   };
 };
 
 const buildLeaseMutationVariables = (
   formData: Record<string, any>,
   recordation: RecordationEntry[],
-  tractLinks: TractLinkEntry[],
+  legalDescriptions: LegalDescriptionEntry[],
   accountId: number,
 ) => ({
   accountId,
@@ -191,7 +191,7 @@ const buildLeaseMutationVariables = (
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
   provisions: buildProvisionInputs(formData),
-  tractLinks: buildTractLinkInputs(tractLinks),
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
 });
 
 export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
@@ -208,14 +208,6 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_LEASES);
       return result.leases as any[];
-    },
-  });
-
-  const { data: availableTracts = [] } = useQuery({
-    queryKey: ["tracts"],
-    queryFn: async () => {
-      const result = await executeGraphQL(FETCH_TRACTS);
-      return result.tracts as TractOption[];
     },
   });
 
@@ -238,10 +230,10 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
   const handleSave = async (
     formData: Record<string, any>,
     recordation: RecordationEntry[],
-    tractLinks: TractLinkEntry[],
+    legalDescriptions: LegalDescriptionEntry[],
   ) => {
     try {
-      const variables = buildLeaseMutationVariables(formData, recordation, tractLinks, accountId);
+      const variables = buildLeaseMutationVariables(formData, recordation, legalDescriptions, accountId);
       if (view === "add") {
         await executeGraphQL(CREATE_LEASE_MUTATION, variables);
       } else {
@@ -274,7 +266,6 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
     searchTerm,
     selectedItem,
     filteredData,
-    availableTracts,
     saveError,
     clearSaveError: () => setSaveError(null),
     pendingDeleteItem,

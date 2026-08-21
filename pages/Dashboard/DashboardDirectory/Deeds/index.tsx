@@ -6,7 +6,7 @@ import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
 import { DeedCrossReferencesTab } from "../../../../components/FormComponents/DeedCrossReferencesTab";
-import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
+import { LegalDescriptionListField, LegalDescriptionEntry } from "../../../../components/FormComponents/LegalDescriptionListField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import deedsConfig from "@/config/deedsConfig";
 import { useDeeds } from "@/hooks/useDeeds";
@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 const Deeds = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [tractLinks, setTractLinks] = useState<TractLinkEntry[]>([]);
+  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
@@ -29,7 +29,6 @@ const Deeds = () => {
     searchTerm,
     selectedItem,
     filteredData,
-    availableTracts,
     saveError,
     clearSaveError,
     pendingDeleteItem,
@@ -60,19 +59,19 @@ const Deeds = () => {
   }, [filteredData.length]);
 
   const handleAdd = () => {
-    setTractLinks([]);
+    setLegalDescriptions([]);
     setRecordation([]);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
-    setTractLinks(item._tractLinks || []);
+    setLegalDescriptions(item._legalDescriptions || []);
     setRecordation(item._recordation || []);
     _handleEdit(item);
   };
 
   const onSave = (formData: any) => {
-    handleSave(formData, recordation, tractLinks);
+    handleSave(formData, recordation, legalDescriptions);
   };
 
   return (
@@ -115,12 +114,11 @@ const Deeds = () => {
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
               customContent={{
-                tractLinks: (
-                  <TractPickerField
-                    availableTracts={availableTracts}
-                    value={tractLinks}
-                    onChange={setTractLinks}
-                    accountId={userProfile?.account?.id ?? 0}
+                legalDescriptions: (
+                  <LegalDescriptionListField
+                    value={legalDescriptions}
+                    onChange={setLegalDescriptions}
+                    stateCountyReference={stateCountyReference}
                   />
                 ),
                 recordation: (

@@ -4,6 +4,7 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
+import { TractCrossReferencesTab } from "../../../../components/FormComponents/TractCrossReferencesTab";
 import tractsConfig from "@/config/tractsConfig";
 import { useTracts } from "@/hooks/useTracts";
 import { useAtom } from "jotai";
@@ -108,6 +109,15 @@ const Tracts = () => {
               onClearSaveError={clearSaveError}
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
+              customContent={{
+                crossReferences: (
+                  <TractCrossReferencesTab
+                    linkedLeases={selectedItem?._leaseLinks || []}
+                    linkedDeeds={selectedItem?._titleDocumentLinks || []}
+                    hasId={selectedItem?.id != null}
+                  />
+                ),
+              }}
             />
           )}
         </div>

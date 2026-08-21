@@ -50,9 +50,9 @@ const deedLabel = (deed: any): string => {
 };
 
 // GraphQL's ID scalar (what well/acquisition/deed ids are declared as) serializes over the wire
-// as a string even though the underlying column is an int — same reason TractPickerField keeps
-// its own toTractId. Route every id through here so options/linked ids are actually numbers, not
-// just typed as one, or Int-typed mutation variables like $wellId reject them at request time.
+// as a string even though the underlying column is an int. Route every id through here so
+// options/linked ids are actually numbers, not just typed as one, or Int-typed mutation
+// variables like $wellId reject them at request time.
 const toId = (id: unknown): number => Number(id);
 
 // Same pattern as useDeedCrossReferences.ts: reuse the ["leases"]/["deeds"] queries useLeases.ts

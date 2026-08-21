@@ -53,9 +53,9 @@ const leaseLabel = (lease: any): string =>
   [lease?.lessor, lease?.lessee].filter(Boolean).join(" / ") || `Lease #${lease?.id}`;
 
 // GraphQL's ID scalar (what party/lease/well/acquisition ids are declared as) serializes over
-// the wire as a string even though the underlying column is an int — same reason TractPickerField
-// keeps its own toTractId. Route every id through here so options/linked ids are actually numbers,
-// not just typed as one, or Int-typed mutation variables like $wellId reject them at request time.
+// the wire as a string even though the underlying column is an int. Route every id through here
+// so options/linked ids are actually numbers, not just typed as one, or Int-typed mutation
+// variables like $wellId reject them at request time.
 const toId = (id: unknown): number => Number(id);
 
 // Deeds are already loaded on this page via useDeeds' identical ["deeds"] query — reusing the

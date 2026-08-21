@@ -12,6 +12,25 @@ export const FETCH_WELLS = `
       stateCode
       countyName
       notes
+      legalDescriptions {
+        id
+        sortOrder
+        stateCode
+        countyName
+        tractType
+        tractLabel
+        legalDescription
+        lotNo
+        blockNo
+        township
+        section
+        range
+        abstract
+        survey
+        quarterCalls
+        grossAcres
+        netAcres
+      }
     }
   }
 `;
@@ -29,6 +48,7 @@ export const CREATE_WELL_MUTATION = `
     $stateCode: String
     $countyName: String
     $notes: String
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     createWell(
       accountId: $accountId
@@ -42,6 +62,7 @@ export const CREATE_WELL_MUTATION = `
       stateCode: $stateCode
       countyName: $countyName
       notes: $notes
+      legalDescriptions: $legalDescriptions
     ) {
       well { id }
     }
@@ -61,6 +82,7 @@ export const UPDATE_WELL_MUTATION = `
     $stateCode: String
     $countyName: String
     $notes: String
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     updateWell(
       id: $id
@@ -74,6 +96,7 @@ export const UPDATE_WELL_MUTATION = `
       stateCode: $stateCode
       countyName: $countyName
       notes: $notes
+      legalDescriptions: $legalDescriptions
     ) {
       well { id }
     }

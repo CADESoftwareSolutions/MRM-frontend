@@ -4,7 +4,10 @@ export const wellsConfig: ModuleConfig = {
   name: "wells",
   title: "Wells",
   itemName: "Well",
-  tabs: [{ id: "details", label: "Well Details" }],
+  tabs: [
+    { id: "details", label: "Well Details" },
+    { id: "legal", label: "Legal Description" },
+  ],
   listFields: ["name", "operatorName", "stateCode", "countyName", "apiNumber"],
   fields: [
     // ========== IDENTIFICATION ==========
@@ -54,6 +57,19 @@ export const wellsConfig: ModuleConfig = {
       gridColumn: "span 2",
       rows: 3,
     }),
+
+    // ========== LEGAL DESCRIPTION TAB ==========
+    // Same pattern as Deeds/Leases: rendered by LegalDescriptionListField, which reuses
+    // tractsConfig.ts's "legal" tab fields (tractType + IF block) directly — each entry
+    // authors its own Tract row inline rather than picking from an existing list.
+    {
+      id: "legalDescriptions",
+      label: "Legal Descriptions",
+      type: "custom" as const,
+      tab: "legal",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
   ],
 };
 

@@ -22,9 +22,9 @@ interface CrossReferencePickerProps {
 export const inputCls =
   "w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white placeholder:text-white/50 outline-none focus:border-purple-400 transition-colors";
 
-// Same search-box-with-dropdown shape as TractPickerField's inline picker, generalized to any
-// {id,label} option list — Names/Leases/Wells/Acquisitions on the Deeds cross-reference tab all
-// need this exact interaction (search, click a result to add, exclude already-linked ids).
+// A search-box-with-dropdown, generalized to any {id,label} option list — Names/Leases/Wells/
+// Acquisitions on the Deeds cross-reference tab all need this exact interaction (search, click
+// a result to add, exclude already-linked ids).
 export const CrossReferencePicker = ({
   options,
   excludeIds,

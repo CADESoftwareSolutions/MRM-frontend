@@ -25,18 +25,24 @@ export const FETCH_DEEDS = `
         instrumentNumber
         recordingDate
       }
-      tracts {
-        tractId
+      legalDescriptions {
+        id
         sortOrder
+        stateCode
+        countyName
+        tractType
+        tractLabel
+        legalDescription
+        lotNo
+        blockNo
+        township
+        section
+        range
+        abstract
+        survey
+        quarterCalls
         grossAcres
         netAcres
-        tract {
-          id
-          tractNo
-          tractLabel
-          stateCode
-          countyName
-        }
       }
       parties {
         id
@@ -89,7 +95,7 @@ export const CREATE_DEED_MUTATION = `
     $reservations: String
     $notes: String
     $recordations: [RecordationInput]
-    $tractLinks: [TitleDocumentTractLinkInput]
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     createDeed(
       accountId: $accountId
@@ -103,7 +109,7 @@ export const CREATE_DEED_MUTATION = `
       reservations: $reservations
       notes: $notes
       recordations: $recordations
-      tractLinks: $tractLinks
+      legalDescriptions: $legalDescriptions
     ) {
       deed { id }
     }
@@ -123,7 +129,7 @@ export const UPDATE_DEED_MUTATION = `
     $reservations: String
     $notes: String
     $recordations: [RecordationInput]
-    $tractLinks: [TitleDocumentTractLinkInput]
+    $legalDescriptions: [LegalDescriptionInput]
   ) {
     updateDeed(
       id: $id
@@ -137,7 +143,7 @@ export const UPDATE_DEED_MUTATION = `
       reservations: $reservations
       notes: $notes
       recordations: $recordations
-      tractLinks: $tractLinks
+      legalDescriptions: $legalDescriptions
     ) {
       deed { id }
     }

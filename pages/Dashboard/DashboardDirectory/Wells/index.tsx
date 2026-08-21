@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
+import { LegalDescriptionListField, LegalDescriptionEntry } from "../../../../components/FormComponents/LegalDescriptionListField";
 import wellsConfig from "@/config/wellsConfig";
 import { useWells } from "@/hooks/useWells";
 import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 const Wells = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
+  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
@@ -29,8 +31,8 @@ const Wells = () => {
     confirmDelete,
     cancelDelete,
     setSearchTerm,
-    handleAdd,
-    handleEdit,
+    handleAdd: _handleAdd,
+    handleEdit: _handleEdit,
     handleSave,
     handleDelete,
     handleCancel,
@@ -52,8 +54,18 @@ const Wells = () => {
     return () => setPageHeader({});
   }, [filteredData.length]);
 
+  const handleAdd = () => {
+    setLegalDescriptions([]);
+    _handleAdd();
+  };
+
+  const handleEdit = (item: any) => {
+    setLegalDescriptions(item._legalDescriptions || []);
+    _handleEdit(item);
+  };
+
   const onSave = (formData: any) => {
-    handleSave(formData);
+    handleSave(formData, legalDescriptions);
   };
 
   return (
@@ -95,6 +107,15 @@ const Wells = () => {
               onClearSaveError={clearSaveError}
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
+              customContent={{
+                legalDescriptions: (
+                  <LegalDescriptionListField
+                    value={legalDescriptions}
+                    onChange={setLegalDescriptions}
+                    stateCountyReference={stateCountyReference}
+                  />
+                ),
+              }}
             />
           )}
         </div>

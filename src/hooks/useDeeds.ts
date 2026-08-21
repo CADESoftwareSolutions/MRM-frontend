@@ -9,9 +9,9 @@ import {
   UPDATE_DEED_MUTATION,
   DELETE_DEED_MUTATION,
 } from "../graphql/Deeds";
-import { FETCH_TRACTS } from "../graphql/Tracts";
 import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
-import { TractLinkEntry, TractOption, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
+import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDescriptionListField";
+import { transformLegalDescriptions, buildLegalDescriptionInputs } from "./useLegalDescriptions";
 import { executeGraphQL } from "../lib/api";
 
 interface UseDeedsProps {
@@ -66,7 +66,7 @@ const transformDeed = (deed: any): Record<string, any> => {
     reservations: deed.reservations || "",
     notes: deed.notes || "",
     _recordation: (deed.recordations || []).map(transformRecordation),
-    _tractLinks: transformTractLinks(deed.tracts),
+    _legalDescriptions: transformLegalDescriptions(deed.legalDescriptions),
     _conveyanceParties: parties,
   };
 };
@@ -96,7 +96,7 @@ const buildConveyancePartyInputs = (
 const buildDeedMutationVariables = (
   formData: Record<string, any>,
   recordation: RecordationEntry[],
-  tractLinks: TractLinkEntry[],
+  legalDescriptions: LegalDescriptionEntry[],
   accountId: number,
   existingParties: any[],
 ) => ({
@@ -111,7 +111,7 @@ const buildDeedMutationVariables = (
   reservations: formData.reservations || null,
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
-  tractLinks: buildTractLinkInputs(tractLinks),
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
 });
 
 export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
@@ -128,14 +128,6 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_DEEDS);
       return result.deeds as any[];
-    },
-  });
-
-  const { data: availableTracts = [] } = useQuery({
-    queryKey: ["tracts"],
-    queryFn: async () => {
-      const result = await executeGraphQL(FETCH_TRACTS);
-      return result.tracts as TractOption[];
     },
   });
 
@@ -158,13 +150,13 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
   const handleSave = async (
     formData: Record<string, any>,
     recordation: RecordationEntry[],
-    tractLinks: TractLinkEntry[],
+    legalDescriptions: LegalDescriptionEntry[],
   ) => {
     try {
       const variables = buildDeedMutationVariables(
         formData,
         recordation,
-        tractLinks,
+        legalDescriptions,
         accountId,
         selectedItem?._conveyanceParties || [],
       );
@@ -200,7 +192,6 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     searchTerm,
     selectedItem,
     filteredData,
-    availableTracts,
     saveError,
     clearSaveError: () => setSaveError(null),
     pendingDeleteItem,
