@@ -134,10 +134,11 @@ const Deeds = () => {
                     entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />
                 ),
-                crossReferences: (
+                crossReferences: (activeTab: string) => (
                   <DeedCrossReferencesTab
                     deedId={selectedItem?.id ? Number(selectedItem.id) : null}
                     accountId={userProfile?.account?.id ?? 0}
+                    isActive={activeTab === "crossReferences"}
                   />
                 ),
               }}

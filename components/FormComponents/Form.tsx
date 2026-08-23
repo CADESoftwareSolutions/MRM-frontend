@@ -40,8 +40,11 @@ interface FormProps {
   nettingEntries?: NettingEntry[];
   onNettingChange?: (entries: NettingEntry[]) => void;
   allParties?: Array<{ id: string; name: string }>;
-  /** Custom React nodes injected by field id — rendered in place of fields with type "custom" */
-  customContent?: Record<string, React.ReactNode>;
+  /** Custom content injected by field id, rendered in place of fields with type "custom" — a
+   * plain node, or a function of the currently-active tab id for content that needs to know
+   * when its own tab becomes visible (e.g. re-fetching suggestions each time a user returns to
+   * a Cross-References tab, since tabs use forceMount and never unmount on switch). */
+  customContent?: Record<string, React.ReactNode | ((activeTab: string) => React.ReactNode)>;
   /** Runtime options loaded from reference data, keyed by field id. */
   dynamicOptions?: Record<string, FieldConfig["options"]>;
   /** State/county reference data for county-combobox fields. */
@@ -154,14 +157,17 @@ export const Form: React.FC<FormProps> = ({
   // Callers (renderTabContent) already filter to visibleFields via shouldShowField before
   // calling this, so it can assume field is visible rather than re-checking.
   const renderField = (field: FieldConfig) => {
-    // Custom content injected from parent
+    // Custom content injected from parent — either a plain node, or a function of the
+    // currently-active tab id (see the customContent prop doc comment above).
     if (field.type === "custom") {
+      const content = customContent[field.id];
+      const rendered = typeof content === "function" ? content(activeTab) : content;
       return (
         <div
           key={field.id}
           className={field.gridColumn === "span 2" ? "col-span-2" : ""}
         >
-          {customContent[field.id] ?? null}
+          {rendered ?? null}
         </div>
       );
     }

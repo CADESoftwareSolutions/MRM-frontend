@@ -46,10 +46,11 @@ const ReadOnlyLinkedList = ({
   </div>
 );
 
-// Read-only: a tract gets linked to a Lease/Deed by that record's own Legal Description tab
-// authoring an entry against it (LegalDescriptionListField), not from here — this just surfaces
-// what already points at this tract, same leaseLinks/titleDocumentLinks data useTracts.ts
-// derives from FETCH_TRACTS.
+// Read-only: a tract gets linked to a Lease/Deed from that record's own Cross-References tab —
+// either the manual Tract picker there (CreateLeaseTract/CreateTitleDocumentTract) or accepting
+// a suggested match (SuggestedCrossReferencesModal), not from here — this just surfaces what
+// already points at this tract, same leaseLinks/titleDocumentLinks data useTracts.ts derives
+// from FETCH_TRACTS.
 export const TractCrossReferencesTab = ({ linkedLeases, linkedDeeds, hasId }: TractCrossReferencesTabProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";

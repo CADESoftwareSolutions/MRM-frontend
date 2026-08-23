@@ -7,6 +7,7 @@ export const wellsConfig: ModuleConfig = {
   tabs: [
     { id: "details", label: "Well Details" },
     { id: "legal", label: "Legal Description" },
+    { id: "crossReferences", label: "Cross-References" },
   ],
   listFields: ["name", "operatorName", "stateCode", "countyName", "apiNumber"],
   fields: [
@@ -60,13 +61,25 @@ export const wellsConfig: ModuleConfig = {
 
     // ========== LEGAL DESCRIPTION TAB ==========
     // Same pattern as Deeds/Leases: rendered by LegalDescriptionListField, which reuses
-    // tractsConfig.ts's "legal" tab fields (tractType + IF block) directly — each entry
-    // authors its own Tract row inline rather than picking from an existing list.
+    // tractsConfig.ts's "legal" tab fields (tractType + IF block) directly. Each entry is plain
+    // data owned by the well, not a Tract row — a Tract only enters the picture if this well's
+    // legal description happens to match one, referenced from the Cross-References tab below
+    // (manually, or via the suggested-matches modal), same as Deeds/Leases.
     {
       id: "legalDescriptions",
       label: "Legal Descriptions",
       type: "custom" as const,
       tab: "legal",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
+
+    // ========== CROSS-REFERENCES TAB ==========
+    {
+      id: "crossReferences",
+      label: "Cross-References",
+      type: "custom" as const,
+      tab: "crossReferences",
       section: "default",
       gridColumn: "span 2" as const,
     },

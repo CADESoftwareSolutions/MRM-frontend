@@ -5,6 +5,7 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LegalDescriptionListField, LegalDescriptionEntry } from "../../../../components/FormComponents/LegalDescriptionListField";
+import { WellCrossReferencesTab } from "../../../../components/FormComponents/WellCrossReferencesTab";
 import wellsConfig from "@/config/wellsConfig";
 import { useWells } from "@/hooks/useWells";
 import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
@@ -113,6 +114,13 @@ const Wells = () => {
                     value={legalDescriptions}
                     onChange={setLegalDescriptions}
                     stateCountyReference={stateCountyReference}
+                  />
+                ),
+                crossReferences: (activeTab: string) => (
+                  <WellCrossReferencesTab
+                    wellId={selectedItem?.id ? Number(selectedItem.id) : null}
+                    accountId={userProfile?.account?.id ?? 0}
+                    isActive={activeTab === "crossReferences"}
                   />
                 ),
               }}

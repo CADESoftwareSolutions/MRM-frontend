@@ -44,6 +44,16 @@ export const FETCH_DEEDS = `
         grossAcres
         netAcres
       }
+      tracts {
+        id
+        tract {
+          id
+          tractNo
+          tractLabel
+          stateCode
+          countyName
+        }
+      }
       parties {
         id
         role
@@ -163,6 +173,25 @@ export const DELETE_DEED_MUTATION = `
 // createDeed/updateDeed arguments — each link is its own row (title_document_party /
 // _lease / _well / _acquisition) persisted immediately via its own mutation, same shape as
 // file attachments (useFileUpload.ts): requires an existing deed id, invalidate + refetch after.
+
+export const CREATE_DEED_TRACT_MUTATION = `
+  mutation CreateDeedTract($accountId: Int!, $deedId: Int!, $tractId: Int!) {
+    createDeedTract(accountId: $accountId, deedId: $deedId, tractId: $tractId) {
+      deedTract {
+        id
+        tract { id tractNo tractLabel stateCode countyName }
+      }
+    }
+  }
+`;
+
+export const DELETE_DEED_TRACT_MUTATION = `
+  mutation DeleteDeedTract($id: Int!) {
+    deleteDeedTract(id: $id) {
+      success
+    }
+  }
+`;
 
 export const CREATE_DEED_PARTY_MUTATION = `
   mutation CreateDeedParty($accountId: Int!, $deedId: Int!, $partyId: Int!, $role: String!, $notes: String) {

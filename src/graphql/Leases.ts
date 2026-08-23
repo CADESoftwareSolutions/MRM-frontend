@@ -73,6 +73,16 @@ export const FETCH_LEASES = `
         grossAcres
         netAcres
       }
+      tracts {
+        id
+        tract {
+          id
+          tractNo
+          tractLabel
+          stateCode
+          countyName
+        }
+      }
       wellLinks {
         id
         notes
@@ -262,6 +272,25 @@ export const DELETE_LEASE_MUTATION = `
 // Same immediate-mutation shape as the Deeds equivalents in Deeds.ts — Deed cross-references
 // reuse CREATE_DEED_LEASE_MUTATION/DELETE_DEED_LEASE_MUTATION from there directly (it's the
 // same title_document_lease row either way, just created with this lease's id as leaseId).
+
+export const CREATE_LEASE_TRACT_MUTATION = `
+  mutation CreateLeaseTract($accountId: Int!, $leaseId: Int!, $tractId: Int!) {
+    createLeaseTract(accountId: $accountId, leaseId: $leaseId, tractId: $tractId) {
+      leaseTract {
+        id
+        tract { id tractNo tractLabel stateCode countyName }
+      }
+    }
+  }
+`;
+
+export const DELETE_LEASE_TRACT_MUTATION = `
+  mutation DeleteLeaseTract($id: Int!) {
+    deleteLeaseTract(id: $id) {
+      success
+    }
+  }
+`;
 
 export const CREATE_LEASE_WELL_MUTATION = `
   mutation CreateLeaseWell($accountId: Int!, $leaseId: Int!, $wellId: Int!, $notes: String) {

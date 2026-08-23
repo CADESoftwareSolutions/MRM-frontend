@@ -63,9 +63,10 @@ const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 // A tract's own cross-references are read-only: the link is actually created from the
-// Deed/Lease/Well side's Legal Description tab, not from here. FETCH_TRACTS carries these two
-// relationships purely for display — same shape useDeedCrossReferences.ts /
-// useLeaseCrossReferences.ts already read off Deed/Lease, just walked in reverse off Tract.
+// Deed/Lease side's own Cross-References tab (the manual Tract picker there, or accepting a
+// suggested match), not from here. FETCH_TRACTS carries these two relationships purely for
+// display — same shape useDeedCrossReferences.ts / useLeaseCrossReferences.ts already read off
+// Deed/Lease, just walked in reverse off Tract.
 interface RawTract extends TractOption {
   leaseLinks?: { id: string | number; lease: { id: number; lessor?: string | null; lessee?: string | null } | null }[];
   titleDocumentLinks?: {

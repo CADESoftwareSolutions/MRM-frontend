@@ -5,15 +5,20 @@ import { themeAtom } from "@/atoms/NavigationAtom";
 import { useLeaseCrossReferences } from "@/hooks/useLeaseCrossReferences";
 import { CrossReferencePicker, inputCls } from "./CrossReferencePicker";
 import { LinkedRowsTable, numberOrNull } from "./CrossReferenceTable";
+import { SuggestedCrossReferencesModal } from "./SuggestedCrossReferencesModal";
 
 interface LeaseCrossReferencesTabProps {
   leaseId?: number | null;
   accountId: number;
+  /** True while this tab is the one currently showing (Form.tsx's tabs use forceMount and never
+   * unmount on switch) — passed through to the suggested-matches modal so it re-checks fresh
+   * every time the user returns to this tab, not just once when the form first opens. */
+  isActive: boolean;
 }
 
 // No "Name" section here — unlike title_document_party for Deeds, the backend has no
 // lease_party table, so there's nowhere to store a lease-to-Directory-name cross-reference.
-export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossReferencesTabProps) => {
+export const LeaseCrossReferencesTab = ({ leaseId, accountId, isActive }: LeaseCrossReferencesTabProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
   const [pendingCost, setPendingCost] = useState("");
@@ -21,12 +26,18 @@ export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossRefere
   const {
     error,
     clearError,
+    linkedTracts,
     linkedWells,
     linkedAcquisitions,
     linkedDeeds,
+    linkedLeases,
+    tractOptions,
     wellOptions,
     acquisitionOptions,
     deedOptions,
+    leaseOptions,
+    addTract,
+    removeTract,
     addWell,
     removeWell,
     addAcquisition,
@@ -34,6 +45,8 @@ export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossRefere
     removeAcquisition,
     addDeed,
     removeDeed,
+    addLease,
+    removeLease,
   } = useLeaseCrossReferences({ leaseId, accountId });
 
   if (leaseId == null) {
@@ -46,6 +59,14 @@ export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossRefere
 
   return (
     <div className="space-y-6">
+      <SuggestedCrossReferencesModal
+        sourceEntityType="lease"
+        sourceEntityId={leaseId}
+        accountId={accountId}
+        isActive={isActive}
+        isLight={isLight}
+      />
+
       {error && (
         <div className="flex items-center justify-between p-2 rounded-lg bg-red-500/10 border border-red-500/40">
           <p className="text-xs text-red-300">{error}</p>
@@ -105,6 +126,42 @@ export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossRefere
         </h3>
 
         <div className="space-y-5">
+          {/* Tracts */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-purple-200">Tract</label>
+            <CrossReferencePicker
+              options={tractOptions}
+              excludeIds={new Set(linkedTracts.map((t) => t.tractId))}
+              placeholder="Search tracts by number, state, or county"
+              onAdd={(option) => addTract(option.id)}
+            />
+            <LinkedRowsTable
+              rows={linkedTracts.map((t) => ({ id: t.id, primary: t.name }))}
+              emptyMessage="No tracts referenced yet."
+              nameHeader="Tract"
+              onRemove={removeTract}
+              isLight={isLight}
+            />
+          </div>
+
+          {/* Other Leases */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-purple-200">Lease</label>
+            <CrossReferencePicker
+              options={leaseOptions}
+              excludeIds={new Set(linkedLeases.map((l) => l.leaseId))}
+              placeholder="Search other leases by lessor or lessee"
+              onAdd={(option) => addLease(option.id)}
+            />
+            <LinkedRowsTable
+              rows={linkedLeases.map((l) => ({ id: l.id, primary: l.name }))}
+              emptyMessage="No other leases referenced yet."
+              nameHeader="Lease"
+              onRemove={removeLease}
+              isLight={isLight}
+            />
+          </div>
+
           {/* Wells */}
           <div className="space-y-2">
             <label className="text-xs font-medium text-purple-200">Well</label>

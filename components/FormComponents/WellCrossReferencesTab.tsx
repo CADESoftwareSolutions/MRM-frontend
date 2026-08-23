@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useAtom } from "jotai";
 import { X } from "lucide-react";
 import { themeAtom } from "@/atoms/NavigationAtom";
-import { useDeedCrossReferences } from "@/hooks/useDeedCrossReferences";
+import { useWellCrossReferences } from "@/hooks/useWellCrossReferences";
 import { CrossReferencePicker, inputCls } from "./CrossReferencePicker";
 import { LinkedRowsTable, numberOrNull } from "./CrossReferenceTable";
 import { SuggestedCrossReferencesModal } from "./SuggestedCrossReferencesModal";
 
-interface DeedCrossReferencesTabProps {
-  deedId?: number | null;
+interface WellCrossReferencesTabProps {
+  wellId?: number | null;
   accountId: number;
   /** True while this tab is the one currently showing (Form.tsx's tabs use forceMount and never
    * unmount on switch) — passed through to the suggested-matches modal so it re-checks fresh
@@ -16,7 +16,8 @@ interface DeedCrossReferencesTabProps {
   isActive: boolean;
 }
 
-export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCrossReferencesTabProps) => {
+// No "Name" section here — same reason Lease has none: no well_party table on the backend.
+export const WellCrossReferencesTab = ({ wellId, accountId, isActive }: WellCrossReferencesTabProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
   const [pendingCost, setPendingCost] = useState("");
@@ -25,33 +26,29 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
     error,
     clearError,
     linkedTracts,
-    linkedParties,
-    linkedLeases,
     linkedWells,
-    linkedAcquisitions,
+    linkedLeases,
     linkedDeeds,
+    linkedAcquisitions,
     tractOptions,
-    partyOptions,
-    leaseOptions,
     wellOptions,
-    acquisitionOptions,
+    leaseOptions,
     deedOptions,
+    acquisitionOptions,
     addTract,
     removeTract,
-    addParty,
-    removeParty,
-    addLease,
-    removeLease,
     addWell,
     removeWell,
+    addLease,
+    removeLease,
+    addDeed,
+    removeDeed,
     addAcquisition,
     updateAcquisitionCost,
     removeAcquisition,
-    addDeed,
-    removeDeed,
-  } = useDeedCrossReferences({ deedId, accountId });
+  } = useWellCrossReferences({ wellId, accountId });
 
-  if (deedId == null) {
+  if (wellId == null) {
     return (
       <p className="text-center text-sm text-purple-300/70 py-6 border border-dashed border-purple-300/30 rounded-lg">
         Save to enable cross-references.
@@ -62,8 +59,8 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
   return (
     <div className="space-y-6">
       <SuggestedCrossReferencesModal
-        sourceEntityType="title_document"
-        sourceEntityId={deedId}
+        sourceEntityType="well"
+        sourceEntityId={wellId}
         accountId={accountId}
         isActive={isActive}
         isLight={isLight}
@@ -96,7 +93,7 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
               type="number"
               value={pendingCost}
               onChange={(e) => setPendingCost(e.target.value)}
-              placeholder="Cost paid for this deed"
+              placeholder="Cost paid for this well"
               className={`${inputCls} w-56`}
             />
           }
@@ -124,7 +121,7 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
 
       <div className="border-t border-purple-300/30 pt-4">
         <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-3">
-          Cross-Reference Deed to
+          Cross-Reference Well to
         </h3>
 
         <div className="space-y-5">
@@ -146,38 +143,20 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
             />
           </div>
 
-          {/* Other Deeds */}
+          {/* Other Wells */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-200">Deed</label>
+            <label className="text-xs font-medium text-purple-200">Well</label>
             <CrossReferencePicker
-              options={deedOptions}
-              excludeIds={new Set(linkedDeeds.map((d) => d.deedId))}
-              placeholder="Search other deeds by grantor or type"
-              onAdd={(option) => addDeed(option.id)}
+              options={wellOptions}
+              excludeIds={new Set(linkedWells.map((w) => w.wellId))}
+              placeholder="Search other wells by name"
+              onAdd={(option) => addWell(option.id)}
             />
             <LinkedRowsTable
-              rows={linkedDeeds.map((d) => ({ id: d.id, primary: d.name }))}
-              emptyMessage="No other deeds referenced yet."
-              nameHeader="Deed"
-              onRemove={removeDeed}
-              isLight={isLight}
-            />
-          </div>
-
-          {/* Names */}
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-200">Name</label>
-            <CrossReferencePicker
-              options={partyOptions}
-              excludeIds={new Set(linkedParties.map((p) => p.partyId))}
-              placeholder="Search names in the Directory"
-              onAdd={(option) => addParty(option.id)}
-            />
-            <LinkedRowsTable
-              rows={linkedParties.map((p) => ({ id: p.id, primary: p.name }))}
-              emptyMessage="No names referenced yet."
-              nameHeader="Name"
-              onRemove={removeParty}
+              rows={linkedWells.map((w) => ({ id: w.id, primary: w.name }))}
+              emptyMessage="No other wells referenced yet."
+              nameHeader="Well"
+              onRemove={removeWell}
               isLight={isLight}
             />
           </div>
@@ -200,20 +179,20 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
             />
           </div>
 
-          {/* Wells */}
+          {/* Deeds */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-purple-200">Well</label>
+            <label className="text-xs font-medium text-purple-200">Deed</label>
             <CrossReferencePicker
-              options={wellOptions}
-              excludeIds={new Set(linkedWells.map((w) => w.wellId))}
-              placeholder="Search wells by name"
-              onAdd={(option) => addWell(option.id)}
+              options={deedOptions}
+              excludeIds={new Set(linkedDeeds.map((d) => d.deedId))}
+              placeholder="Search deeds by grantor or type"
+              onAdd={(option) => addDeed(option.id)}
             />
             <LinkedRowsTable
-              rows={linkedWells.map((w) => ({ id: w.id, primary: w.name }))}
-              emptyMessage="No wells referenced yet."
-              nameHeader="Well"
-              onRemove={removeWell}
+              rows={linkedDeeds.map((d) => ({ id: d.id, primary: d.name }))}
+              emptyMessage="No deeds referenced yet."
+              nameHeader="Deed"
+              onRemove={removeDeed}
               isLight={isLight}
             />
           </div>
@@ -223,4 +202,4 @@ export const DeedCrossReferencesTab = ({ deedId, accountId, isActive }: DeedCros
   );
 };
 
-export default DeedCrossReferencesTab;
+export default WellCrossReferencesTab;
