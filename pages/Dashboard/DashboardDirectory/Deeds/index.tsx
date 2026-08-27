@@ -118,7 +118,6 @@ const Deeds = () => {
                   <LegalDescriptionListField
                     value={legalDescriptions}
                     onChange={setLegalDescriptions}
-                    stateCountyReference={stateCountyReference}
                   />
                 ),
                 recordation: (

@@ -113,7 +113,6 @@ const Wells = () => {
                   <LegalDescriptionListField
                     value={legalDescriptions}
                     onChange={setLegalDescriptions}
-                    stateCountyReference={stateCountyReference}
                   />
                 ),
                 crossReferences: (activeTab: string) => (

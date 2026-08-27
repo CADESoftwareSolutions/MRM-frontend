@@ -118,7 +118,6 @@ const Leases = () => {
                   <LegalDescriptionListField
                     value={legalDescriptions}
                     onChange={setLegalDescriptions}
-                    stateCountyReference={stateCountyReference}
                   />
                 ),
                 recordation: (

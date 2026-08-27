@@ -8,11 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CountyCombobox } from "./CountyCombobox";
-import { STATES } from "@/config/directoryConfig";
 import { tractsConfig, TRACT_TYPE_OPTIONS } from "@/config/tractsConfig";
 import { themeAtom } from "@/atoms/NavigationAtom";
-import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 import { Z_INDEX } from "@/lib/zIndex";
 
 // Plain data owned by the Lease/Deed/Well — not a Tract (that's a separate, reusable,
@@ -29,7 +26,6 @@ export interface LegalDescriptionEntry {
 interface LegalDescriptionListFieldProps {
   value: LegalDescriptionEntry[];
   onChange: (entries: LegalDescriptionEntry[]) => void;
-  stateCountyReference: StateCountyReference[];
 }
 
 export const newLegalDescriptionEntry = (): LegalDescriptionEntry => ({
@@ -37,7 +33,7 @@ export const newLegalDescriptionEntry = (): LegalDescriptionEntry => ({
   sortOrder: null,
   grossAcres: null,
   netAcres: null,
-  fields: { tractType: "", stateCode: "", countyName: "" },
+  fields: { tractType: "" },
 });
 
 const inputCls =
@@ -61,7 +57,6 @@ const numberOrNull = (raw: string): number | null => (raw === "" ? null : Number
 export const LegalDescriptionListField = ({
   value,
   onChange,
-  stateCountyReference,
 }: LegalDescriptionListFieldProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
@@ -75,9 +70,6 @@ export const LegalDescriptionListField = ({
   };
 
   const remove = (id: string) => onChange(value.filter((e) => e.id !== id));
-
-  const countiesForState = (state: string) =>
-    stateCountyReference.find((s) => s.code === state)?.counties ?? [];
 
   return (
     <div className="space-y-4">
@@ -103,60 +95,9 @@ export const LegalDescriptionListField = ({
               </button>
             </div>
 
+            {/* State/County live on the parent record's own Basic Information — every entry is
+                saved under that same state/county rather than asking for it again per entry. */}
             <div className="grid grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className={labelCls}>State</label>
-                <Select
-                  value={entry.fields.stateCode || undefined}
-                  onValueChange={(stateCode) => {
-                    if (stateCode !== entry.fields.stateCode) {
-                      onChange(
-                        value.map((e) =>
-                          e.id === entry.id
-                            ? { ...e, fields: { ...e.fields, stateCode, countyName: "" } }
-                            : e,
-                        ),
-                      );
-                    }
-                  }}
-                >
-                  <SelectTrigger
-                    style={{ width: "100%" }}
-                    className={`${inputCls} cursor-pointer data-[placeholder]:text-white/70`}
-                  >
-                    <SelectValue placeholder="Select state" />
-                  </SelectTrigger>
-                  <SelectContent
-                    style={{ zIndex: Z_INDEX.modalDropdown }}
-                    className="bg-[#1a1a2e] border-purple-300/30 max-h-[300px] overflow-y-auto"
-                    position="popper"
-                    sideOffset={4}
-                  >
-                    {STATES.map((s) => (
-                      <SelectItem
-                        key={s}
-                        value={s}
-                        className="hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer text-white"
-                      >
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className={labelCls}>County</label>
-                <CountyCombobox
-                  value={entry.fields.countyName || ""}
-                  onChange={(countyName) => updateField(entry.id, "countyName", countyName)}
-                  counties={countiesForState(entry.fields.stateCode)}
-                  disabled={!entry.fields.stateCode}
-                  placeholder={entry.fields.stateCode ? "Select county" : "Select state first"}
-                  className={inputCls}
-                />
-              </div>
-
               <div>
                 <label className={labelCls}>Legal Description Type</label>
                 <Select

@@ -49,7 +49,7 @@ const buildWellMutationVariables = (
   stateCode: formData.stateCode || null,
   countyName: formData.countyName || null,
   notes: formData.notes || null,
-  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions, formData.stateCode || null, formData.countyName || null),
 });
 
 export const useWells = ({ config: _config, accountId }: UseWellsProps) => {

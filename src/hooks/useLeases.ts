@@ -191,7 +191,7 @@ const buildLeaseMutationVariables = (
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
   provisions: buildProvisionInputs(formData),
-  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions, formData.stateCode || null, formData.countyName || null),
 });
 
 export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {

@@ -4,7 +4,9 @@ import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDesc
 // separate, reusable, cross-referenceable entity managed on its own Tracts screen). Reads a
 // raw `legalDescriptions` row list straight off FETCH_LEASES/FETCH_DEEDS/FETCH_WELLS into the
 // entry shape LegalDescriptionListField renders.
-export const transformLegalDescriptions = (rows: any[]): LegalDescriptionEntry[] =>
+export const transformLegalDescriptions = (
+  rows: any[],
+): LegalDescriptionEntry[] =>
   (rows || []).map((row) => ({
     id: String(row.id),
     sortOrder: row.sortOrder ?? null,
@@ -12,8 +14,6 @@ export const transformLegalDescriptions = (rows: any[]): LegalDescriptionEntry[]
     netAcres: row.netAcres ?? null,
     fields: {
       tractType: row.tractType || "",
-      stateCode: row.stateCode || "",
-      countyName: row.countyName || "",
       tractLabel: row.tractLabel || "",
       legalDescription: row.legalDescription || "",
       lotNo: row.lotNo || "",
@@ -27,13 +27,20 @@ export const transformLegalDescriptions = (rows: any[]): LegalDescriptionEntry[]
     },
   }));
 
-// Synchronous — unlike the old Tract-linking flow, no network round trip is needed here: each
+// Synchronous —network round trip is needed here: each
 // entry is replaced wholesale on the parent record's own save (same pattern as Recordation),
-// so this is just a shape conversion to the mutation's LegalDescriptionInput.
-export const buildLegalDescriptionInputs = (entries: LegalDescriptionEntry[]) =>
+// so this is just a shape conversion to the mutation's LegalDescriptionInput. stateCode/
+// countyName are no longer entered per entry (LegalDescriptionListField.tsx removed those
+// pickers) — every entry is stamped with the parent Lease/Deed/Well's own state/county instead,
+// since that's the only place it's asked for now.
+export const buildLegalDescriptionInputs = (
+  entries: LegalDescriptionEntry[],
+  stateCode: string | null,
+  countyName: string | null,
+) =>
   entries.map((entry, index) => ({
-    stateCode: entry.fields.stateCode || null,
-    countyName: entry.fields.countyName || null,
+    stateCode: stateCode || null,
+    countyName: countyName || null,
     tractType: entry.fields.tractType || null,
     tractLabel: entry.fields.tractLabel || null,
     legalDescription: entry.fields.legalDescription || null,

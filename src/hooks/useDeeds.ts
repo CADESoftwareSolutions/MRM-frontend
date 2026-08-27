@@ -111,7 +111,7 @@ const buildDeedMutationVariables = (
   reservations: formData.reservations || null,
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
-  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
+  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions, formData.stateCode || null, formData.countyName || null),
 });
 
 export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
