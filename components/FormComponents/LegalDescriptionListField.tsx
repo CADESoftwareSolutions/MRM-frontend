@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CountyCombobox } from "./CountyCombobox";
-import { STATES } from "@/config/directoryConfig";
+import { STATES } from "@/config/contactsConfig";
 import { tractsConfig, TRACT_TYPE_OPTIONS } from "@/config/tractsConfig";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";

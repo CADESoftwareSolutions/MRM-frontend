@@ -299,7 +299,7 @@ export const locationFields = (
   ];
 };
 
-export const directoryConfig: ModuleConfig = {
+export const contactsConfig: ModuleConfig = {
   name: "directory",
   title: "Contacts",
   itemName: "Contact",

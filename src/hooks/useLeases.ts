@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
 import { moduleViewAtom } from "../atoms/NavigationAtom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ModuleConfig } from "../config/directoryConfig";
+import { ModuleConfig } from "../config/contactsConfig";
 import {
   FETCH_LEASES,
   CREATE_LEASE_MUTATION,

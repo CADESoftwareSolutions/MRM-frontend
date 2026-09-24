@@ -1,4 +1,4 @@
-import { ModuleConfig } from "../../src/config/directoryConfig";
+import { ModuleConfig } from "../../src/config/contactsConfig";
 
 export const createEmptyFormData = (config: ModuleConfig) => {
   const formData: any = {};

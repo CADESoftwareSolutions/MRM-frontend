@@ -33,7 +33,7 @@ Two distinct areas:
 ### GraphQL
 
 - Raw `fetch` — **not** Apollo Client — via an `executeGraphQL` helper defined inside each hook
-- GraphQL strings live in `src/graphql/`; one file per domain (e.g. `Directory.ts`)
+- GraphQL strings live in `src/graphql/`; one file per domain (e.g. `Contacts.ts`)
 - Multi-step mutations follow party → address → partyAddress order
 - Never add a new field to a query until the BE schema supports it
 
@@ -69,9 +69,9 @@ pages/Dashboard/.../index.tsx  →  wires config + hook into Form + List
 
 ### Adding a new module
 
-1. Create `src/config/<module>Config.ts` following `directoryConfig.ts` as the template
+1. Create `src/config/<module>Config.ts` following `contactsConfig.ts` as the template
 2. Create `src/graphql/<Module>.ts` with query + mutations
-3. Create `src/hooks/use<Module>.ts` (copy `useDirectory.ts` structure)
+3. Create `src/hooks/use<Module>.ts` (copy `useContacts.ts` structure)
 4. Create `pages/Dashboard/DashboardDirectory/<Module>/index.tsx`
 5. Add route to sidebar in `components/DashboardComponents/DashboardLayout.tsx`
 

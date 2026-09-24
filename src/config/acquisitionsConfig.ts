@@ -1,4 +1,4 @@
-import { field, ModuleConfig } from "./directoryConfig";
+import { field, ModuleConfig } from "./contactsConfig";
 
 export const acquisitionsConfig: ModuleConfig = {
   name: "acquisitions",

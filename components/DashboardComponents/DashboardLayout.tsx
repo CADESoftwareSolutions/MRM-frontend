@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, FileText, House, Layers, Settings, Users } from "lucide-react";
+import { BarChart3, ChevronLeft, File, FileText, House, Layers, Settings, Users } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect } from "react";
@@ -77,16 +77,26 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Accounting",
       icon: FileText,
       items: [
-        { text: "Documents", route: "/Dashboard/documents" },
-        { text: "Checks",    route: "/Dashboard/checks" },
-        { text: "Reports",   route: "/Dashboard/reports" },
+        { text: "Checks", route: "/Dashboard/checks" },
       ],
     },
     {
       type: "link",
-      text: "Directory",
+      text: "Documents",
+      icon: File,
+      route: "/Dashboard/documents",
+    },
+    {
+      type: "link",
+      text: "Reports",
+      icon: BarChart3,
+      route: "/Dashboard/reports",
+    },
+    {
+      type: "link",
+      text: "Contacts",
       icon: Users,
-      route: "/Dashboard/directory",
+      route: "/Dashboard/contacts",
     },
     {
       type: "link",

@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Edit, Trash2, Plus, User, X, Save } from "lucide-react";
-import { STATES } from "@/config/directoryConfig";
+import { STATES } from "@/config/contactsConfig";
 
 export interface Contact {
   id: number;

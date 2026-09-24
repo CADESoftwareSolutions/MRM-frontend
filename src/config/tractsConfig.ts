@@ -1,4 +1,4 @@
-import { field, ModuleConfig, STATES } from "./directoryConfig";
+import { field, ModuleConfig, STATES } from "./contactsConfig";
 
 export const TRACT_TYPE_OPTIONS = [
   { value: "block_section_survey", label: "Block/Section/Survey" },

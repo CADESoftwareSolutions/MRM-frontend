@@ -1,4 +1,4 @@
-import { field, ModuleConfig, locationFields } from "./directoryConfig";
+import { field, ModuleConfig, locationFields } from "./contactsConfig";
 
 export const wellsConfig: ModuleConfig = {
   name: "wells",

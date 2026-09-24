@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
 import { moduleViewAtom } from "../atoms/NavigationAtom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ModuleConfig } from "../config/directoryConfig";
+import { ModuleConfig } from "../config/contactsConfig";
 import {
   FETCH_PARTIES,
   CREATE_PARTY_MUTATION,
@@ -19,14 +19,14 @@ import {
   UPDATE_PHONE_MUTATION,
   CREATE_PARTY_PHONE_MUTATION,
   DELETE_PARTY_PHONE_MUTATION,
-} from "../graphql/Directory";
+} from "../graphql/Contacts";
 import { AddressEntry } from "../../components/FormComponents/MultiAddressField";
 import { PhoneEntry } from "../../components/FormComponents/MultiPhoneField";
 import { Contact } from "../../components/FormComponents/ContactsTab";
 
 import { executeGraphQL } from "../lib/api";
 
-interface UseDirectoryDataProps {
+interface UseContactsDataProps {
   config: ModuleConfig;
   accountId: number;
 }
@@ -118,7 +118,7 @@ const transformParties = (parties: any[], config: ModuleConfig) =>
     };
   });
 
-export const useDirectory = ({ config, accountId }: UseDirectoryDataProps) => {
+export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
   const queryClient = useQueryClient();
   const queryKey = ["parties", accountId];
 

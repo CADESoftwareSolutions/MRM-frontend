@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
-import { ModuleConfig } from "../../src/config/directoryConfig";
+import { ModuleConfig } from "../../src/config/contactsConfig";
 import { useAtom } from "jotai";
 import { themeAtom } from "@/atoms/NavigationAtom";
 

@@ -113,7 +113,7 @@ export const DeedCrossReferencesTab = ({ deedId, accountId }: DeedCrossReference
             <CrossReferencePicker
               options={partyOptions}
               excludeIds={new Set(linkedParties.map((p) => p.partyId))}
-              placeholder="Search names in the Directory"
+              placeholder="Search names in Contacts"
               onAdd={(option) => addParty(option.id)}
             />
             <LinkedRowsTable

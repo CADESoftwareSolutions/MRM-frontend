@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { executeGraphQL } from "../lib/api";
 import { CrossRefOption } from "../../components/FormComponents/CrossReferencePicker";
-import { FETCH_PARTIES } from "../graphql/Directory";
+import { FETCH_PARTIES } from "../graphql/Contacts";
 import { FETCH_LEASES } from "../graphql/Leases";
 import { FETCH_WELLS } from "../graphql/Wells";
 import { FETCH_ACQUISITIONS } from "../graphql/Acquisitions";

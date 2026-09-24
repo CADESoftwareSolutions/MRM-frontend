@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CountyCombobox } from "./CountyCombobox";
-import { STATES } from "@/config/directoryConfig";
+import { STATES } from "@/config/contactsConfig";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 import { Z_INDEX } from "@/lib/zIndex";

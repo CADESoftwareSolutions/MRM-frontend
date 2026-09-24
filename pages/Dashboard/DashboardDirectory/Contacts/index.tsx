@@ -6,8 +6,8 @@ import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { MultiAddressField, AddressEntry } from "../../../../components/FormComponents/MultiAddressField";
 import { SinglePhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
-import { directoryConfig } from "@/config/directoryConfig";
-import { useDirectory } from "@/hooks/useDirectory";
+import { contactsConfig } from "@/config/contactsConfig";
+import { useContacts } from "@/hooks/useContacts";
 import { useEffect, useRef, useState } from "react";
 import { NettingEntry } from "../../../../components/FormComponents/NettingTab";
 import { useAtom } from "jotai";
@@ -46,7 +46,7 @@ const phonesFromItem = (item: any): PhoneEntry[] => {
   }));
 };
 
-const AddressDirectory = () => {
+const Contacts = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [addresses, setAddresses] = useState<AddressEntry[]>(DEFAULT_ADDRESSES);
@@ -79,8 +79,8 @@ const AddressDirectory = () => {
     handleSave,
     handleDelete,
     handleCancel,
-  } = useDirectory({
-    config: directoryConfig,
+  } = useContacts({
+    config: contactsConfig,
     accountId: userProfile?.account?.id ?? 0,
   });
 
@@ -91,7 +91,7 @@ const AddressDirectory = () => {
   useEffect(() => {
     const count = filteredData.length;
     setPageHeader({
-      title: "Directory",
+      title: "Contacts",
       subtitle: `${count} ${count === 1 ? "contact" : "contacts"}`,
     });
     return () => setPageHeader({});
@@ -143,7 +143,7 @@ const AddressDirectory = () => {
 
           {view === "list" && (
             <List
-              config={directoryConfig}
+              config={contactsConfig}
               data={filteredData}
               loading={loading}
               searchTerm={searchTerm}
@@ -155,7 +155,7 @@ const AddressDirectory = () => {
 
           {(view === "add" || view === "edit") && (
             <Form
-              config={directoryConfig}
+              config={contactsConfig}
               initialData={selectedItem}
               onSave={onSave}
               onCancel={handleCancel}
@@ -201,4 +201,4 @@ const AddressDirectory = () => {
   );
 };
 
-export default AddressDirectory;
+export default Contacts;

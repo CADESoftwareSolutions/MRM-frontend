@@ -15,7 +15,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, FileText, X } from "lucide-react";
-import { FieldConfig, ModuleConfig } from "../../src/config/directoryConfig";
+import { FieldConfig, ModuleConfig } from "../../src/config/contactsConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 import { NettingTab, NettingEntry } from "./NettingTab";
 import { CountyCombobox } from "./CountyCombobox";

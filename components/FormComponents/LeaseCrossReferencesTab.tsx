@@ -12,7 +12,7 @@ interface LeaseCrossReferencesTabProps {
 }
 
 // No "Name" section here — unlike title_document_party for Deeds, the backend has no
-// lease_party table, so there's nowhere to store a lease-to-Directory-name cross-reference.
+// lease_party table, so there's nowhere to store a lease-to-Contacts-name cross-reference.
 export const LeaseCrossReferencesTab = ({ leaseId, accountId }: LeaseCrossReferencesTabProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";

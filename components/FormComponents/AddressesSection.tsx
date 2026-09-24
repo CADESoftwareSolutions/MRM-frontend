@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { STATES } from "@/config/directoryConfig";
+import { STATES } from "@/config/contactsConfig";
 
 export const ADDRESS_TYPES = [
   "Physical",

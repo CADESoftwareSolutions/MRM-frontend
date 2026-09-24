@@ -5,7 +5,7 @@ const nextConfig = {
   async rewrites() {
     return [
       { source: "/login",                   destination: "/Login/Login" },
-      { source: "/Dashboard/directory",     destination: "/Dashboard/DashboardDirectory/Directory" },
+      { source: "/Dashboard/contacts",      destination: "/Dashboard/DashboardDirectory/Contacts" },
       { source: "/Dashboard/leases",        destination: "/Dashboard/DashboardDirectory/Leases" },
       { source: "/Dashboard/checks",        destination: "/Dashboard/DashboardDirectory/Checks" },
       { source: "/Dashboard/documents",     destination: "/Dashboard/DashboardDirectory/Documents" },
