@@ -42,6 +42,10 @@ export interface FieldConfig {
   singleSelect?: boolean;
   /** For county-combobox: state field id used to choose the county option set. */
   countyStateField?: string;
+  /** Opt-in: splits the section into independent left/right columns instead of the normal auto-flow grid. Every field in the section must set this for the split to apply. */
+  layoutColumn?: "left" | "right";
+  /** Opt-in: hides the section's uppercase header text (the border-top divider still shows). Set on any field in the section. */
+  hideSectionHeader?: boolean;
 }
 
 export interface TabConfig {
@@ -277,7 +281,12 @@ export const STATES = [
  */
 export const locationFields = (
   section: string,
-  opts: { stateId?: string; countyId?: string; tab?: string; required?: boolean } = {},
+  opts: {
+    stateId?: string;
+    countyId?: string;
+    tab?: string;
+    required?: boolean;
+  } = {},
 ): FieldConfig[] => {
   const stateId = opts.stateId ?? "stateCode";
   const countyId = opts.countyId ?? "countyName";
@@ -326,35 +335,20 @@ export const contactsConfig: ModuleConfig = {
       graphqlKey: "nameFirst",
     }),
 
-    field.email("email", "Email Address", {
-      section: "default",
-      gridColumn: "span 1",
-      graphqlKey: "email",
-    }),
-
     field.text("nameLine2", "Name Line 2", {
       section: "default",
       gridColumn: "span 1",
       graphqlKey: "nameMiddle",
     }),
 
-    {
-      id: "phones",
-      label: "Phone Numbers",
-      type: "custom" as const,
-      tab: "basic",
-      section: "default",
-      gridColumn: "span 1" as const,
-    },
-
     field.multiBadge(
       "classifications",
-      "Name Classification",
+      "Classification Type",
       ["REV", "JIB", "OPERATOR", "PURCHASER", "VENDOR", "EMPLOYEE", "PARTNER"],
       {
         required: true,
         section: "default",
-        gridColumn: "span 1",
+        gridColumn: "span 2",
         defaultValue: [],
         graphqlKey: "partyTypes",
         toGraphQL: (v: string | string[]) => {
@@ -366,30 +360,51 @@ export const contactsConfig: ModuleConfig = {
       },
     ),
 
-    field.select("status", "Active Status", ["Active", "Inactive"], {
-      section: "default",
-      defaultValue: "Active",
-      graphqlKey: "isActive",
-      toGraphQL: (v: string) => v === "Active",
-      fromGraphQL: (v: boolean | null | undefined) => (v === false ? "Inactive" : "Active"),
-    }),
-
-    field.boolean("ownerNettingApplies", "Owner Netting Applies", {
-      section: "default",
-      defaultValue: "No",
-    }),
-
     {
       id: "addresses",
       label: "Addresses",
       type: "custom",
       tab: "basic",
-      section: "address",
-      gridColumn: "span 2",
+      section: "contact-details",
+      layoutColumn: "left",
     },
 
-    field.textarea("comments", "Comments/Notes", {
+    {
+      id: "phones",
+      label: "Phone Numbers",
+      type: "custom" as const,
+      tab: "basic",
+      section: "contact-details",
+      layoutColumn: "right",
+      gridColumn: "span 2" as const,
+    },
+
+    field.email("email", "Email Address", {
+      section: "contact-details",
+      layoutColumn: "right",
+      gridColumn: "span 2",
+      graphqlKey: "email",
+    }),
+
+    field.select("status", "Active Status", ["Active", "Inactive"], {
+      section: "contact-details",
+      layoutColumn: "right",
+      defaultValue: "Active",
+      graphqlKey: "isActive",
+      toGraphQL: (v: string) => v === "Active",
+      fromGraphQL: (v: boolean | null | undefined) =>
+        v === false ? "Inactive" : "Active",
+    }),
+
+    field.boolean("ownerNettingApplies", "Owner Netting Applies", {
+      section: "contact-details",
+      layoutColumn: "right",
+      defaultValue: "No",
+    }),
+
+    field.textarea("comments", "Comments", {
       section: "notes",
+      hideSectionHeader: true,
       gridColumn: "span 2",
       helpText: "Auto-populate if address was changed or transfer was done",
       graphqlKey: "notes",
@@ -398,7 +413,8 @@ export const contactsConfig: ModuleConfig = {
     field.textarea("notificationRecap", "Notification Recap", {
       section: "notes",
       gridColumn: "span 2",
-      helpText: "Snapshot of items to track: suspense balances, outstanding checks, missing W-9, etc.",
+      helpText:
+        "Snapshot of items to track: suspense balances, outstanding checks, missing W-9, etc.",
     }),
 
     field.select(

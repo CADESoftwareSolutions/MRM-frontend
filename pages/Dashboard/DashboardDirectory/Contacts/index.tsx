@@ -5,7 +5,7 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { MultiAddressField, AddressEntry } from "../../../../components/FormComponents/MultiAddressField";
-import { SinglePhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
+import { MultiPhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
 import { contactsConfig } from "@/config/contactsConfig";
 import { useContacts } from "@/hooks/useContacts";
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +17,8 @@ import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 const DEFAULT_ADDRESSES: AddressEntry[] = [
   { type: "Physical", address: "", addressLine2: "", city: "", state: "", zip: "" },
 ];
+
+const DEFAULT_PHONES: PhoneEntry[] = [{ type: "Home", number: "" }];
 
 const addressesFromItem = (item: any): AddressEntry[] => {
   const raw = item?._rawData?.addresses;
@@ -38,6 +40,7 @@ const addressesFromItem = (item: any): AddressEntry[] => {
 
 const phonesFromItem = (item: any): PhoneEntry[] => {
   const rawPhones: any[] = item?._rawData?.phones || [];
+  if (!rawPhones.length) return DEFAULT_PHONES;
   return rawPhones.map((pp: any) => ({
     type: pp.phoneType || "Home",
     number: pp.phone?.number || "",
@@ -50,7 +53,7 @@ const Contacts = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [addresses, setAddresses] = useState<AddressEntry[]>(DEFAULT_ADDRESSES);
-  const [phones, setPhones] = useState<PhoneEntry[]>([]);
+  const [phones, setPhones] = useState<PhoneEntry[]>(DEFAULT_PHONES);
   const [nettingEntries, setNettingEntries] = useState<NettingEntry[]>([]);
   const [showAddressValidation, setShowAddressValidation] = useState(false);
   const addressesRef = useRef(addresses);
@@ -99,7 +102,7 @@ const Contacts = () => {
 
   const handleAdd = () => {
     setAddresses(DEFAULT_ADDRESSES);
-    setPhones([]);
+    setPhones(DEFAULT_PHONES);
     setNettingEntries([]);
     setShowAddressValidation(false);
     _handleAdd();
@@ -179,7 +182,7 @@ const Contacts = () => {
                   />
                 ),
                 phones: (
-                  <SinglePhoneField
+                  <MultiPhoneField
                     value={phones}
                     onChange={setPhones}
                   />

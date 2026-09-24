@@ -420,6 +420,12 @@ export const Form: React.FC<FormProps> = ({
           const visibleFields = fields.filter(shouldShowField);
           if (visibleFields.length === 0) return null;
 
+          // Opt-in: a section where every field declares layoutColumn renders as two
+          // independent columns (e.g. a tall custom field beside several short ones)
+          // instead of the normal auto-flow grid, which can't align a tall cell next
+          // to a stack of short ones in the same row.
+          const hasLayoutColumns = visibleFields.some((f) => f.layoutColumn);
+
           return (
             <div
               key={sectionId}
@@ -429,21 +435,37 @@ export const Form: React.FC<FormProps> = ({
                   : ""
               }
             >
-              {sectionId !== "default" && (
-                <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1.5">
-                  {sectionId.replace(/-/g, " ")}
-                </h3>
+              {sectionId !== "default" &&
+                !visibleFields.some((f) => f.hideSectionHeader) && (
+                  <h3 className="text-sm font-semibold text-white/90 uppercase tracking-wider mb-1.5">
+                    {sectionId.replace(/-/g, " ")}
+                  </h3>
+                )}
+              {hasLayoutColumns ? (
+                <div className="grid grid-cols-2 gap-x-4">
+                  <div className="space-y-2">
+                    {visibleFields
+                      .filter((f) => f.layoutColumn === "left")
+                      .map((field) => renderField(field))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 content-start">
+                    {visibleFields
+                      .filter((f) => f.layoutColumn === "right")
+                      .map((field) => renderField(field))}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`grid gap-x-4 gap-y-2 ${
+                    visibleFields.some((f) => f.sectionColumns === 3) ||
+                    visibleFields.every((f) => f.type === "boolean")
+                      ? "grid-cols-3"
+                      : "grid-cols-2"
+                  }`}
+                >
+                  {visibleFields.map((field) => renderField(field))}
+                </div>
               )}
-              <div
-                className={`grid gap-x-4 gap-y-2 ${
-                  visibleFields.some((f) => f.sectionColumns === 3) ||
-                  visibleFields.every((f) => f.type === "boolean")
-                    ? "grid-cols-3"
-                    : "grid-cols-2"
-                }`}
-              >
-                {visibleFields.map((field) => renderField(field))}
-              </div>
             </div>
           );
         })}
