@@ -6,7 +6,7 @@ export const leasesConfig: ModuleConfig = {
   itemName: "Lease",
   tabs: [
     { id: "basic", label: "Basic Information" },
-    { id: "legal", label: "Legal Description" },
+    { id: "legal", label: "Legal Descriptions" },
     { id: "terms", label: "Terms & Payments" },
     { id: "provisions", label: "Provisions" },
     { id: "recordation", label: "Recordation" },
@@ -119,9 +119,9 @@ export const leasesConfig: ModuleConfig = {
       placeholder: "0.0000",
     }),
 
-    // ========== LEGAL DESCRIPTION TAB ==========
+    // ========== LEGAL DESCRIPTIONS TAB ==========
     {
-      id: "legalDescriptions",
+      id: "tracts",
       label: "Legal Descriptions",
       type: "custom" as const,
       tab: "legal",

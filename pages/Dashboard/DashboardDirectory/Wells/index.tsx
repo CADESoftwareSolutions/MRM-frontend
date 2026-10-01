@@ -4,7 +4,8 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { LegalDescriptionListField, LegalDescriptionEntry } from "../../../../components/FormComponents/LegalDescriptionListField";
+import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
+import { SharedTractReferencesTab } from "../../../../components/FormComponents/SharedTractReferencesTab";
 import wellsConfig from "@/config/wellsConfig";
 import { useWells } from "@/hooks/useWells";
 import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
@@ -16,7 +17,7 @@ import { Button } from "@/components/ui/button";
 const Wells = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
+  const [tracts, setTracts] = useState<TractLinkEntry[]>([]);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
@@ -25,6 +26,7 @@ const Wells = () => {
     searchTerm,
     selectedItem,
     filteredData,
+    availableTracts,
     saveError,
     clearSaveError,
     pendingDeleteItem,
@@ -55,17 +57,17 @@ const Wells = () => {
   }, [filteredData.length]);
 
   const handleAdd = () => {
-    setLegalDescriptions([]);
+    setTracts([]);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
-    setLegalDescriptions(item._legalDescriptions || []);
+    setTracts(item._tracts || []);
     _handleEdit(item);
   };
 
   const onSave = (formData: any) => {
-    handleSave(formData, legalDescriptions);
+    handleSave(formData, tracts);
   };
 
   return (
@@ -108,11 +110,18 @@ const Wells = () => {
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
               customContent={{
-                legalDescriptions: (
-                  <LegalDescriptionListField
-                    value={legalDescriptions}
-                    onChange={setLegalDescriptions}
-                    stateCountyReference={stateCountyReference}
+                tracts: (
+                  <TractPickerField
+                    availableTracts={availableTracts}
+                    value={tracts}
+                    onChange={setTracts}
+                    accountId={userProfile?.account?.id ?? 0}
+                  />
+                ),
+                crossReferences: (
+                  <SharedTractReferencesTab
+                    entityType="well"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />
                 ),
               }}

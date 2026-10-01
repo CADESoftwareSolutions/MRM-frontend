@@ -114,6 +114,7 @@ const Tracts = () => {
                   <TractCrossReferencesTab
                     linkedLeases={selectedItem?._leaseLinks || []}
                     linkedDeeds={selectedItem?._titleDocumentLinks || []}
+                    linkedWells={selectedItem?._wellLinks || []}
                     hasId={selectedItem?.id != null}
                   />
                 ),

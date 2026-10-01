@@ -1,5 +1,14 @@
 import { Button } from "@/components/ui/button";
-import { BarChart3, ChevronLeft, File, FileText, House, Layers, Settings, Users } from "lucide-react";
+import {
+  BarChart3,
+  ChevronLeft,
+  File,
+  FileText,
+  House,
+  Layers,
+  Settings,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect } from "react";
@@ -12,7 +21,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAtom } from "jotai";
-import { openAccordionsAtom, sidebarOpenAtom, themeAtom } from "@/atoms/NavigationAtom";
+import {
+  openAccordionsAtom,
+  sidebarOpenAtom,
+  themeAtom,
+} from "@/atoms/NavigationAtom";
 import { useQuery } from "@tanstack/react-query";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { API_URL } from "@/lib/api";
@@ -36,7 +49,8 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
       });
-      if (res.status === 401) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+      if (res.status === 401)
+        throw Object.assign(new Error("Unauthorized"), { status: 401 });
       if (!res.ok) throw new Error("Profile fetch failed");
       return res.json();
     },
@@ -65,20 +79,18 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       text: "Land",
       icon: Layers,
       items: [
-        { text: "Leases",       route: "/Dashboard/leases" },
-        { text: "Wells",        route: "/Dashboard/wells" },
-        { text: "Deeds",        route: "/Dashboard/deeds" },
-        { text: "Tracts",       route: "/Dashboard/tracts" },
         { text: "Acquisitions", route: "/Dashboard/acquisitions" },
+        { text: "Deeds", route: "/Dashboard/deeds" },
+        { text: "Leases", route: "/Dashboard/leases" },
+        { text: "Tracts", route: "/Dashboard/tracts" },
+        { text: "Wells", route: "/Dashboard/wells" },
       ],
     },
     {
       type: "group",
       text: "Accounting",
       icon: FileText,
-      items: [
-        { text: "Checks", route: "/Dashboard/checks" },
-      ],
+      items: [{ text: "Checks", route: "/Dashboard/checks" }],
     },
     {
       type: "link",
@@ -110,7 +122,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
     setOpenAccordions((prev) =>
       prev.includes(groupText)
         ? prev.filter((item) => item !== groupText)
-        : [...prev, groupText]
+        : [...prev, groupText],
     );
   };
   return (
@@ -130,12 +142,24 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
           background: isLight
             ? "linear-gradient(180deg, #e8e0f5 0%, #ede8f7 100%)"
             : "linear-gradient(180deg, #2d1b4e 0%, #1e1e3f 100%)",
-          borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(255 255 255 / 0.1)",
+          borderColor: isLight
+            ? "rgb(167 139 250 / 0.25)"
+            : "rgb(255 255 255 / 0.1)",
         }}
       >
         {/* Logo + company name — height matches header (64px) */}
-        <div className="flex items-center justify-between px-3 border-b shrink-0" style={{ height: 64, borderColor: isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.3)" }}>
-          <div className={`flex items-center gap-2 min-w-0 ${!sidebarOpen ? "justify-center w-full" : ""}`}>
+        <div
+          className="flex items-center justify-between px-3 border-b shrink-0"
+          style={{
+            height: 64,
+            borderColor: isLight
+              ? "rgb(167 139 250 / 0.25)"
+              : "rgb(167 139 250 / 0.3)",
+          }}
+        >
+          <div
+            className={`flex items-center gap-2 min-w-0 ${!sidebarOpen ? "justify-center w-full" : ""}`}
+          >
             <Image
               src={isLight ? "/images/logo-light.svg" : "/images/logo-dark.svg"}
               alt="CADE Logo"
@@ -144,7 +168,9 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
               className="shrink-0"
             />
             {sidebarOpen && (
-              <span className={`text-base font-bold tracking-widest truncate ${isLight ? "text-purple-900" : "text-white"}`}>
+              <span
+                className={`text-base font-bold tracking-widest truncate ${isLight ? "text-purple-900" : "text-white"}`}
+              >
                 CADE
               </span>
             )}
@@ -168,10 +194,16 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
               group.type === "link" && router.pathname === group.route;
 
             const navText = isLight ? "text-purple-900" : "text-white";
-            const navHover = isLight ? "hover:bg-purple-300/40 hover:text-purple-900" : "hover:bg-purple-600 hover:text-white";
-            const navActive = isLight ? "bg-purple-400/40 text-purple-900" : "bg-purple-600";
+            const navHover = isLight
+              ? "hover:bg-purple-300/40 hover:text-purple-900"
+              : "hover:bg-purple-600 hover:text-white";
+            const navActive = isLight
+              ? "bg-purple-400/40 text-purple-900"
+              : "bg-purple-600";
             const subText = isLight ? "text-purple-800/70" : "text-gray-300";
-            const subActive = isLight ? "bg-purple-300/40 text-purple-900" : "bg-purple-600/20 text-white";
+            const subActive = isLight
+              ? "bg-purple-300/40 text-purple-900"
+              : "bg-purple-600/20 text-white";
 
             if (group.type === "link") {
               return (
@@ -263,9 +295,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         }}
       >
         <DashboardHeader sidebarWidth={sidebarWidth} />
-        <div className={isLight ? "light-theme" : ""}>
-          {children}
-        </div>
+        <div className={isLight ? "light-theme" : ""}>{children}</div>
       </main>
     </div>
   );

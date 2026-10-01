@@ -21,8 +21,7 @@ interface UseTractsProps {
 // above and TractInput on the BE. buildTractInput (below) and transformTract build their
 // write/read shapes from this instead of each hand-listing the same ~15 field names, so a
 // field rename here is a compile error at both call sites instead of something that can
-// silently drift out of sync. Also used by useLegalDescriptions.ts, which resolves each
-// Deed/Lease/Well legal-description entry to a Tract row via the same buildTractInput.
+// silently drift out of sync.
 export interface TractFields {
   tractNo?: string | null;
   tractLabel?: string | null;
@@ -63,25 +62,28 @@ const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
 );
 
 // A tract's own cross-references are read-only: the link is actually created from the
-// Deed/Lease/Well side's Legal Description tab, not from here. FETCH_TRACTS carries these two
-// relationships purely for display — same shape useDeedCrossReferences.ts /
-// useLeaseCrossReferences.ts already read off Deed/Lease, just walked in reverse off Tract.
+// Lease/Deed/Well side's Legal Descriptions tab (TractPickerField), not from here. FETCH_TRACTS carries
+// this purely for display. Unlike the old per-parent-type leaseLinks/titleDocumentLinks, a
+// tract_join row covers all three parent types in one table — only one of lease/titleDocument/
+// well is ever set per row (see TractJoin's check constraint on the BE), so each row here
+// resolves to exactly one of the three derived lists below.
 interface RawTract extends TractOption {
-  leaseLinks?: { id: string | number; lease: { id: number; lessor?: string | null; lessee?: string | null } | null }[];
-  titleDocumentLinks?: {
+  joins?: {
     id: string | number;
+    lease: { id: number; lessor?: string | null; lessee?: string | null } | null;
     titleDocument: {
       id: number;
       documentType?: string | null;
       conveyanceParties?: { role: string; name: string; sortOrder: number }[];
     } | null;
+    well: { id: number; name?: string | null } | null;
   }[];
 }
 
 const leaseLabel = (lease: any): string =>
   [lease?.lessor, lease?.lessee].filter(Boolean).join(" / ") || `Lease #${lease?.id}`;
 
-// Mirrors useLeaseCrossReferences.ts's deedLabel: first grantor row (by sortOrder) named on
+// Mirrors useSharedTractReferences.ts's deedLabel: first grantor row (by sortOrder) named on
 // the instrument, since title_document has no single "name" column of its own.
 const deedLabel = (deed: any): string => {
   const grantor = (deed?.conveyanceParties || [])
@@ -90,6 +92,8 @@ const deedLabel = (deed: any): string => {
   const type = deed?.documentType || "Deed";
   return grantor ? `${type} — ${grantor.name}` : `${type} #${deed?.id}`;
 };
+
+const wellLabel = (well: any): string => well?.name || `Well #${well?.id}`;
 
 const transformTract = (tract: RawTract): Record<string, any> => ({
   id: tract.id,
@@ -114,18 +118,17 @@ const transformTract = (tract: RawTract): Record<string, any> => ({
   quarterCalls: tract.quarterCalls || "",
   grossAcres: tract.grossAcres ?? "",
   netAcres: tract.netAcres ?? "",
-  _leaseLinks: (tract.leaseLinks || []).map((link) => ({
-    id: String(link.id),
-    name: leaseLabel(link.lease),
-  })),
-  _titleDocumentLinks: (tract.titleDocumentLinks || []).map((link) => ({
-    id: String(link.id),
-    name: deedLabel(link.titleDocument),
-  })),
+  _leaseLinks: (tract.joins || [])
+    .filter((join) => join.lease)
+    .map((join) => ({ id: String(join.id), name: leaseLabel(join.lease) })),
+  _titleDocumentLinks: (tract.joins || [])
+    .filter((join) => join.titleDocument)
+    .map((join) => ({ id: String(join.id), name: deedLabel(join.titleDocument) })),
+  _wellLinks: (tract.joins || [])
+    .filter((join) => join.well)
+    .map((join) => ({ id: String(join.id), name: wellLabel(join.well) })),
 });
 
-// Exported so resolveLegalDescriptionLinks (useLegalDescriptions.ts) can build the same
-// GraphQL input for each inline-authored legal description without duplicating this mapping.
 // Typed to return exactly TractFields' keys — a field added/renamed there is a compile error
 // here instead of a mutation silently missing (or carrying a stray extra) value.
 export const buildTractInput = (formData: Record<string, any>): Record<keyof TractFields, string | number | null> => ({
@@ -183,7 +186,16 @@ export const useTracts = ({ config: _config, accountId }: UseTractsProps) => {
     );
   }, [tracts, searchTerm]);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey });
+  // Lease/Deed/Well caches each embed a nested snapshot of every tract they link to
+  // (tracts[].tract — see FETCH_LEASES/FETCH_DEEDS/FETCH_WELLS), so editing or deleting a
+  // Tract here can leave those snapshots stale unless they're invalidated alongside ["tracts"].
+  const invalidate = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey }),
+      queryClient.invalidateQueries({ queryKey: ["leases"] }),
+      queryClient.invalidateQueries({ queryKey: ["deeds"] }),
+      queryClient.invalidateQueries({ queryKey: ["wells"] }),
+    ]);
 
   const handleSave = async (formData: Record<string, any>) => {
     try {

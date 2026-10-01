@@ -21,16 +21,13 @@ export const FETCH_TRACTS = `
       quarterCalls
       grossAcres
       netAcres
-      leaseLinks {
+      joins {
         id
         lease {
           id
           lessor
           lessee
         }
-      }
-      titleDocumentLinks {
-        id
         titleDocument {
           id
           documentType
@@ -39,6 +36,10 @@ export const FETCH_TRACTS = `
             name
             sortOrder
           }
+        }
+        well {
+          id
+          name
         }
       }
     }

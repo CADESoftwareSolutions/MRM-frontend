@@ -9,9 +9,10 @@ import {
   UPDATE_DEED_MUTATION,
   DELETE_DEED_MUTATION,
 } from "../graphql/Deeds";
+import { FETCH_TRACTS } from "../graphql/Tracts";
+import { TractOption } from "./useTracts";
 import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
-import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDescriptionListField";
-import { transformLegalDescriptions, buildLegalDescriptionInputs } from "./useLegalDescriptions";
+import { TractLinkEntry, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
 import { executeGraphQL } from "../lib/api";
 
 interface UseDeedsProps {
@@ -66,7 +67,7 @@ const transformDeed = (deed: any): Record<string, any> => {
     reservations: deed.reservations || "",
     notes: deed.notes || "",
     _recordation: (deed.recordations || []).map(transformRecordation),
-    _legalDescriptions: transformLegalDescriptions(deed.legalDescriptions),
+    _tracts: transformTractLinks(deed.tracts),
     _conveyanceParties: parties,
   };
 };
@@ -96,7 +97,7 @@ const buildConveyancePartyInputs = (
 const buildDeedMutationVariables = (
   formData: Record<string, any>,
   recordation: RecordationEntry[],
-  legalDescriptions: LegalDescriptionEntry[],
+  tracts: TractLinkEntry[],
   accountId: number,
   existingParties: any[],
 ) => ({
@@ -111,7 +112,7 @@ const buildDeedMutationVariables = (
   reservations: formData.reservations || null,
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
-  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
+  tractLinks: buildTractLinkInputs(tracts),
 });
 
 export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
@@ -128,6 +129,16 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_DEEDS);
       return result.deeds as any[];
+    },
+  });
+
+  // Same ["tracts"] query/cache key the standalone Tracts screen uses (useTracts.ts) — shares
+  // one fetch/cache entry rather than each screen maintaining its own copy.
+  const { data: availableTracts = [] } = useQuery({
+    queryKey: ["tracts"],
+    queryFn: async () => {
+      const result = await executeGraphQL(FETCH_TRACTS);
+      return result.tracts as TractOption[];
     },
   });
 
@@ -150,13 +161,13 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
   const handleSave = async (
     formData: Record<string, any>,
     recordation: RecordationEntry[],
-    legalDescriptions: LegalDescriptionEntry[],
+    tracts: TractLinkEntry[],
   ) => {
     try {
       const variables = buildDeedMutationVariables(
         formData,
         recordation,
-        legalDescriptions,
+        tracts,
         accountId,
         selectedItem?._conveyanceParties || [],
       );
@@ -165,7 +176,14 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
       } else {
         await executeGraphQL(UPDATE_DEED_MUTATION, { id: Number(selectedItem?.id), ...variables });
       }
-      await queryClient.invalidateQueries({ queryKey: ["deeds"] });
+      // tractLinks changes tract_join rows — the same data the ["tracts"] cache's `joins`
+      // field represents (Tract Picker's availableTracts, the standalone Tracts screen's
+      // backlinks, and every record's Cross-References tab all read off it), so it needs
+      // invalidating here too, not just ["deeds"].
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["deeds"] }),
+        queryClient.invalidateQueries({ queryKey: ["tracts"] }),
+      ]);
       setView("list");
       setSelectedItem(null);
     } catch (err) {
@@ -179,7 +197,11 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     if (!pendingDeleteItem) return;
     try {
       await executeGraphQL(DELETE_DEED_MUTATION, { id: Number(pendingDeleteItem.id) });
-      await queryClient.invalidateQueries({ queryKey: ["deeds"] });
+      // Deleting a deed cascades its tract_join rows too — same reasoning as handleSave above.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["deeds"] }),
+        queryClient.invalidateQueries({ queryKey: ["tracts"] }),
+      ]);
     } catch (err) {
       setSaveError((err as Error).message);
     }
@@ -192,6 +214,7 @@ export const useDeeds = ({ config: _config, accountId }: UseDeedsProps) => {
     searchTerm,
     selectedItem,
     filteredData,
+    availableTracts,
     saveError,
     clearSaveError: () => setSaveError(null),
     pendingDeleteItem,

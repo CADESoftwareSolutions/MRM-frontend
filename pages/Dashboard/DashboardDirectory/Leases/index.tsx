@@ -5,8 +5,8 @@ import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
 import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
-import { LeaseCrossReferencesTab } from "../../../../components/FormComponents/LeaseCrossReferencesTab";
-import { LegalDescriptionListField, LegalDescriptionEntry } from "../../../../components/FormComponents/LegalDescriptionListField";
+import { SharedTractReferencesTab } from "../../../../components/FormComponents/SharedTractReferencesTab";
+import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import { MultiRecordationField, RecordationEntry } from "../../../../components/FormComponents/MultiRecordationField";
 import leasesConfig from "@/config/leasesConfig";
 import { useLeases } from "@/hooks/useLeases";
@@ -19,7 +19,7 @@ import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
 const Leases = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [legalDescriptions, setLegalDescriptions] = useState<LegalDescriptionEntry[]>([]);
+  const [tracts, setTracts] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordation] = useState<RecordationEntry[]>([]);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
@@ -29,6 +29,7 @@ const Leases = () => {
     searchTerm,
     selectedItem,
     filteredData,
+    availableTracts,
     saveError,
     clearSaveError,
     pendingDeleteItem,
@@ -59,19 +60,19 @@ const Leases = () => {
   }, [filteredData.length]);
 
   const handleAdd = () => {
-    setLegalDescriptions([]);
+    setTracts([]);
     setRecordation([]);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
-    setLegalDescriptions(item._legalDescriptions || []);
+    setTracts(item._tracts || []);
     setRecordation(item._recordation || []);
     _handleEdit(item);
   };
 
   const onSave = (formData: any) => {
-    handleSave(formData, recordation, legalDescriptions);
+    handleSave(formData, recordation, tracts);
   };
 
   return (
@@ -114,11 +115,12 @@ const Leases = () => {
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
               customContent={{
-                legalDescriptions: (
-                  <LegalDescriptionListField
-                    value={legalDescriptions}
-                    onChange={setLegalDescriptions}
-                    stateCountyReference={stateCountyReference}
+                tracts: (
+                  <TractPickerField
+                    availableTracts={availableTracts}
+                    value={tracts}
+                    onChange={setTracts}
+                    accountId={userProfile?.account?.id ?? 0}
                   />
                 ),
                 recordation: (
@@ -135,9 +137,9 @@ const Leases = () => {
                   />
                 ),
                 crossReferences: (
-                  <LeaseCrossReferencesTab
-                    leaseId={selectedItem?.id ? Number(selectedItem.id) : null}
-                    accountId={userProfile?.account?.id ?? 0}
+                  <SharedTractReferencesTab
+                    entityType="lease"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />
                 ),
               }}

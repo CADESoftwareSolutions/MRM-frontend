@@ -6,7 +6,8 @@ export const wellsConfig: ModuleConfig = {
   itemName: "Well",
   tabs: [
     { id: "details", label: "Well Details" },
-    { id: "legal", label: "Legal Description" },
+    { id: "legal", label: "Legal Descriptions" },
+    { id: "crossReferences", label: "Cross-References" },
   ],
   listFields: ["name", "operatorName", "stateCode", "countyName", "apiNumber"],
   fields: [
@@ -58,15 +59,24 @@ export const wellsConfig: ModuleConfig = {
       rows: 3,
     }),
 
-    // ========== LEGAL DESCRIPTION TAB ==========
-    // Same pattern as Deeds/Leases: rendered by LegalDescriptionListField, which reuses
-    // tractsConfig.ts's "legal" tab fields (tractType + IF block) directly — each entry
-    // authors its own Tract row inline rather than picking from an existing list.
+    // ========== LEGAL DESCRIPTIONS TAB ==========
+    // Same pattern as Deeds/Leases, new for Wells: rendered by TractPickerField, which picks
+    // from or creates Tract rows and links them via the unified tract_join table.
     {
-      id: "legalDescriptions",
+      id: "tracts",
       label: "Legal Descriptions",
       type: "custom" as const,
       tab: "legal",
+      section: "default",
+      gridColumn: "span 2" as const,
+    },
+
+    // ========== CROSS-REFERENCES TAB ==========
+    {
+      id: "crossReferences",
+      label: "Cross-References",
+      type: "custom" as const,
+      tab: "crossReferences",
       section: "default",
       gridColumn: "span 2" as const,
     },

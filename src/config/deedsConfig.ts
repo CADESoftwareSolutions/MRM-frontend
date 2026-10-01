@@ -6,7 +6,7 @@ export const deedsConfig: ModuleConfig = {
   itemName: "Deed",
   tabs: [
     { id: "basic", label: "Basic Information" },
-    { id: "legal", label: "Legal Description" },
+    { id: "legal", label: "Legal Descriptions" },
     { id: "recordation", label: "Recordation" },
     { id: "crossReferences", label: "Cross-References" },
     { id: "documents", label: "Documents" },
@@ -115,9 +115,9 @@ export const deedsConfig: ModuleConfig = {
     // ========== BASIC TAB — location ==========
     ...locationFields("location"),
 
-    // ========== LEGAL DESCRIPTION TAB ==========
+    // ========== LEGAL DESCRIPTIONS TAB ==========
     {
-      id: "legalDescriptions",
+      id: "tracts",
       label: "Legal Descriptions",
       type: "custom" as const,
       tab: "legal",

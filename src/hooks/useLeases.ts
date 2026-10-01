@@ -9,9 +9,10 @@ import {
   UPDATE_LEASE_MUTATION,
   DELETE_LEASE_MUTATION,
 } from "../graphql/Leases";
+import { FETCH_TRACTS } from "../graphql/Tracts";
+import { TractOption } from "./useTracts";
 import { RecordationEntry } from "../../components/FormComponents/MultiRecordationField";
-import { LegalDescriptionEntry } from "../../components/FormComponents/LegalDescriptionListField";
-import { transformLegalDescriptions, buildLegalDescriptionInputs } from "./useLegalDescriptions";
+import { TractLinkEntry, transformTractLinks, buildTractLinkInputs } from "../../components/FormComponents/TractPickerField";
 import { executeGraphQL } from "../lib/api";
 
 interface UseLeasesProps {
@@ -149,14 +150,14 @@ const transformLease = (lease: any): Record<string, any> => {
     notes: lease.notes || "",
     ...provisionFormValues,
     _recordation: (lease.recordations || []).map(transformRecordation),
-    _legalDescriptions: transformLegalDescriptions(lease.legalDescriptions),
+    _tracts: transformTractLinks(lease.tracts),
   };
 };
 
 const buildLeaseMutationVariables = (
   formData: Record<string, any>,
   recordation: RecordationEntry[],
-  legalDescriptions: LegalDescriptionEntry[],
+  tracts: TractLinkEntry[],
   accountId: number,
 ) => ({
   accountId,
@@ -191,7 +192,7 @@ const buildLeaseMutationVariables = (
   notes: formData.notes || null,
   recordations: recordation.map(buildRecordationInput),
   provisions: buildProvisionInputs(formData),
-  legalDescriptions: buildLegalDescriptionInputs(legalDescriptions),
+  tractLinks: buildTractLinkInputs(tracts),
 });
 
 export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
@@ -208,6 +209,16 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
     queryFn: async () => {
       const result = await executeGraphQL(FETCH_LEASES);
       return result.leases as any[];
+    },
+  });
+
+  // Same ["tracts"] query/cache key the standalone Tracts screen uses (useTracts.ts) — shares
+  // one fetch/cache entry rather than each screen maintaining its own copy.
+  const { data: availableTracts = [] } = useQuery({
+    queryKey: ["tracts"],
+    queryFn: async () => {
+      const result = await executeGraphQL(FETCH_TRACTS);
+      return result.tracts as TractOption[];
     },
   });
 
@@ -230,16 +241,23 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
   const handleSave = async (
     formData: Record<string, any>,
     recordation: RecordationEntry[],
-    legalDescriptions: LegalDescriptionEntry[],
+    tracts: TractLinkEntry[],
   ) => {
     try {
-      const variables = buildLeaseMutationVariables(formData, recordation, legalDescriptions, accountId);
+      const variables = buildLeaseMutationVariables(formData, recordation, tracts, accountId);
       if (view === "add") {
         await executeGraphQL(CREATE_LEASE_MUTATION, variables);
       } else {
         await executeGraphQL(UPDATE_LEASE_MUTATION, { id: Number(selectedItem?.id), ...variables });
       }
-      await queryClient.invalidateQueries({ queryKey: ["leases"] });
+      // tractLinks changes tract_join rows — the same data the ["tracts"] cache's `joins`
+      // field represents (Tract Picker's availableTracts, the standalone Tracts screen's
+      // backlinks, and every record's Cross-References tab all read off it), so it needs
+      // invalidating here too, not just ["leases"].
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leases"] }),
+        queryClient.invalidateQueries({ queryKey: ["tracts"] }),
+      ]);
       setView("list");
       setSelectedItem(null);
     } catch (err) {
@@ -253,7 +271,11 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
     if (!pendingDeleteItem) return;
     try {
       await executeGraphQL(DELETE_LEASE_MUTATION, { id: Number(pendingDeleteItem.id) });
-      await queryClient.invalidateQueries({ queryKey: ["leases"] });
+      // Deleting a lease cascades its tract_join rows too — same reasoning as handleSave above.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leases"] }),
+        queryClient.invalidateQueries({ queryKey: ["tracts"] }),
+      ]);
     } catch (err) {
       setSaveError((err as Error).message);
     }
@@ -266,6 +288,7 @@ export const useLeases = ({ config: _config, accountId }: UseLeasesProps) => {
     searchTerm,
     selectedItem,
     filteredData,
+    availableTracts,
     saveError,
     clearSaveError: () => setSaveError(null),
     pendingDeleteItem,
