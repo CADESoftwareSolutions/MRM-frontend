@@ -11,7 +11,8 @@ export type FieldType =
   | "date"
   | "county-combobox"
   | "combobox"
-  | "custom";
+  | "custom"
+  | "readonly";
 
 export interface FieldConfig {
   id: string;
@@ -25,9 +26,9 @@ export interface FieldConfig {
   rows?: number;
   /** Overrides the shared textarea's default 100px min-height (px). Opt-in — omit to keep current sizing. */
   textareaMinHeight?: number;
-  gridColumn?: "span 1" | "span 2" | "span 3";
-  /** Opt a section into a denser 3-column layout (default is 2, or 3 automatically when every field in the section is type "boolean"). */
-  sectionColumns?: 3;
+  gridColumn?: "span 1" | "span 2" | "span 3" | "span 6";
+  /** Opt a section into a denser 3- or 6-column layout (default is 2, or 3 automatically when every field in the section is type "boolean"). 6 is for sections mixing 2-, 3-, and 1-wide rows (e.g. tractsConfig's legal-description section) — every field's gridColumn is then expressed out of 6 (span 2/3/6) so rows of 2 or 3 fields coexist in one grid. */
+  sectionColumns?: 3 | 6;
   defaultValue?: any;
   dependsOn?: string; // Show field only if another field has certain value
   dependsOnValue?: any;

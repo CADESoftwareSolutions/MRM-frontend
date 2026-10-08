@@ -32,8 +32,15 @@ const labelCls = "block text-xs font-medium text-purple-200 mb-1";
 // of duplicating the type-to-fields mapping a second time, so a change to what a legal
 // description type shows only ever needs to happen in one place. Used to render each linked
 // tract's own legal description read-only (it belongs to the Tract record, not this link).
+// tractType/stateCode/countyName are excluded here — they're rendered as their own fixed cells
+// above, not looped in with the type-specific fields.
 const LEGAL_FIELDS = tractsConfig.fields.filter(
-  (f) => f.tab === "legal" && f.section === "legal-description",
+  (f) =>
+    f.tab === "legal" &&
+    f.section === "legal-description" &&
+    f.id !== "tractType" &&
+    f.id !== "stateCode" &&
+    f.id !== "countyName",
 );
 
 const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
@@ -253,6 +260,18 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
                         <label className={labelCls}>Legal Description Type</label>
                         <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
                           {TRACT_TYPE_LABELS[fullTract.tractType ?? ""] || fullTract.tractType || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>State</label>
+                        <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
+                          {fullTract.stateCode || "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <label className={labelCls}>County</label>
+                        <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
+                          {fullTract.countyName || "—"}
                         </p>
                       </div>
                       {visibleLegalFields.map((field) =>

@@ -19,6 +19,17 @@ export const deedsConfig: ModuleConfig = {
   ],
   fields: [
     // ========== BASIC TAB — identification ==========
+    // Deed # is the BE-assigned id, shown read-only — it isn't part of buildDeedMutationVariables
+    // in useDeeds.ts, so it's never written back. Empty until the deed is first saved.
+    {
+      id: "id",
+      label: "Deed #",
+      type: "readonly" as const,
+      tab: "basic",
+      section: "identification",
+      gridColumn: "span 2" as const,
+    },
+
     // documentType + interestType share a row
     field.select(
       "documentType",

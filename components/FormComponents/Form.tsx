@@ -159,7 +159,15 @@ export const Form: React.FC<FormProps> = ({
       return (
         <div
           key={field.id}
-          className={field.gridColumn === "span 2" ? "col-span-2" : ""}
+          className={
+            field.gridColumn === "span 6"
+              ? "col-span-6"
+              : field.gridColumn === "span 3"
+                ? "col-span-3"
+                : field.gridColumn === "span 2"
+                  ? "col-span-2"
+                  : ""
+          }
         >
           {customContent[field.id] ?? null}
         </div>
@@ -170,11 +178,13 @@ export const Form: React.FC<FormProps> = ({
       <div
         key={field.id}
         className={
-          field.gridColumn === "span 3"
-            ? "col-span-3"
-            : field.gridColumn === "span 2"
-              ? "col-span-2"
-              : ""
+          field.gridColumn === "span 6"
+            ? "col-span-6"
+            : field.gridColumn === "span 3"
+              ? "col-span-3"
+              : field.gridColumn === "span 2"
+                ? "col-span-2"
+                : ""
         }
       >
         <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
@@ -185,6 +195,12 @@ export const Form: React.FC<FormProps> = ({
         </Label>
         {field.helpText && (
           <p className="form-help-text text-xs mb-1">{field.helpText}</p>
+        )}
+
+        {field.type === "readonly" && (
+          <p className="h-9 flex items-center px-3 rounded-md bg-white/5 border border-purple-300/20 text-white/70 text-sm">
+            {watchedValues[field.id] ?? "Assigned after save"}
+          </p>
         )}
 
         {INPUT_TYPES[field.type] !== undefined && (
@@ -457,10 +473,12 @@ export const Form: React.FC<FormProps> = ({
               ) : (
                 <div
                   className={`grid gap-x-4 gap-y-2 ${
-                    visibleFields.some((f) => f.sectionColumns === 3) ||
-                    visibleFields.every((f) => f.type === "boolean")
-                      ? "grid-cols-3"
-                      : "grid-cols-2"
+                    visibleFields.some((f) => f.sectionColumns === 6)
+                      ? "grid-cols-6"
+                      : visibleFields.some((f) => f.sectionColumns === 3) ||
+                          visibleFields.every((f) => f.type === "boolean")
+                        ? "grid-cols-3"
+                        : "grid-cols-2"
                   }`}
                 >
                   {visibleFields.map((field) => renderField(field))}
