@@ -62,13 +62,21 @@ export const deedsConfig: ModuleConfig = {
       },
     ),
 
+    // State/County folded into identification (own section was just these two fields) — fewer
+    // section headers/dividers to scroll past.
+    ...locationFields("identification"),
+
     // ========== BASIC TAB — parties ==========
     // Backend stores these as title_document_conveyance_party rows (multi-grantee).
     // FE still uses flat grantor + grantee display fields until a multi-party control ships.
+    // gridColumn "span 1" (textarea defaults to "span 2", i.e. full row) so these two share a
+    // row instead of each taking its own — resizable (Form.tsx's textarea is resize-y) for
+    // whichever side has more names than fits.
     field.textarea("grantor", "Grantor", {
       required: true,
       tab: "basic",
       section: "parties",
+      gridColumn: "span 1",
       rows: 2,
       textareaMinHeight: 56,
     }),
@@ -77,6 +85,7 @@ export const deedsConfig: ModuleConfig = {
       required: true,
       tab: "basic",
       section: "parties",
+      gridColumn: "span 1",
       rows: 2,
       textareaMinHeight: 56,
     }),
@@ -122,9 +131,6 @@ export const deedsConfig: ModuleConfig = {
       rows: 3,
       textareaMinHeight: 72,
     }),
-
-    // ========== BASIC TAB — location ==========
-    ...locationFields("location"),
 
     // ========== LEGAL DESCRIPTIONS TAB ==========
     {

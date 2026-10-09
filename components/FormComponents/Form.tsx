@@ -48,6 +48,12 @@ interface FormProps {
   stateCountyReference?: StateCountyReference[];
   /** When true, renders without the Card wrapper (for use inside a SideSheet) */
   bare?: boolean;
+  /** When true, renders the Save/Cancel pair as a small right-aligned pair instead of the full-
+   * width prominent bar — for a Form embedded inline inside another Form's own tab content
+   * (e.g. LegalDescriptionForm inside a Lease/Deed/Well's Legal Descriptions tab), where a
+   * second full-width bar right above the outer form's own Save/Cancel reads as a stacked
+   * duplicate of it. */
+  compactActions?: boolean;
 }
 
 const INPUT_TYPES: Record<string, string> = {
@@ -77,6 +83,7 @@ export const Form: React.FC<FormProps> = ({
   dynamicOptions = {},
   stateCountyReference = [],
   bare = false,
+  compactActions = false,
 }) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
@@ -250,7 +257,7 @@ export const Form: React.FC<FormProps> = ({
                 onChange={f.onChange}
                 rows={field.rows || 4}
                 placeholder={field.placeholder}
-                className="bg-white/5 border-purple-300/30 text-white min-h-[100px]"
+                className="bg-white/5 border-purple-300/30 text-white min-h-[100px] resize-y"
                 style={field.textareaMinHeight ? { minHeight: `${field.textareaMinHeight}px` } : undefined}
               />
             )}
@@ -601,7 +608,29 @@ export const Form: React.FC<FormProps> = ({
         </div>
       )}
 
-      {showOuterSave && (
+      {showOuterSave && compactActions && (
+        <div className="flex justify-end gap-2 mt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 cursor-pointer"
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
+            onClick={handleSubmit(onSave)}
+          >
+            {mode === "add"
+              ? `Save ${(config as any).itemName || config.title}`
+              : "Save Changes"}
+          </Button>
+        </div>
+      )}
+
+      {showOuterSave && !compactActions && (
         <div className="flex gap-3 mt-3 pt-3 border-t border-purple-300/30">
           <Button
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
@@ -634,8 +663,8 @@ export const Form: React.FC<FormProps> = ({
           <CardTitle className="text-white flex items-center gap-2">
             <FileText className="w-6 h-6" />
             {mode === "add"
-              ? `Add New ${config.title}`
-              : `Edit ${config.title}`}
+              ? `Add New ${(config as any).itemName || config.title}`
+              : `Edit ${(config as any).itemName || config.title}`}
           </CardTitle>
           <Button
             variant="ghost"

@@ -12,58 +12,17 @@ export const tractsConfig: ModuleConfig = {
   title: "Tracts",
   itemName: "Tract",
   tabs: [
-    { id: "details", label: "Tract Details" },
     { id: "legal", label: "Legal Description" },
     { id: "crossReferences", label: "Cross-References" },
   ],
   listFields: ["label", "tractTypeLabel", "stateCode", "countyName", "grossAcres"],
   fields: [
-    // ========== TRACT DETAILS TAB — identification ==========
-    field.text("tractNo", "Tract Number", {
-      tab: "details",
-      section: "identification",
-    }),
-
-    // ========== TRACT DETAILS TAB — additional details ==========
-    // Fields with helpText (surveyTownship, upi) are grouped together — mixing a helpText
-    // field into a row with a helpText-less one misaligns the inputs, since the extra
-    // helpText line pushes that field's input down relative to its row siblings.
-    field.text("subSurvey", "Sub-Survey", {
-      tab: "details",
-      section: "additional-details",
-    }),
-
-    field.number("grossAcres", "Gross Acres", {
-      tab: "details",
-      section: "additional-details",
-      placeholder: "0.0000",
-    }),
-
-    field.text("surveyTownship", "Survey Township (TX)", {
-      tab: "details",
-      section: "additional-details",
-      helpText: "Texas railroad survey notation, e.g. T8S",
-    }),
-
-    field.text("upi", "UPI", {
-      tab: "details",
-      section: "additional-details",
-      helpText: "Pennsylvania Uniform Parcel Identifier",
-    }),
-
-    field.number("netAcres", "Net Acres", {
-      tab: "details",
-      section: "additional-details",
-      placeholder: "0.0000",
-    }),
-
     // ========== LEGAL DESCRIPTION TAB ==========
     // State/County moved here from Tract Details — a legal description reads as incomplete
     // without them, and they're now the row directly under the type selector. sectionColumns: 6
     // opts this whole section into a 6-column grid (Form.tsx) so rows of 1, 2, or 3 fields can
     // coexist: gridColumn "span 6" = full row, "span 3" = a pair, "span 2" = a trio.
     field.select("tractType", "Legal Description Type", TRACT_TYPE_OPTIONS, {
-      required: true,
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
@@ -71,7 +30,6 @@ export const tractsConfig: ModuleConfig = {
     }),
 
     field.select("stateCode", "State", STATES, {
-      required: true,
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
@@ -82,7 +40,6 @@ export const tractsConfig: ModuleConfig = {
       id: "countyName",
       label: "County",
       type: "county-combobox" as const,
-      required: true,
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
@@ -91,9 +48,9 @@ export const tractsConfig: ModuleConfig = {
       placeholder: "Select county",
     },
 
-    // Shown + required per tract type (see TRACT_TYPE_REQUIRED_FIELDS in the backend's
-    // mrm_geo.constants for the minimum the BE itself enforces). Block/Section/Survey and
-    // Metes and Bounds/Freeform share one row layout; Rectangular (STR) uses a different one —
+    // Shown per tract type — nothing here is required (a legal description can be saved
+    // however complete it is so far). Block/Section/Survey and Metes and Bounds/Freeform
+    // share one row layout; Rectangular (STR) uses a different one —
     // since e.g. Section pairs with Block in one layout but with Township+Range in the other, no
     // single field order can produce both, so each row below is its own dependsOnValue-gated
     // entry keyed to the type(s) that use that pairing. The tract types are mutually exclusive,
@@ -107,7 +64,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey", "metes_and_bounds", "freeform"],
     }),
@@ -117,7 +73,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey", "metes_and_bounds", "freeform"],
     }),
@@ -128,7 +83,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey", "metes_and_bounds", "freeform"],
     }),
@@ -138,7 +92,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey", "metes_and_bounds", "freeform"],
     }),
@@ -149,7 +102,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey"],
     }),
@@ -159,7 +111,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey"],
     }),
@@ -169,7 +120,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey"],
     }),
@@ -180,7 +130,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["rectangular_str"],
     }),
@@ -190,7 +139,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["rectangular_str"],
     }),
@@ -200,7 +148,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 2",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["rectangular_str"],
     }),
@@ -211,7 +158,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["rectangular_str"],
     }),
@@ -221,7 +167,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["rectangular_str"],
     }),
@@ -233,7 +178,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 6",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey", "rectangular_str"],
     }),
@@ -244,7 +188,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["metes_and_bounds", "freeform"],
     }),
@@ -254,7 +197,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 3",
-      required: true,
       dependsOn: "tractType",
       dependsOnValue: ["metes_and_bounds", "freeform"],
     }),
@@ -264,7 +206,6 @@ export const tractsConfig: ModuleConfig = {
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 6",
-      required: true,
       rows: 4,
       dependsOn: "tractType",
       dependsOnValue: ["metes_and_bounds", "freeform"],

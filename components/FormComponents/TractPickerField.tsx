@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAtom } from "jotai";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { themeAtom } from "@/atoms/NavigationAtom";
-import { Button } from "@/components/ui/button";
-import { TractFormModal } from "../modals/TractFormModal";
+import { LegalDescriptionForm } from "./LegalDescriptionForm";
+import { TractLegalSummary } from "./TractLegalSummary";
 import { TractOption, tractDisplayLabel } from "@/hooks/useTracts";
-import { tractsConfig, TRACT_TYPE_OPTIONS } from "@/config/tractsConfig";
 
 export interface TractLinkEntry {
   tractId: number;
@@ -27,30 +26,6 @@ interface TractPickerFieldProps {
 const inputCls =
   "w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-purple-400 transition-colors";
 const labelCls = "block text-xs font-medium text-purple-200 mb-1";
-
-// Same fields + dependsOnValue rules as tractsConfig.ts's "legal" tab — read from there instead
-// of duplicating the type-to-fields mapping a second time, so a change to what a legal
-// description type shows only ever needs to happen in one place. Used to render each linked
-// tract's own legal description read-only (it belongs to the Tract record, not this link).
-// tractType/stateCode/countyName are excluded here — they're rendered as their own fixed cells
-// above, not looped in with the type-specific fields.
-const LEGAL_FIELDS = tractsConfig.fields.filter(
-  (f) =>
-    f.tab === "legal" &&
-    f.section === "legal-description" &&
-    f.id !== "tractType" &&
-    f.id !== "stateCode" &&
-    f.id !== "countyName",
-);
-
-const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
-  TRACT_TYPE_OPTIONS.map((option) => [option.value, option.label]),
-);
-
-const fieldAppliesToType = (dependsOnValue: any, tractType: string): boolean => {
-  const targets = Array.isArray(dependsOnValue) ? dependsOnValue : [dependsOnValue];
-  return targets.includes(tractType);
-};
 
 // Shared by useLeases.ts/useDeeds.ts/useWells.ts: all three bind their record to tracts
 // through an identically-shaped tract_join row (tractId, sortOrder, grossAcres, netAcres,
@@ -107,9 +82,12 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
   const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  // "add" opens a blank tract; "edit" opens tractModal.tract's full record — either way the
-  // lease/deed/well form stays open underneath, per the modal's whole reason for existing.
-  const [tractModal, setTractModal] = useState<{ mode: "add" | "edit"; tract?: TractOption } | null>(null);
+  // The pencil icon on an existing entry replaces that card with the edit form in place.
+  const [editingTract, setEditingTract] = useState<TractOption | null>(null);
+  // The "add" form (below) is always mounted, not gated behind a button — bumping this key
+  // remounts it blank after a save/link/cancel, since Form.tsx has no imperative reset.
+  const [addFormKey, setAddFormKey] = useState(0);
+  const resetAddForm = () => setAddFormKey((k) => k + 1);
 
   const linkedIds = useMemo(() => new Set(value.map((entry) => toTractId(entry.tractId))), [value]);
   const filteredTracts = useMemo(
@@ -155,6 +133,25 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
 
   const removeEntry = (tractId: number) => onChange(value.filter((entry) => entry.tractId !== tractId));
 
+  // Used when the duplicate-match popup's "Add" is picked in place of creating/updating a Tract:
+  // drop whichever link this form was about to produce (none yet, for "add"; the tract being
+  // edited, for "edit") and link the existing match instead.
+  const linkExistingInsteadOf = (oldTractId: number | null, matched: TractOption) => {
+    const saved = { ...matched, id: toTractId(matched.id) } as TractOption;
+    onChange([
+      ...value.filter((entry) => entry.tractId !== oldTractId),
+      {
+        tractId: toTractId(saved.id),
+        tractName: tractDisplayLabel(saved),
+        grossAcres: null,
+        netAcres: null,
+        quarterCalls: null,
+        depthRights: null,
+        sortOrder: value.length,
+      },
+    ]);
+  };
+
   return (
     <div className="space-y-4">
       <div ref={rootRef} className="relative">
@@ -197,17 +194,58 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
         )}
       </div>
 
+      {/* Always mounted — no button click needed to reveal it. addFormKey remounts it blank
+          after each save/link so it's ready for the next one, since there's no gating "Add"
+          button anymore to separately reset. */}
+      <LegalDescriptionForm
+        key={addFormKey}
+        mode="add"
+        accountId={accountId}
+        availableTracts={availableTracts}
+        linkedTractIds={linkedIds}
+        onClose={resetAddForm}
+        onSaved={(tract: Record<string, any>) => {
+          // id must be spread-assigned last: tract already carries its own (possibly
+          // unnormalized) id, and an object literal's later keys win — putting the
+          // coercion first would get silently overwritten by ...tract's raw id.
+          addTract({ ...tract, id: toTractId(tract.id) } as TractOption);
+        }}
+        onLinkExisting={(matched) => {
+          linkExistingInsteadOf(null, matched);
+          resetAddForm();
+        }}
+      />
+
       {value.length === 0 ? (
-        <p className="text-center text-xs text-purple-300/40 py-6 border border-dashed border-purple-300/30 rounded-xl">
-          No tracts linked yet.
-        </p>
+        <p className="text-center text-xs text-purple-300/50">No legal descriptions linked yet.</p>
       ) : (
         <div className="space-y-3">
+          <div className="border-t border-purple-300/20" />
           {value.map((entry) => {
+            // Being edited below instead of shown as a static card.
+            if (editingTract && toTractId(editingTract.id) === entry.tractId) {
+              return (
+                <LegalDescriptionForm
+                  key={entry.tractId}
+                  mode="edit"
+                  accountId={accountId}
+                  initialData={editingTract}
+                  availableTracts={availableTracts}
+                  linkedTractIds={linkedIds}
+                  onClose={() => setEditingTract(null)}
+                  onSaved={(tract) => {
+                    const saved = { ...tract, id: toTractId(tract.id) } as TractOption;
+                    updateEntry(saved.id, { tractName: tractDisplayLabel(saved) });
+                  }}
+                  onLinkExisting={(matched) => {
+                    linkExistingInsteadOf(entry.tractId, matched);
+                    setEditingTract(null);
+                  }}
+                />
+              );
+            }
+
             const fullTract = tractsById.get(toTractId(entry.tractId));
-            const visibleLegalFields = fullTract
-              ? LEGAL_FIELDS.filter((f) => fieldAppliesToType(f.dependsOnValue, fullTract.tractType || ""))
-              : [];
 
             return (
               <div key={entry.tractId} className="border border-purple-300/20 rounded-xl p-4 bg-white/5 space-y-3">
@@ -219,8 +257,8 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
                     <button
                       type="button"
                       disabled={!fullTract}
-                      onClick={() => fullTract && setTractModal({ mode: "edit", tract: fullTract })}
-                      title={fullTract ? "View / edit tract" : undefined}
+                      onClick={() => fullTract && setEditingTract(fullTract)}
+                      title={fullTract ? "Edit legal description" : undefined}
                       className={`p-1.5 rounded-md transition-colors ${
                         fullTract ? "cursor-pointer" : "cursor-not-allowed opacity-40"
                       } ${
@@ -246,147 +284,79 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
                   </div>
                 </div>
 
-                {/* Read-only: this is the Tract's own legal description — edit it via the
-                    pencil icon above (opens TractFormModal), not here. */}
-                <div className="border-t border-purple-300/10 pt-3">
-                  <h4 className="text-xs font-semibold text-purple-300 uppercase tracking-wide mb-2">
-                    Legal Description
-                  </h4>
-                  {!fullTract ? (
-                    <p className="text-xs text-purple-300/50">Tract details unavailable.</p>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className={labelCls}>Legal Description Type</label>
-                        <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
-                          {TRACT_TYPE_LABELS[fullTract.tractType ?? ""] || fullTract.tractType || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <label className={labelCls}>State</label>
-                        <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
-                          {fullTract.stateCode || "—"}
-                        </p>
-                      </div>
-                      <div>
-                        <label className={labelCls}>County</label>
-                        <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
-                          {fullTract.countyName || "—"}
-                        </p>
-                      </div>
-                      {visibleLegalFields.map((field) =>
-                        field.type === "textarea" ? (
-                          <div key={field.id} className="col-span-3">
-                            <label className={labelCls}>{field.label}</label>
-                            <p className={`text-sm whitespace-pre-wrap ${isLight ? "text-gray-800" : "text-white"}`}>
-                              {(fullTract as any)[field.id] || "—"}
-                            </p>
-                          </div>
-                        ) : (
-                          <div key={field.id}>
-                            <label className={labelCls}>{field.label}</label>
-                            <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>
-                              {(fullTract as any)[field.id] || "—"}
-                            </p>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* One shared divider for the whole card body (read-only Legal Description +
+                    editable per-link overrides) instead of two, so there's one less border/
+                    padding gap to scroll past per linked entry. */}
+                <div className="border-t border-purple-300/10 pt-3 space-y-3">
+                  {/* Read-only: this is the Tract's own legal description — edit it via the
+                      pencil icon above (opens the inline LegalDescriptionForm), not here. */}
+                  <div>
+                    <h4 className="text-xs font-semibold text-purple-300 uppercase tracking-wide mb-2">
+                      Legal Description
+                    </h4>
+                    {!fullTract ? (
+                      <p className="text-xs text-purple-300/50">Tract details unavailable.</p>
+                    ) : (
+                      <TractLegalSummary tract={fullTract} isLight={isLight} />
+                    )}
+                  </div>
 
-                {/* Editable: per-link overrides (tract_join's own columns), independent of the
-                    Tract row above. */}
-                <div className="border-t border-purple-300/10 pt-3 grid grid-cols-3 gap-3">
-                  <div>
-                    <label className={labelCls}>Gross Acres</label>
-                    <input
-                      type="number"
-                      value={entry.grossAcres ?? ""}
-                      onChange={(e) => updateEntry(entry.tractId, { grossAcres: numberOrNull(e.target.value) })}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Net Acres</label>
-                    <input
-                      type="number"
-                      value={entry.netAcres ?? ""}
-                      onChange={(e) => updateEntry(entry.tractId, { netAcres: numberOrNull(e.target.value) })}
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Quarter Calls</label>
-                    <input
-                      type="text"
-                      value={entry.quarterCalls ?? ""}
-                      onChange={(e) => updateEntry(entry.tractId, { quarterCalls: stringOrNull(e.target.value) })}
-                      placeholder="e.g. NE/4"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Depth Rights</label>
-                    <input
-                      type="text"
-                      value={entry.depthRights ?? ""}
-                      onChange={(e) => updateEntry(entry.tractId, { depthRights: stringOrNull(e.target.value) })}
-                      placeholder="e.g. All depths"
-                      className={inputCls}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Sort Order</label>
-                    <input
-                      type="number"
-                      value={entry.sortOrder ?? ""}
-                      onChange={(e) => updateEntry(entry.tractId, { sortOrder: numberOrNull(e.target.value) })}
-                      className={inputCls}
-                    />
+                  {/* Editable: per-link overrides (tract_join's own columns), independent of the
+                      Tract row above. */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className={labelCls}>Gross Acres</label>
+                      <input
+                        type="number"
+                        value={entry.grossAcres ?? ""}
+                        onChange={(e) => updateEntry(entry.tractId, { grossAcres: numberOrNull(e.target.value) })}
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Net Acres</label>
+                      <input
+                        type="number"
+                        value={entry.netAcres ?? ""}
+                        onChange={(e) => updateEntry(entry.tractId, { netAcres: numberOrNull(e.target.value) })}
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Quarter Calls</label>
+                      <input
+                        type="text"
+                        value={entry.quarterCalls ?? ""}
+                        onChange={(e) => updateEntry(entry.tractId, { quarterCalls: stringOrNull(e.target.value) })}
+                        placeholder="e.g. NE/4"
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Depth Rights</label>
+                      <input
+                        type="text"
+                        value={entry.depthRights ?? ""}
+                        onChange={(e) => updateEntry(entry.tractId, { depthRights: stringOrNull(e.target.value) })}
+                        placeholder="e.g. All depths"
+                        className={inputCls}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelCls}>Sort Order</label>
+                      <input
+                        type="number"
+                        value={entry.sortOrder ?? ""}
+                        onChange={(e) => updateEntry(entry.tractId, { sortOrder: numberOrNull(e.target.value) })}
+                        className={inputCls}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      )}
-
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setTractModal({ mode: "add" })}
-          className={`cursor-pointer ${
-            isLight
-              ? "border-purple-600 text-purple-600 hover:bg-purple-50"
-              : "bg-white/5 border-purple-400 text-purple-300 hover:bg-purple-500/20"
-          }`}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          New Tract
-        </Button>
-      </div>
-
-      {tractModal && (
-        <TractFormModal
-          mode={tractModal.mode}
-          accountId={accountId}
-          initialData={tractModal.tract ?? undefined}
-          onClose={() => setTractModal(null)}
-          onSaved={(tract: Record<string, any>) => {
-            // id must be spread-assigned last: tract already carries its own (possibly
-            // unnormalized) id, and an object literal's later keys win — putting the
-            // coercion first would get silently overwritten by ...tract's raw id.
-            const saved = { ...tract, id: toTractId(tract.id) } as TractOption;
-            if (tractModal.mode === "add") {
-              addTract(saved);
-            } else {
-              updateEntry(saved.id, { tractName: tractDisplayLabel(saved) });
-            }
-          }}
-        />
       )}
     </div>
   );
