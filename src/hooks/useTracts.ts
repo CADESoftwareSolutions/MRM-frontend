@@ -61,41 +61,7 @@ const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   TRACT_TYPE_OPTIONS.map((option) => [option.value, option.label])
 );
 
-// A tract's own cross-references are read-only: the link is actually created from the
-// Lease/Deed/Well side's Legal Descriptions tab (TractPickerField), not from here. FETCH_TRACTS carries
-// this purely for display. Unlike the old per-parent-type leaseLinks/titleDocumentLinks, a
-// tract_join row covers all three parent types in one table — only one of lease/titleDocument/
-// well is ever set per row (see TractJoin's check constraint on the BE), so each row here
-// resolves to exactly one of the three derived lists below.
-interface RawTract extends TractOption {
-  joins?: {
-    id: string | number;
-    lease: { id: number; lessor?: string | null; lessee?: string | null } | null;
-    titleDocument: {
-      id: number;
-      documentType?: string | null;
-      conveyanceParties?: { role: string; name: string; sortOrder: number }[];
-    } | null;
-    well: { id: number; name?: string | null } | null;
-  }[];
-}
-
-const leaseLabel = (lease: any): string =>
-  [lease?.lessor, lease?.lessee].filter(Boolean).join(" / ") || `Lease #${lease?.id}`;
-
-// Mirrors useSharedTractReferences.ts's deedLabel: first grantor row (by sortOrder) named on
-// the instrument, since title_document has no single "name" column of its own.
-const deedLabel = (deed: any): string => {
-  const grantor = (deed?.conveyanceParties || [])
-    .filter((p: any) => p.role === "grantor")
-    .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0];
-  const type = deed?.documentType || "Deed";
-  return grantor ? `${type} — ${grantor.name}` : `${type} #${deed?.id}`;
-};
-
-const wellLabel = (well: any): string => well?.name || `Well #${well?.id}`;
-
-const transformTract = (tract: RawTract): Record<string, any> => ({
+const transformTract = (tract: TractOption): Record<string, any> => ({
   id: tract.id,
   label: tractDisplayLabel(tract),
   tractTypeLabel: TRACT_TYPE_LABELS[tract.tractType ?? ""] || tract.tractType || "",
@@ -118,15 +84,6 @@ const transformTract = (tract: RawTract): Record<string, any> => ({
   quarterCalls: tract.quarterCalls || "",
   grossAcres: tract.grossAcres ?? "",
   netAcres: tract.netAcres ?? "",
-  _leaseLinks: (tract.joins || [])
-    .filter((join) => join.lease)
-    .map((join) => ({ id: String(join.id), name: leaseLabel(join.lease) })),
-  _titleDocumentLinks: (tract.joins || [])
-    .filter((join) => join.titleDocument)
-    .map((join) => ({ id: String(join.id), name: deedLabel(join.titleDocument) })),
-  _wellLinks: (tract.joins || [])
-    .filter((join) => join.well)
-    .map((join) => ({ id: String(join.id), name: wellLabel(join.well) })),
 });
 
 // Typed to return exactly TractFields' keys — a field added/renamed there is a compile error

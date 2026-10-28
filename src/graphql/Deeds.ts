@@ -12,6 +12,7 @@ export const FETCH_DEEDS = `
       }
       stateCode
       countyName
+      effectiveDate
       consideration
       acres
       reservations
@@ -20,6 +21,7 @@ export const FETCH_DEEDS = `
         id
         stateCode
         countyName
+        book
         volume
         page
         instrumentNumber
@@ -68,6 +70,7 @@ export const CREATE_DEED_MUTATION = `
     $conveyanceParties: [ConveyancePartyInput]
     $stateCode: String
     $countyName: String
+    $effectiveDate: Date
     $consideration: Float
     $acres: Float
     $reservations: String
@@ -82,6 +85,7 @@ export const CREATE_DEED_MUTATION = `
       conveyanceParties: $conveyanceParties
       stateCode: $stateCode
       countyName: $countyName
+      effectiveDate: $effectiveDate
       consideration: $consideration
       acres: $acres
       reservations: $reservations
@@ -102,6 +106,7 @@ export const UPDATE_DEED_MUTATION = `
     $conveyanceParties: [ConveyancePartyInput]
     $stateCode: String
     $countyName: String
+    $effectiveDate: Date
     $consideration: Float
     $acres: Float
     $reservations: String
@@ -116,6 +121,7 @@ export const UPDATE_DEED_MUTATION = `
       conveyanceParties: $conveyanceParties
       stateCode: $stateCode
       countyName: $countyName
+      effectiveDate: $effectiveDate
       consideration: $consideration
       acres: $acres
       reservations: $reservations

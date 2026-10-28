@@ -154,7 +154,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       <PopoverContent
         style={{ zIndex: Z_INDEX.modalDropdown }}
         className="w-auto"
-        align="start"
+        // "end" (not "start"): the calendar icon that opens this sits at the field's right
+        // edge, so the popover should drop down aligned under it, not under the left edge of
+        // the typed-date text.
+        align="end"
         onOpenAutoFocus={(e) => e.preventDefault()}
         // Keep focus on the input throughout calendar interactions instead of letting the
         // browser shift it to whichever day/nav button was clicked.

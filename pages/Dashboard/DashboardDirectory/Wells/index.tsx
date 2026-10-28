@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { TractPickerField, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
-import { SharedTractReferencesTab } from "../../../../components/FormComponents/SharedTractReferencesTab";
+import { TractPickerField, TractPickerFieldHandle, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
+import { CrossReferencesTab } from "../../../../components/FormComponents/CrossReferencesTab";
 import wellsConfig from "@/config/wellsConfig";
 import { useWells } from "@/hooks/useWells";
 import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
@@ -17,8 +17,23 @@ import { Button } from "@/components/ui/button";
 const Wells = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const [tracts, setTracts] = useState<TractLinkEntry[]>([]);
+  const [tracts, setTractsState] = useState<TractLinkEntry[]>([]);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
+
+  // See Deeds/index.tsx for why tracts is mirrored into a ref too.
+  const tractsRef = useRef(tracts);
+  const setTracts = (next: TractLinkEntry[]) => {
+    tractsRef.current = next;
+    setTractsState(next);
+  };
+  const [liveLocation, setLiveLocation] = useState<{ stateCode?: string; countyName?: string }>({});
+  const tractPickerRef = useRef<TractPickerFieldHandle>(null);
+  // Surfaced at the OUTER form level (not just inside the Legal Descriptions tab) when the
+  // always-present "add" or an open "edit" Legal Description card fails validation on save —
+  // that card's own error summary lives inside a `hidden` TabsContent whenever the user is on a
+  // different tab, so without this, clicking Save while looking at e.g. Well Details would
+  // silently do nothing with no visible explanation at all.
+  const [legalDescriptionBlockError, setLegalDescriptionBlockError] = useState<string | null>(null);
 
   const {
     view,
@@ -58,16 +73,33 @@ const Wells = () => {
 
   const handleAdd = () => {
     setTracts([]);
+    setLiveLocation({});
+    setLegalDescriptionBlockError(null);
     _handleAdd();
   };
 
   const handleEdit = (item: any) => {
     setTracts(item._tracts || []);
+    setLiveLocation({ stateCode: item.stateCode, countyName: item.countyName });
+    setLegalDescriptionBlockError(null);
     _handleEdit(item);
   };
 
-  const onSave = (formData: any) => {
-    handleSave(formData, tracts);
+  const onSave = async (formData: any) => {
+    // See Deeds/index.tsx's onSave for the full explanation of this sequence (no Recordation
+    // tab here, so just the Legal Descriptions half applies).
+    setLegalDescriptionBlockError(null);
+    if (tractPickerRef.current?.hasAnyValue()) {
+      const outcome = await tractPickerRef.current.trySubmit();
+      if (outcome === "duplicate-pending") return;
+      if (outcome === "error") {
+        setLegalDescriptionBlockError(
+          "A Legal Description has an error that needs to be fixed before this Well can be saved — check the Legal Descriptions tab.",
+        );
+        return;
+      }
+    }
+    handleSave(formData, tractsRef.current);
   };
 
   return (
@@ -105,21 +137,32 @@ const Wells = () => {
               onSave={onSave}
               onCancel={handleCancel}
               mode={view}
-              saveError={saveError}
-              onClearSaveError={clearSaveError}
+              saveError={legalDescriptionBlockError || saveError}
+              onClearSaveError={() => {
+                setLegalDescriptionBlockError(null);
+                clearSaveError();
+              }}
               dynamicOptions={dynamicOptions}
               stateCountyReference={stateCountyReference}
+              watchFields={["stateCode", "countyName"]}
+              onFieldsChange={(values) =>
+                setLiveLocation({ stateCode: values.stateCode, countyName: values.countyName })
+              }
               customContent={{
                 tracts: (
                   <TractPickerField
+                    ref={tractPickerRef}
                     availableTracts={availableTracts}
                     value={tracts}
                     onChange={setTracts}
                     accountId={userProfile?.account?.id ?? 0}
+                    defaultState={liveLocation.stateCode}
+                    defaultCounty={liveLocation.countyName}
+                    locationTabLabel="Well Details"
                   />
                 ),
                 crossReferences: (
-                  <SharedTractReferencesTab
+                  <CrossReferencesTab
                     entityType="well"
                     entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />

@@ -133,7 +133,7 @@ textarea,
   border-color: rgb(124 58 237);
 }
 .light-theme input::placeholder,
-.light-theme textarea::placeholder { color: rgb(167 139 250 / 0.6); }
+.light-theme textarea::placeholder { color: rgb(124 58 237 / 0.65); }
 
 .light-theme [data-slot="select-content"],
 :root[data-theme="light"] [data-slot="select-content"] {

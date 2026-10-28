@@ -54,6 +54,30 @@ interface FormProps {
    * second full-width bar right above the outer form's own Save/Cancel reads as a stacked
    * duplicate of it. */
   compactActions?: boolean;
+  /** Field ids to watch — onFieldsChange fires with the current value of just these fields
+   * whenever any of them changes, letting a parent mirror a few live fields elsewhere (e.g. this
+   * form's own State/County) without re-rendering on every keystroke across the whole form. */
+  watchFields?: string[];
+  onFieldsChange?: (values: Record<string, any>) => void;
+}
+
+export interface FormHandle {
+  /** True once any editable field (custom/readonly fields don't count) currently holds a
+   * non-empty value. Deliberately NOT react-hook-form's own formState.isDirty — that tracks
+   * "changed from its starting value," which a Select/DatePicker/county-combobox can flip on
+   * its own via their internal onChange plumbing without the user actually having filled
+   * anything in, giving false positives for "does this draft have anything worth saving." This
+   * checks the literal current values instead, so it's unambiguous either way. */
+  hasAnyValue: () => boolean;
+  /** Triggers the same validate-then-onSave flow the Save button does, without the user
+   * clicking it — e.g. so a parent can "save" an embedded Legal Description/Recordation form
+   * the user filled in but forgot to explicitly submit before saving the record it belongs to.
+   * Resolves to false if validation failed — react-hook-form's handleSubmit never calls onSave
+   * in that case, it just resolves, so this form's own inline "Please fill in the required
+   * fields" summary is now showing (same as a real button click would leave it) but nothing
+   * was persisted. The caller must treat that as a failure, not silently proceed. Resolves to
+   * true once onSave has actually run to completion. */
+  submit: () => Promise<boolean>;
 }
 
 const INPUT_TYPES: Record<string, string> = {
@@ -63,28 +87,33 @@ const INPUT_TYPES: Record<string, string> = {
   number: "number",
 };
 
-export const Form: React.FC<FormProps> = ({
-  config,
-  initialData,
-  onSave,
-  onCancel,
-  mode = "add",
-  saveError,
-  onClearSaveError,
-  partyId,
-  contacts = [],
-  onAddContact,
-  onUpdateContact,
-  onDeleteContact,
-  nettingEntries = [],
-  onNettingChange,
-  allParties = [],
-  customContent = {},
-  dynamicOptions = {},
-  stateCountyReference = [],
-  bare = false,
-  compactActions = false,
-}) => {
+const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
+  {
+    config,
+    initialData,
+    onSave,
+    onCancel,
+    mode = "add",
+    saveError,
+    onClearSaveError,
+    partyId,
+    contacts = [],
+    onAddContact,
+    onUpdateContact,
+    onDeleteContact,
+    nettingEntries = [],
+    onNettingChange,
+    allParties = [],
+    customContent = {},
+    dynamicOptions = {},
+    stateCountyReference = [],
+    bare = false,
+    compactActions = false,
+    watchFields,
+    onFieldsChange,
+  },
+  ref,
+) => {
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
     return acc;
@@ -99,12 +128,56 @@ export const Form: React.FC<FormProps> = ({
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitted },
+    clearErrors,
+    unregister,
+    formState: { errors, isSubmitted, isSubmitting },
   } = useForm({
     defaultValues: { ...configDefaults, ...(initialData || {}) },
   });
 
   const watchedValues = watch();
+
+  // Editable field ids only — "custom" (e.g. nested TractPickerField/MultiRecordationField
+  // content) and "readonly" (e.g. Deed #) fields aren't something a user "filled in" here.
+  const editableFieldIds = new Set(
+    config.fields.filter((f) => f.type !== "custom" && f.type !== "readonly").map((f) => f.id),
+  );
+
+  React.useImperativeHandle(ref, () => ({
+    hasAnyValue: () =>
+      Object.entries(watchedValues).some(([id, v]) => {
+        if (!editableFieldIds.has(id)) return false;
+        if (Array.isArray(v)) return v.length > 0;
+        return v !== undefined && v !== null && v !== "";
+      }),
+    submit: async () => {
+      let valid = false;
+      await handleSubmit(
+        async (data) => {
+          valid = true;
+          await onSave(data);
+        },
+        () => {
+          valid = false;
+        },
+      )();
+      return valid;
+    },
+  }));
+
+  // Key off the watched fields' actual values, not a fresh watchFields
+  // array reference, so this only fires when one of those specific values really changes.
+  const watchFieldsKey = watchFields ? watchFields.map((f) => watchedValues[f]).join("\u0000") : undefined;
+  React.useEffect(() => {
+    if (!watchFields || !onFieldsChange) return;
+    onFieldsChange(
+      watchFields.reduce<Record<string, any>>((acc, f) => {
+        acc[f] = watchedValues[f];
+        return acc;
+      }, {}),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchFieldsKey]);
 
   const getFieldOptions = (field: FieldConfig) =>
     dynamicOptions[field.id] ?? field.options ?? [];
@@ -139,8 +212,52 @@ export const Form: React.FC<FormProps> = ({
       : targets.includes(val);
   };
 
+  // A field hidden by a dependsOn switch (e.g. tractsConfig.ts's per-tractType duplicate field
+  // ids — Block is required for Block/Section/Survey but not for Metes and Bounds, as two
+  // separate entries sharing one id) can leave a stale "X is required" error behind: useForm's
+  // default shouldUnregister:false means an error isn't cleared just because the field that
+  // produced it stopped rendering. Sweep those away whenever a dependsOn value changes so
+  // switching away from a type doesn't keep showing an error for a field that no longer shows.
+  React.useEffect(() => {
+    const stale = config.fields
+      .filter((f) => !shouldShowField(f) && errors[f.id])
+      .map((f) => f.id);
+    if (stale.length > 0) clearErrors(stale);
+
+    // A field id that's REQUIRED somewhere but has NO visible instance at all for the current
+    // dependsOn value (e.g. tractsConfig.ts's legalDescription, required but only shown for
+    // Metes and Bounds/Freeform — there's no "hidden, not-required" sibling the way Block/
+    // Section/Survey has) stays registered with its last rules/value forever otherwise: not
+    // just a stale error message, but a stale REQUIRED rule that can never be satisfied again
+    // once its only Controller unmounts, permanently blocking every future submit.
+    // Unregistering it (rather than just clearing its error) drops the rule and value together,
+    // so switching away from the type that showed it behaves like it was never filled in.
+    // Deliberately narrowed to ids that are required SOMEWHERE (everRequiredIds) rather than
+    // every vanished field: unregister also discards the field's value, and most dependsOn
+    // fields across the app (e.g. leasesConfig's payment-type-specific amounts) are never
+    // required at all — unregistering those too would wipe a value just because the user
+    // clicked through other options before settling back on the original one, for no
+    // corresponding validation benefit.
+    const everRequiredIds = new Set(config.fields.filter((f) => f.required).map((f) => f.id));
+    const shownIds = new Set(config.fields.filter((f) => shouldShowField(f)).map((f) => f.id));
+    const vanished = config.fields
+      .filter((f) => !shouldShowField(f) && !shownIds.has(f.id) && everRequiredIds.has(f.id))
+      .map((f) => f.id);
+    if (vanished.length > 0) unregister(vanished);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedValues, errors]);
+
   const getFieldRules = (f: FieldConfig) => {
-    if (!f.required) return {};
+    // Explicit `required: false` (not `{}`) when not required: react-hook-form's own register
+    // merges each call's options onto whatever was already registered for that name rather than
+    // replacing them (`{...oldRules, ...newRules}` internally) — an empty object here would
+    // leave a PRIOR `required` rule in place. That prior rule is real, not hypothetical: a
+    // duplicate field id gated by different dependsOnValue (tractsConfig.ts's per-tractType
+    // Block/Section/Survey/etc.) renders at the same key, so switching tractType re-registers
+    // the SAME Controller with new rules rather than mounting a fresh one — without an explicit
+    // false here, a field required under one type would stay silently required forever after
+    // switching to a type where it's optional.
+    if (!f.required) return { required: false };
     if (f.type === "multi-badge") {
       return {
         validate: (v: string[]) =>
@@ -620,12 +737,15 @@ export const Form: React.FC<FormProps> = ({
           </Button>
           <Button
             size="sm"
+            disabled={isSubmitting}
             className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
           >
-            {mode === "add"
-              ? `Save ${(config as any).itemName || config.title}`
-              : "Save Changes"}
+            {isSubmitting
+              ? "Saving..."
+              : mode === "add"
+                ? `Save ${(config as any).itemName || config.title}`
+                : "Save Changes"}
           </Button>
         </div>
       )}
@@ -633,12 +753,15 @@ export const Form: React.FC<FormProps> = ({
       {showOuterSave && !compactActions && (
         <div className="flex gap-3 mt-3 pt-3 border-t border-purple-300/30">
           <Button
+            disabled={isSubmitting}
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
           >
-            {mode === "add"
-              ? `Save ${(config as any).itemName || config.title}`
-              : "Save Changes"}
+            {isSubmitting
+              ? "Saving..."
+              : mode === "add"
+                ? `Save ${(config as any).itemName || config.title}`
+                : "Save Changes"}
           </Button>
           <Button
             variant="outline"
@@ -679,5 +802,7 @@ export const Form: React.FC<FormProps> = ({
     </Card>
   );
 };
+
+export const Form = React.forwardRef(FormImpl);
 
 export default Form;

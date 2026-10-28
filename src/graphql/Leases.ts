@@ -33,6 +33,7 @@ export const FETCH_LEASES = `
         id
         stateCode
         countyName
+        book
         volume
         page
         instrumentNumber

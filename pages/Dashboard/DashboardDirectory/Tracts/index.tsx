@@ -4,7 +4,7 @@ import DashboardLayout from "../../../../components/DashboardComponents/Dashboar
 import { List } from "../../../../components/FormComponents/List";
 import Form from "../../../../components/FormComponents/Form";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { TractCrossReferencesTab } from "../../../../components/FormComponents/TractCrossReferencesTab";
+import { CrossReferencesTab } from "../../../../components/FormComponents/CrossReferencesTab";
 import tractsConfig from "@/config/tractsConfig";
 import { useTracts } from "@/hooks/useTracts";
 import { useAtom } from "jotai";
@@ -111,11 +111,9 @@ const Tracts = () => {
               stateCountyReference={stateCountyReference}
               customContent={{
                 crossReferences: (
-                  <TractCrossReferencesTab
-                    linkedLeases={selectedItem?._leaseLinks || []}
-                    linkedDeeds={selectedItem?._titleDocumentLinks || []}
-                    linkedWells={selectedItem?._wellLinks || []}
-                    hasId={selectedItem?.id != null}
+                  <CrossReferencesTab
+                    entityType="tract"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                   />
                 ),
               }}

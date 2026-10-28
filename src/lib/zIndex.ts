@@ -20,4 +20,7 @@ export const Z_INDEX = {
    * `modal` itself, since Radix Select portals to <body> as its own top-level sibling rather
    * than nesting inside whatever modal triggered it. */
   modalDropdown: 10001,
+  /** Toast/snackbar notifications — must clear everything, including modals, since a save can
+   * complete (and fire a toast) while a modal from that same action is still open. */
+  toast: 10002,
 } as const;

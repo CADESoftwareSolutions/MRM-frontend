@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type ForwardedRef } from "react";
 import { useAtom } from "jotai";
 import { Pencil, Search, Trash2 } from "lucide-react";
 import { themeAtom } from "@/atoms/NavigationAtom";
-import { LegalDescriptionForm } from "./LegalDescriptionForm";
+import { LegalDescriptionForm, LegalDescriptionFormHandle } from "./LegalDescriptionForm";
 import { TractLegalSummary } from "./TractLegalSummary";
 import { TractOption, tractDisplayLabel } from "@/hooks/useTracts";
 
@@ -21,7 +21,20 @@ interface TractPickerFieldProps {
   value: TractLinkEntry[];
   onChange: (entries: TractLinkEntry[]) => void;
   accountId: number;
+  /** The parent Lease/Deed/Well's own current State/County (Basic Information tab) — forwarded
+   * straight through to LegalDescriptionForm, which shows it as a small read-only line rather
+   * than letting it be independently edited per legal description. */
+  defaultState?: string;
+  defaultCounty?: string;
+  /** Forwarded to LegalDescriptionForm — see its own prop doc. Wells passes "Well Details". */
+  locationTabLabel?: string;
 }
+
+// Same shape as the thing it wraps — hasAnyValue/trySubmit now check BOTH the always-present
+// "add" card and, if the pencil icon is open on an existing entry, that "edit" card too (see
+// useImperativeHandle below), so a parent force-submitting this handle never misses whichever
+// one actually has unsaved content.
+export type TractPickerFieldHandle = LegalDescriptionFormHandle;
 
 const inputCls =
   "w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-purple-400 transition-colors";
@@ -76,7 +89,18 @@ const filterTracts = (tracts: TractOption[], query: string, excludeIds: Set<numb
 const numberOrNull = (raw: string): number | null => (raw === "" ? null : Number(raw));
 const stringOrNull = (raw: string): string | null => (raw === "" ? null : raw);
 
-export const TractPickerField = ({ availableTracts, value, onChange, accountId }: TractPickerFieldProps) => {
+const TractPickerFieldImpl = (
+  {
+    availableTracts,
+    value,
+    onChange,
+    accountId,
+    defaultState,
+    defaultCounty,
+    locationTabLabel,
+  }: TractPickerFieldProps,
+  ref: ForwardedRef<TractPickerFieldHandle>,
+) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
   const rootRef = useRef<HTMLDivElement>(null);
@@ -88,6 +112,29 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
   // remounts it blank after a save/link/cancel, since Form.tsx has no imperative reset.
   const [addFormKey, setAddFormKey] = useState(0);
   const resetAddForm = () => setAddFormKey((k) => k + 1);
+  const addFormRef = useRef<LegalDescriptionFormHandle>(null);
+  // Ref onto whichever LegalDescriptionForm the pencil icon currently has open (null the rest
+  // of the time — React nulls a ref automatically when the component it's attached to
+  // unmounts, which happens whenever editingTract closes or switches to a different entry).
+  const editFormRef = useRef<LegalDescriptionFormHandle>(null);
+
+  useImperativeHandle(ref, () => ({
+    hasAnyValue: () =>
+      (editFormRef.current?.hasAnyValue() ?? false) || (addFormRef.current?.hasAnyValue() ?? false),
+    trySubmit: async () => {
+      // Check the edit card first: it represents changes to an EXISTING tract, so losing those
+      // silently would be worse than losing an unstarted "add new" draft. Abort immediately on
+      // a failure there (don't let the add card's own outcome below mask it) — but a
+      // successful edit-save still falls through to check the add card too, in case the user
+      // had both open with content at once; neither should get silently skipped.
+      if (editFormRef.current?.hasAnyValue()) {
+        const editOutcome = await editFormRef.current.trySubmit();
+        if (editOutcome === "duplicate-pending" || editOutcome === "error") return editOutcome;
+      }
+      if (!addFormRef.current?.hasAnyValue()) return "empty";
+      return addFormRef.current.trySubmit();
+    },
+  }));
 
   const linkedIds = useMemo(() => new Set(value.map((entry) => toTractId(entry.tractId))), [value]);
   const filteredTracts = useMemo(
@@ -198,11 +245,15 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
           after each save/link so it's ready for the next one, since there's no gating "Add"
           button anymore to separately reset. */}
       <LegalDescriptionForm
+        ref={addFormRef}
         key={addFormKey}
         mode="add"
         accountId={accountId}
         availableTracts={availableTracts}
         linkedTractIds={linkedIds}
+        defaultState={defaultState}
+        defaultCounty={defaultCounty}
+        locationTabLabel={locationTabLabel}
         onClose={resetAddForm}
         onSaved={(tract: Record<string, any>) => {
           // id must be spread-assigned last: tract already carries its own (possibly
@@ -226,12 +277,16 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
             if (editingTract && toTractId(editingTract.id) === entry.tractId) {
               return (
                 <LegalDescriptionForm
+                  ref={editFormRef}
                   key={entry.tractId}
                   mode="edit"
                   accountId={accountId}
                   initialData={editingTract}
                   availableTracts={availableTracts}
                   linkedTractIds={linkedIds}
+                  defaultState={defaultState}
+                  defaultCounty={defaultCounty}
+                  locationTabLabel={locationTabLabel}
                   onClose={() => setEditingTract(null)}
                   onSaved={(tract) => {
                     const saved = { ...tract, id: toTractId(tract.id) } as TractOption;
@@ -361,5 +416,7 @@ export const TractPickerField = ({ availableTracts, value, onChange, accountId }
     </div>
   );
 };
+
+export const TractPickerField = forwardRef(TractPickerFieldImpl);
 
 export default TractPickerField;

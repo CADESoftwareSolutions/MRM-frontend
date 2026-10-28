@@ -13,6 +13,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { PropsWithChildren, useEffect } from "react";
 import DashboardHeader from "../../components/DashboardComponents/DashboardHeader";
+import ToastHost from "../../components/DashboardComponents/ToastHost";
 
 import {
   Accordion,
@@ -297,6 +298,8 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         <DashboardHeader sidebarWidth={sidebarWidth} />
         <div className={isLight ? "light-theme" : ""}>{children}</div>
       </main>
+
+      <ToastHost />
     </div>
   );
 };

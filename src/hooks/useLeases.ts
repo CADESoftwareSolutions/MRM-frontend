@@ -23,6 +23,7 @@ interface UseLeasesProps {
 const buildRecordationInput = (entry: RecordationEntry) => ({
   stateCode: entry.state,
   countyName: entry.county,
+  book: entry.book || null,
   volume: entry.volume || null,
   page: entry.page || null,
   instrumentNumber: entry.instrumentId || null,
@@ -33,6 +34,7 @@ const transformRecordation = (rec: any): RecordationEntry => ({
   id: String(rec.id),
   state: rec.stateCode || "",
   county: rec.countyName || "",
+  book: rec.book || "",
   volume: rec.volume || "",
   page: rec.page || "",
   instrumentId: rec.instrumentNumber || "",

@@ -66,6 +66,15 @@ export const deedsConfig: ModuleConfig = {
     // section headers/dividers to scroll past.
     ...locationFields("identification"),
 
+    {
+      id: "effectiveDate",
+      label: "Effective Date",
+      type: "date",
+      tab: "basic",
+      section: "identification",
+      gridColumn: "span 1",
+    },
+
     // ========== BASIC TAB — parties ==========
     // Backend stores these as title_document_conveyance_party rows (multi-grantee).
     // FE still uses flat grantor + grantee display fields until a multi-party control ships.
@@ -103,7 +112,6 @@ export const deedsConfig: ModuleConfig = {
     }),
 
     // ========== BASIC TAB — acreage & details ==========
-    // Backend dropped effective_date/executed_date from title_document; no longer collected here.
     field.number("acres", "Acres", {
       tab: "basic",
       section: "acreage-details",
