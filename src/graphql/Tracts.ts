@@ -23,6 +23,7 @@ export const FETCH_TRACTS = `
       netAcres
       joins {
         id
+        quarterCalls
         lease {
           id
           lessor

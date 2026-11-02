@@ -217,6 +217,8 @@ const Deeds = () => {
                     value={tracts}
                     onChange={setTracts}
                     accountId={userProfile?.account?.id ?? 0}
+                    entityType="title_document"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                     defaultState={liveLocation.stateCode}
                     defaultCounty={liveLocation.countyName}
                   />

@@ -4,6 +4,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import {
   useCrossReferences,
+  CROSS_REFERENCE_NOUN as NOUN,
   CrossReferenceEntityType,
   CrossReferenceOption,
   CrossReferenceRow,
@@ -14,13 +15,6 @@ interface CrossReferencesTabProps {
   entityType: CrossReferenceEntityType;
   entityId?: number | null;
 }
-
-const NOUN: Record<CrossReferenceEntityType, { singular: string; plural: string }> = {
-  tract: { singular: "tract", plural: "Tracts" },
-  lease: { singular: "lease", plural: "Leases" },
-  title_document: { singular: "deed", plural: "Deeds" },
-  well: { singular: "well", plural: "Wells" },
-};
 
 const SECTION_ORDER: CrossReferenceEntityType[] = ["tract", "lease", "title_document", "well"];
 

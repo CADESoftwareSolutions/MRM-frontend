@@ -21,8 +21,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
+  moduleViewAtom,
   openAccordionsAtom,
   sidebarOpenAtom,
   themeAtom,
@@ -42,6 +43,16 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const [, setUserProfile] = useAtom(userProfileAtom);
   const isLight = theme === "light";
   const router = useRouter();
+  const setModuleView = useSetAtom(moduleViewAtom);
+
+  // Module pages switch between their list and add/edit form via moduleViewAtom, not the URL, so
+  // pushing the route you're already on does nothing — reset the view to get back to the list.
+  // asPath, not pathname: next.config.js rewrites e.g. /Dashboard/deeds to
+  // /Dashboard/DashboardDirectory/Deeds, and pathname is the rewritten page path.
+  const navigate = (route: string) => {
+    if (router.asPath.split(/[?#]/)[0] === route) setModuleView("list");
+    else router.push(route);
+  };
 
   const { data: profileData, error: profileError } = useQuery({
     queryKey: ["profile"],
@@ -211,7 +222,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                 <Button
                   key={group.text}
                   variant="ghost"
-                  onClick={() => router.push(group.route!)}
+                  onClick={() => navigate(group.route!)}
                   className={`w-full justify-start transition-colors cursor-pointer h-10 ${navText} ${navHover} ${isActive ? navActive : ""}`}
                   style={{
                     padding: sidebarOpen ? "0.5rem 1rem" : "0.5rem",
@@ -272,7 +283,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                         <Button
                           key={subItem.text}
                           variant="ghost"
-                          onClick={() => router.push(subItem.route)}
+                          onClick={() => navigate(subItem.route)}
                           className={`w-full justify-start h-9 text-sm cursor-pointer px-4 ${subText} ${navHover} ${
                             router.pathname === subItem.route ? subActive : ""
                           }`}

@@ -1,10 +1,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type ForwardedRef } from "react";
 import { useAtom } from "jotai";
+import { useQueryClient } from "@tanstack/react-query";
 import { Pencil, Search, Trash2 } from "lucide-react";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { LegalDescriptionForm, LegalDescriptionFormHandle } from "./LegalDescriptionForm";
 import { TractLegalSummary } from "./TractLegalSummary";
+import { LinkTractDocumentsModal } from "../modals/LinkTractDocumentsModal";
 import { TractOption, tractDisplayLabel } from "@/hooks/useTracts";
+import { CrossReferenceEntityType, TractDocument, documentsSharingTract } from "@/hooks/useCrossReferences";
 
 export interface TractLinkEntry {
   tractId: number;
@@ -21,6 +24,9 @@ interface TractPickerFieldProps {
   value: TractLinkEntry[];
   onChange: (entries: TractLinkEntry[]) => void;
   accountId: number;
+  /** The Lease/Deed/Well this picker belongs to; entityId is null until it's first saved. */
+  entityType: CrossReferenceEntityType;
+  entityId?: number | null;
   /** The parent Lease/Deed/Well's own current State/County (Basic Information tab) — forwarded
    * straight through to LegalDescriptionForm, which shows it as a small read-only line rather
    * than letting it be independently edited per legal description. */
@@ -95,6 +101,8 @@ const TractPickerFieldImpl = (
     value,
     onChange,
     accountId,
+    entityType,
+    entityId,
     defaultState,
     defaultCounty,
     locationTabLabel,
@@ -103,6 +111,14 @@ const TractPickerFieldImpl = (
 ) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
+  const queryClient = useQueryClient();
+  // An existing tract waiting on the link popup. `replacing` is the tract an edit card was open
+  // on when its duplicate-match popup picked this one instead.
+  const [pendingLink, setPendingLink] = useState<{
+    tract: TractOption;
+    replacing: number | null;
+    documents: TractDocument[];
+  } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -157,9 +173,11 @@ const TractPickerFieldImpl = (
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, []);
 
-  const addTract = (tract: TractOption) => {
+  // `replacing`: drop that tract's link in favour of this one — set when an edit card's
+  // duplicate-match popup picked an existing tract instead of saving the one being edited.
+  const linkTract = (tract: TractOption, replacing: number | null) => {
     onChange([
-      ...value,
+      ...value.filter((entry) => entry.tractId !== replacing),
       {
         tractId: toTractId(tract.id),
         tractName: tractDisplayLabel(tract),
@@ -170,8 +188,14 @@ const TractPickerFieldImpl = (
         sortOrder: value.length,
       },
     ]);
-    setQuery("");
-    setOpen(false);
+  };
+
+  // An existing tract may already be in other records' Legal Descriptions, and linking it
+  // cross-references this record with all of them — show which ones before it's linked.
+  const linkExistingTract = (tract: TractOption, replacing: number | null) => {
+    const documents = documentsSharingTract(tract, { entityType, entityId }, queryClient);
+    if (documents.length > 0) setPendingLink({ tract, replacing, documents });
+    else linkTract(tract, replacing);
   };
 
   const updateEntry = (tractId: number, patch: Partial<TractLinkEntry>) => {
@@ -179,25 +203,6 @@ const TractPickerFieldImpl = (
   };
 
   const removeEntry = (tractId: number) => onChange(value.filter((entry) => entry.tractId !== tractId));
-
-  // Used when the duplicate-match popup's "Add" is picked in place of creating/updating a Tract:
-  // drop whichever link this form was about to produce (none yet, for "add"; the tract being
-  // edited, for "edit") and link the existing match instead.
-  const linkExistingInsteadOf = (oldTractId: number | null, matched: TractOption) => {
-    const saved = { ...matched, id: toTractId(matched.id) } as TractOption;
-    onChange([
-      ...value.filter((entry) => entry.tractId !== oldTractId),
-      {
-        tractId: toTractId(saved.id),
-        tractName: tractDisplayLabel(saved),
-        grossAcres: null,
-        netAcres: null,
-        quarterCalls: null,
-        depthRights: null,
-        sortOrder: value.length,
-      },
-    ]);
-  };
 
   return (
     <div className="space-y-4">
@@ -227,7 +232,11 @@ const TractPickerFieldImpl = (
                   key={tract.id}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => addTract(tract)}
+                  onClick={() => {
+                    linkExistingTract(tract, null);
+                    setQuery("");
+                    setOpen(false);
+                  }}
                   className="flex w-full cursor-pointer flex-col items-start rounded-sm px-2 py-1.5 text-left text-sm text-white outline-none hover:bg-purple-400/30"
                 >
                   <span>{tractDisplayLabel(tract)}</span>
@@ -259,10 +268,10 @@ const TractPickerFieldImpl = (
           // id must be spread-assigned last: tract already carries its own (possibly
           // unnormalized) id, and an object literal's later keys win — putting the
           // coercion first would get silently overwritten by ...tract's raw id.
-          addTract({ ...tract, id: toTractId(tract.id) } as TractOption);
+          linkTract({ ...tract, id: toTractId(tract.id) } as TractOption, null);
         }}
         onLinkExisting={(matched) => {
-          linkExistingInsteadOf(null, matched);
+          linkExistingTract({ ...matched, id: toTractId(matched.id) }, null);
           resetAddForm();
         }}
       />
@@ -293,7 +302,7 @@ const TractPickerFieldImpl = (
                     updateEntry(saved.id, { tractName: tractDisplayLabel(saved) });
                   }}
                   onLinkExisting={(matched) => {
-                    linkExistingInsteadOf(entry.tractId, matched);
+                    linkExistingTract({ ...matched, id: toTractId(matched.id) }, entry.tractId);
                     setEditingTract(null);
                   }}
                 />
@@ -412,6 +421,20 @@ const TractPickerFieldImpl = (
             );
           })}
         </div>
+      )}
+
+      {pendingLink && (
+        <LinkTractDocumentsModal
+          tract={pendingLink.tract}
+          documents={pendingLink.documents}
+          entityType={entityType}
+          isLight={isLight}
+          onCancel={() => setPendingLink(null)}
+          onConfirm={() => {
+            linkTract(pendingLink.tract, pendingLink.replacing);
+            setPendingLink(null);
+          }}
+        />
       )}
     </div>
   );

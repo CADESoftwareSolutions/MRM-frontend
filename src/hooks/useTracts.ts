@@ -47,6 +47,7 @@ export interface TractFields {
 // A tract as loaded from FETCH_TRACTS: TractFields plus its id.
 export interface TractOption extends TractFields {
   id: number;
+  joins?: any[];
 }
 
 // Tract has no single "name" column — build a display label from whatever identifying fields

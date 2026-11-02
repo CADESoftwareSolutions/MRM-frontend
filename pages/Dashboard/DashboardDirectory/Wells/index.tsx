@@ -156,6 +156,8 @@ const Wells = () => {
                     value={tracts}
                     onChange={setTracts}
                     accountId={userProfile?.account?.id ?? 0}
+                    entityType="well"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                     defaultState={liveLocation.stateCode}
                     defaultCounty={liveLocation.countyName}
                     locationTabLabel="Well Details"

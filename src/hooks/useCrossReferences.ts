@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useAtom } from "jotai";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { executeGraphQL } from "../lib/api";
 import { FETCH_TRACTS } from "../graphql/Tracts";
@@ -23,6 +23,13 @@ const MANUAL_DISABLED_MESSAGE =
   "Manually added cross-references can't be saved yet — the backend doesn't support them.";
 
 export type CrossReferenceEntityType = "tract" | "lease" | "title_document" | "well";
+
+export const CROSS_REFERENCE_NOUN: Record<CrossReferenceEntityType, { singular: string; plural: string }> = {
+  tract: { singular: "tract", plural: "Tracts" },
+  lease: { singular: "lease", plural: "Leases" },
+  title_document: { singular: "deed", plural: "Deeds" },
+  well: { singular: "well", plural: "Wells" },
+};
 
 export interface CrossReferenceOption {
   key: string;
@@ -166,6 +173,49 @@ const joinTarget = (join: any): { type: CrossReferenceEntityType; record: any } 
   if (join.titleDocument) return { type: "title_document", record: join.titleDocument };
   if (join.well) return { type: "well", record: join.well };
   return null;
+};
+
+const LIST_QUERY_KEY: Record<CrossReferenceEntityType, string> = {
+  tract: "tracts",
+  lease: "leases",
+  title_document: "deeds",
+  well: "wells",
+};
+
+export interface TractDocument extends CrossReferenceOption {
+  /** That record's own quarter calls on this tract (tract_join) — the one part of a legal
+   * description that can differ between the records sharing it. */
+  quarterCalls: string | null;
+}
+
+// Every Lease/Deed/Well with this tract in its Legal Descriptions, other than `self` — the
+// records that get cross-referenced with `self` once it links the tract too. The joins only
+// carry a slim copy of each record, so a full one from an already-cached list is preferred for
+// the richer description (dates, recording info) when the user's on a screen that has it.
+export const documentsSharingTract = (
+  tract: { joins?: any[] },
+  self: { entityType: CrossReferenceEntityType; entityId?: number | null },
+  queryClient: QueryClient,
+): TractDocument[] => {
+  const selfKey = self.entityId != null ? refKey(self.entityType, self.entityId) : null;
+  const byKey = new Map<string, TractDocument>();
+  for (const join of tract.joins || []) {
+    const target = joinTarget(join);
+    if (!target) continue;
+    const key = refKey(target.type, target.record.id);
+    if (key === selfKey || byKey.has(key)) continue;
+    const cached = queryClient
+      .getQueryData<any[]>([LIST_QUERY_KEY[target.type]])
+      ?.find((record) => refKey(target.type, record.id) === key);
+    byKey.set(key, {
+      key,
+      entityType: target.type,
+      entityId: toId(target.record.id),
+      ...DESCRIBE[target.type](cached ?? target.record),
+      quarterCalls: join.quarterCalls || null,
+    });
+  }
+  return Array.from(byKey.values());
 };
 
 // Same query keys + queryFn return shapes as useTracts/useLeases/useDeeds/useWells, so this

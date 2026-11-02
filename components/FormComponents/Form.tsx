@@ -223,29 +223,40 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
       .filter((f) => !shouldShowField(f) && errors[f.id])
       .map((f) => f.id);
     if (stale.length > 0) clearErrors(stale);
-
-    // A field id that's REQUIRED somewhere but has NO visible instance at all for the current
-    // dependsOn value (e.g. tractsConfig.ts's legalDescription, required but only shown for
-    // Metes and Bounds/Freeform — there's no "hidden, not-required" sibling the way Block/
-    // Section/Survey has) stays registered with its last rules/value forever otherwise: not
-    // just a stale error message, but a stale REQUIRED rule that can never be satisfied again
-    // once its only Controller unmounts, permanently blocking every future submit.
-    // Unregistering it (rather than just clearing its error) drops the rule and value together,
-    // so switching away from the type that showed it behaves like it was never filled in.
-    // Deliberately narrowed to ids that are required SOMEWHERE (everRequiredIds) rather than
-    // every vanished field: unregister also discards the field's value, and most dependsOn
-    // fields across the app (e.g. leasesConfig's payment-type-specific amounts) are never
-    // required at all — unregistering those too would wipe a value just because the user
-    // clicked through other options before settling back on the original one, for no
-    // corresponding validation benefit.
-    const everRequiredIds = new Set(config.fields.filter((f) => f.required).map((f) => f.id));
-    const shownIds = new Set(config.fields.filter((f) => shouldShowField(f)).map((f) => f.id));
-    const vanished = config.fields
-      .filter((f) => !shouldShowField(f) && !shownIds.has(f.id) && everRequiredIds.has(f.id))
-      .map((f) => f.id);
-    if (vanished.length > 0) unregister(vanished);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchedValues, errors]);
+
+  // A field id that's REQUIRED somewhere but has NO visible instance at all for the current
+  // dependsOn value (e.g. tractsConfig.ts's legalDescription, required but only shown for
+  // Metes and Bounds/Freeform — there's no "hidden, not-required" sibling the way Block/
+  // Section/Survey has) stays registered with its last rules/value forever otherwise: not
+  // just a stale error message, but a stale REQUIRED rule that can never be satisfied again
+  // once its only Controller unmounts, permanently blocking every future submit.
+  // Unregistering it (rather than just clearing its error) drops the rule and value together,
+  // so switching away from the type that showed it behaves like it was never filled in.
+  // Deliberately narrowed to ids that are required SOMEWHERE (everRequiredIds) rather than
+  // every vanished field: unregister also discards the field's value, and most dependsOn
+  // fields across the app (e.g. leasesConfig's payment-type-specific amounts) are never
+  // required at all — unregistering those too would wipe a value just because the user
+  // clicked through other options before settling back on the original one, for no
+  // corresponding validation benefit.
+  const everRequiredIds = new Set(config.fields.filter((f) => f.required).map((f) => f.id));
+  const shownIds = new Set(config.fields.filter((f) => shouldShowField(f)).map((f) => f.id));
+  const vanishedIds = Array.from(
+    new Set(
+      config.fields
+        .filter((f) => !shouldShowField(f) && !shownIds.has(f.id) && everRequiredIds.has(f.id))
+        .map((f) => f.id),
+    ),
+  );
+  // Keyed on which ids are hidden, not on every render: unregister() itself re-renders the form,
+  // so re-running it while the same fields stay hidden loops forever — which also starves Next's
+  // route transitions, so leaving a page with a form open never completes.
+  const vanishedKey = vanishedIds.join("\u0000");
+  React.useEffect(() => {
+    if (vanishedIds.length > 0) unregister(vanishedIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vanishedKey]);
 
   const getFieldRules = (f: FieldConfig) => {
     // Explicit `required: false` (not `{}`) when not required: react-hook-form's own register

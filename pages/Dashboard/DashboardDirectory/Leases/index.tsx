@@ -187,6 +187,8 @@ const Leases = () => {
                     value={tracts}
                     onChange={setTracts}
                     accountId={userProfile?.account?.id ?? 0}
+                    entityType="lease"
+                    entityId={selectedItem?.id ? Number(selectedItem.id) : null}
                     defaultState={liveLocation.stateCode}
                     defaultCounty={liveLocation.countyName}
                   />
