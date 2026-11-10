@@ -4,7 +4,10 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { themeAtom } from "@/atoms/NavigationAtom";
+import { useAddFormToggle } from "@/hooks/useAddFormToggle";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
+import { formatCountyWithCode, formatStateWithCode } from "@/lib/stateCounty";
+import { AddNewButton } from "./AddNewButton";
 
 export interface RecordationEntry {
   id: string;
@@ -21,7 +24,7 @@ interface MultiRecordationFieldProps {
   value: RecordationEntry[];
   onChange: (entries: RecordationEntry[]) => void;
   /** Same reference data Basic Information's State/County pair uses — looked up here only to
-   * show the full state name ("Oregon"), not the abbreviation, next to the read-only field below. */
+   * label the read-only State/County lines below with names and codes ("Texas (TX)", "Gregg (183)"). */
   stateCountyReference: StateCountyReference[];
   /** The parent Lease/Deed/Well's own current State/County (Basic Information tab) — the only
    * source of a recordation's State/County now. Shown here as a small read-only line and kept in
@@ -32,7 +35,9 @@ interface MultiRecordationFieldProps {
   defaultCounty?: string;
   /** Fires with the current "New Recordation" draft every time it changes — lets the parent
    * auto-commit it (as if "Add Recordation" had been clicked) if the user fills some of it in
-   * but saves the Lease/Deed/Well itself without explicitly clicking Add Recordation first. */
+   * but saves the Lease/Deed/Well itself without explicitly clicking Add Recordation first.
+   * Closing the form (Cancel or Add Recordation) blanks the draft, so this fires with an empty
+   * one then too — the parent never holds onto a draft that's no longer on screen. */
   onDraftChange?: (draft: DraftRecordation) => void;
 }
 
@@ -78,12 +83,12 @@ export const MultiRecordationField = ({
 }: MultiRecordationFieldProps) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
-  // Always-present, like LegalDescriptionForm's add card — no separate "Add Recordation"
-  // trigger button to reveal it. Unlike a legal description, a recordation has no backend
-  // entity of its own to create immediately: "Add Recordation" just appends this draft to
-  // `value` (the real save happens when the parent Lease/Deed/Well form saves), so the button
-  // reads "Add Recordation" rather than "Save".
+  // Unlike a legal description, a recordation has no backend entity of its own to create
+  // immediately: "Add Recordation" just appends this draft to `value` (the real save happens
+  // when the parent Lease/Deed/Well form saves), so the button reads "Add Recordation" rather
+  // than "Save".
   const [draft, setDraft] = useState<DraftRecordation>(emptyDraft);
+  const addForm = useAddFormToggle(value.length > 0);
 
   useEffect(() => {
     onDraftChange?.(draft);
@@ -101,10 +106,13 @@ export const MultiRecordationField = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultState, defaultCounty]);
 
-  // Full name for the read-only State line below ("Oregon", not "OR").
-  const stateName = useMemo(
-    () => stateCountyReference.find((s) => s.code === defaultState)?.name || defaultState || "—",
+  const stateLine = useMemo(
+    () => formatStateWithCode(stateCountyReference, defaultState),
     [stateCountyReference, defaultState],
+  );
+  const countyLine = useMemo(
+    () => formatCountyWithCode(stateCountyReference, defaultState, defaultCounty),
+    [stateCountyReference, defaultState, defaultCounty],
   );
 
   const update = (id: string, patch: Partial<RecordationEntry>) => {
@@ -113,9 +121,15 @@ export const MultiRecordationField = ({
 
   const remove = (id: string) => onChange(value.filter((e) => e.id !== id));
 
+  // With nothing added yet the form stays showing, so this just blanks it.
+  const closeForm = () => {
+    setDraft(emptyDraft());
+    addForm.close();
+  };
+
   const addDraft = () => {
     onChange([...value, buildCommittedRecordation(draft, defaultState, defaultCounty)]);
-    setDraft(emptyDraft());
+    closeForm();
   };
 
   const renderFields = (
@@ -127,11 +141,11 @@ export const MultiRecordationField = ({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={labelCls}>State</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{stateName}</p>
+          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{stateLine}</p>
         </div>
         <div>
           <label className={labelCls}>County</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{defaultCounty || "—"}</p>
+          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{countyLine}</p>
         </div>
       </div>
 
@@ -202,34 +216,7 @@ export const MultiRecordationField = ({
 
   return (
     <div className="space-y-4">
-      {/* Always present, before the saved list — same order as LegalDescriptionForm's add card. */}
-      <div className="border border-purple-300/20 rounded-xl p-3 bg-white/5 space-y-2">
-        <span className="text-xs font-semibold text-purple-300 uppercase tracking-wide">
-          New Recordation
-        </span>
-        {renderFields(draft, (patch) => setDraft((d) => ({ ...d, ...patch })))}
-        <div className="flex justify-end gap-2 pt-1">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setDraft(emptyDraft())}
-            className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 cursor-pointer"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={addDraft}
-            className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
-          >
-            Add Recordation
-          </Button>
-        </div>
-      </div>
-
-      {value.length > 0 && <div className="border-t border-purple-300/20" />}
+      {addForm.showAddButton && <AddNewButton label="Add New Recordation" onClick={addForm.open} />}
 
       {value.map((entry, index) => (
         <div
@@ -256,6 +243,39 @@ export const MultiRecordationField = ({
           {renderFields(entry, (patch) => update(entry.id, patch))}
         </div>
       ))}
+
+      {addForm.showDivider && <div className="border-t border-purple-300/20" />}
+
+      {addForm.showForm && (
+        <div
+          ref={addForm.anchorRef}
+          className="border border-purple-300/20 rounded-xl p-3 bg-white/5 space-y-2 scroll-mt-20 scroll-mb-6"
+        >
+          <span className="text-xs font-semibold text-purple-300 uppercase tracking-wide">
+            New Recordation
+          </span>
+          {renderFields(draft, (patch) => setDraft((d) => ({ ...d, ...patch })))}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={closeForm}
+              className="border-purple-300/30 text-purple-600 hover:bg-purple-500/20 cursor-pointer"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={addDraft}
+              className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
+            >
+              Add Recordation
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

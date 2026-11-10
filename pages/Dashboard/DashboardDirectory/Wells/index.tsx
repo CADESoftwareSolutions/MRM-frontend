@@ -28,8 +28,8 @@ const Wells = () => {
   };
   const [liveLocation, setLiveLocation] = useState<{ stateCode?: string; countyName?: string }>({});
   const tractPickerRef = useRef<TractPickerFieldHandle>(null);
-  // Surfaced at the OUTER form level (not just inside the Legal Descriptions tab) when the
-  // always-present "add" or an open "edit" Legal Description card fails validation on save —
+  // Surfaced at the OUTER form level (not just inside the Legal Descriptions tab) when an open
+  // "add" or "edit" Legal Description card fails validation on save —
   // that card's own error summary lives inside a `hidden` TabsContent whenever the user is on a
   // different tab, so without this, clicking Save while looking at e.g. Well Details would
   // silently do nothing with no visible explanation at all.
@@ -99,7 +99,7 @@ const Wells = () => {
         return;
       }
     }
-    handleSave(formData, tractsRef.current);
+    await handleSave(formData, tractsRef.current);
   };
 
   return (

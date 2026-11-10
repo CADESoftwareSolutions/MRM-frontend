@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 
 interface ComboboxBaseProps<T> {
   inputValue: string;
+  /** Shown in place of inputValue while the input isn't focused (e.g. "Gregg (183)"). Focusing
+   * swaps back to inputValue, so typing always edits the real value, never the decorated one. */
+  displayValue?: string;
   onInputChange: (value: string) => void;
   onBlur?: () => void;
   /** Already filtered for the current inputValue — filtering is caller-specific (fuzzy county
@@ -31,6 +34,7 @@ interface ComboboxBaseProps<T> {
  * list) both need identically. Callers own filtering and row rendering. */
 export function ComboboxBase<T>({
   inputValue,
+  displayValue,
   onInputChange,
   onBlur,
   items,
@@ -45,6 +49,7 @@ export function ComboboxBase<T>({
 }: ComboboxBaseProps<T>) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = React.useState(false);
+  const [focused, setFocused] = React.useState(false);
   const [openUpward, setOpenUpward] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(0);
 
@@ -104,13 +109,19 @@ export function ComboboxBase<T>({
           role="combobox"
           aria-expanded={open}
           aria-autocomplete="list"
-          value={inputValue}
+          value={focused || displayValue === undefined ? inputValue : displayValue}
           onChange={(event) => {
             onInputChange(event.target.value);
             openDropdown();
           }}
-          onFocus={() => !disabled && openDropdown()}
-          onBlur={onBlur}
+          onFocus={() => {
+            setFocused(true);
+            if (!disabled) openDropdown();
+          }}
+          onBlur={() => {
+            setFocused(false);
+            onBlur?.();
+          }}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}

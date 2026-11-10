@@ -54,6 +54,9 @@ interface FormProps {
    * second full-width bar right above the outer form's own Save/Cancel reads as a stacked
    * duplicate of it. */
   compactActions?: boolean;
+  /** Overrides the Save button's text (default: "Save <itemName>" when adding, "Save Changes"
+   * when editing). */
+  submitLabel?: string;
   /** Field ids to watch — onFieldsChange fires with the current value of just these fields
    * whenever any of them changes, letting a parent mirror a few live fields elsewhere (e.g. this
    * form's own State/County) without re-rendering on every keystroke across the whole form. */
@@ -109,6 +112,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     stateCountyReference = [],
     bare = false,
     compactActions = false,
+    submitLabel,
     watchFields,
     onFieldsChange,
   },
@@ -462,6 +466,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                   onChange={f.onChange}
                   onBlur={f.onBlur}
                   counties={counties}
+                  showCode={field.showCountyCode}
                   disabled={!hasState}
                   placeholder={
                     hasState
@@ -626,6 +631,11 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     );
   };
 
+  const saveButtonLabel = isSubmitting
+    ? "Saving..."
+    : submitLabel ??
+      (mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes");
+
   const formBody = (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -752,11 +762,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
             className="bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
           >
-            {isSubmitting
-              ? "Saving..."
-              : mode === "add"
-                ? `Save ${(config as any).itemName || config.title}`
-                : "Save Changes"}
+            {saveButtonLabel}
           </Button>
         </div>
       )}
@@ -768,11 +774,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
             className="flex-1 bg-purple-600 hover:bg-purple-700 cursor-pointer"
             onClick={handleSubmit(onSave)}
           >
-            {isSubmitting
-              ? "Saving..."
-              : mode === "add"
-                ? `Save ${(config as any).itemName || config.title}`
-                : "Save Changes"}
+            {saveButtonLabel}
           </Button>
           <Button
             variant="outline"

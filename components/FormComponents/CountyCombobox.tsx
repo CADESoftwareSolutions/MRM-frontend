@@ -2,6 +2,7 @@ import * as React from "react";
 import { Check } from "lucide-react";
 
 import type { CountyReference } from "@/hooks/useStateCountyReference";
+import { countyNameWithCode, normalizeCountyName } from "@/lib/stateCounty";
 import { cn } from "@/lib/utils";
 import { ComboboxBase } from "./ComboboxBase";
 
@@ -10,14 +11,13 @@ interface CountyComboboxProps {
   onChange: (value: string) => void;
   onBlur?: () => void;
   counties: CountyReference[];
+  /** Show the picked county with its FIPS code ("Gregg (183)") while the field isn't being edited. */
+  showCode?: boolean;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
   invalid?: boolean;
 }
-
-const normalizeCounty = (value: string) =>
-  value.toLowerCase().replace(/\s+(county|parish|borough|census area)$/i, "").trim();
 
 const countyLabel = (county: CountyReference) => county.fullName || county.name;
 
@@ -30,7 +30,7 @@ const fullFipsCode = (county: CountyReference) =>
     : countyFips(county);
 
 const filterCounties = (counties: CountyReference[], input: string) => {
-  const query = normalizeCounty(input);
+  const query = normalizeCountyName(input);
   const fipsQuery = input.trim();
   // Backend already returns counties alphabetically — capping this at 25 like the
   // scored/matched branch below made the initial no-query list look like it only had
@@ -39,8 +39,8 @@ const filterCounties = (counties: CountyReference[], input: string) => {
 
   const scored = counties
     .map((county) => {
-      const name = normalizeCounty(county.name);
-      const label = normalizeCounty(countyLabel(county));
+      const name = normalizeCountyName(county.name);
+      const label = normalizeCountyName(countyLabel(county));
       const fips = countyFips(county) ?? "";
       const fullFips = fullFipsCode(county) ?? "";
 
@@ -68,6 +68,7 @@ export const CountyCombobox: React.FC<CountyComboboxProps> = ({
   onChange,
   onBlur,
   counties,
+  showCode = false,
   disabled = false,
   placeholder = "Select county",
   className,
@@ -75,9 +76,15 @@ export const CountyCombobox: React.FC<CountyComboboxProps> = ({
 }) => {
   const filteredCounties = React.useMemo(() => filterCounties(counties, value), [counties, value]);
 
+  const displayValue = React.useMemo(
+    () => (showCode && value ? countyNameWithCode(counties, value) : undefined),
+    [showCode, value, counties],
+  );
+
   return (
     <ComboboxBase
       inputValue={value}
+      displayValue={displayValue}
       onInputChange={onChange}
       onBlur={onBlur}
       items={filteredCounties}
@@ -89,7 +96,7 @@ export const CountyCombobox: React.FC<CountyComboboxProps> = ({
       invalid={invalid}
       emptyMessage="No counties found"
       renderItem={(county, isActive, select) => {
-        const selected = normalizeCounty(county.name) === normalizeCounty(value);
+        const selected = normalizeCountyName(county.name) === normalizeCountyName(value);
         return (
           <button
             type="button"

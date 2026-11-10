@@ -11,6 +11,7 @@ import { showToastAtom } from "@/atoms/toastAtom";
 import tractsConfig from "@/config/tractsConfig";
 import { buildTractInput, tractDisplayLabel, TractOption } from "@/hooks/useTracts";
 import { useStateCountyReference } from "@/hooks/useStateCountyReference";
+import { formatCountyWithCode, formatStateWithCode } from "@/lib/stateCounty";
 import { CREATE_TRACT_MUTATION, UPDATE_TRACT_MUTATION } from "@/graphql/Tracts";
 import { executeGraphQL } from "@/lib/api";
 
@@ -153,11 +154,13 @@ const LegalDescriptionFormImpl = (
   const tractState = mode === "edit" ? (initialData?.stateCode || defaultState) : defaultState;
   const tractCounty = mode === "edit" ? (initialData?.countyName || defaultCounty) : defaultCounty;
 
-  // Full name for the read-only State line below ("Oregon", not "OR") — same reference data
-  // Basic Information's own State field already uses.
-  const stateName = useMemo(
-    () => stateCountyReference.find((s) => s.code === tractState)?.name || tractState || "—",
+  const stateLine = useMemo(
+    () => formatStateWithCode(stateCountyReference, tractState),
     [stateCountyReference, tractState],
+  );
+  const countyLine = useMemo(
+    () => formatCountyWithCode(stateCountyReference, tractState, tractCounty),
+    [stateCountyReference, tractState, tractCounty],
   );
 
   const persist = async (formData: Record<string, any>): Promise<boolean> => {
@@ -185,7 +188,8 @@ const LegalDescriptionFormImpl = (
           stateCode: tract.stateCode,
           countyName: tract.countyName,
         });
-        showToast(`"${savedLabel}" added as a tract`);
+        const tractNumber = `Tract #${id}`;
+        showToast(savedLabel === tractNumber ? `${tractNumber} added` : `${tractNumber} added (${savedLabel})`);
       }
       // Not awaited: the caller already has everything it needs from onSaved above, so the
       // card shouldn't sit open waiting on a full tract-list refetch just to close itself.
@@ -251,11 +255,11 @@ const LegalDescriptionFormImpl = (
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-purple-200 mb-1">State</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{stateName}</p>
+          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{stateLine}</p>
         </div>
         <div>
           <label className="block text-xs font-medium text-purple-200 mb-1">County</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{tractCounty || "—"}</p>
+          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{countyLine}</p>
         </div>
       </div>
 

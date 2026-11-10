@@ -31,6 +31,7 @@ const IntroSection = () => {
       style={{
         background:
           "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
+        backgroundAttachment: "fixed",
       }}
     >
       <h1 className="mb-4 max-w-5xl text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">

@@ -1,5 +1,5 @@
 import { TractOption } from "@/hooks/useTracts";
-import { TRACT_TYPE_LABELS, visibleLegalFieldsFor } from "./legalDescriptionFields";
+import { TRACT_TYPE_LABELS, legalFieldValue, visibleLegalFieldsFor } from "./legalDescriptionFields";
 
 const labelCls = "block text-xs font-medium text-purple-200 mb-1";
 
@@ -37,12 +37,12 @@ export const TractLegalSummary = ({ tract, isLight, columns = 3 }: TractLegalSum
         field.type === "textarea" ? (
           <div key={field.id} className={columns === 2 ? "col-span-2" : "col-span-3"}>
             <label className={labelCls}>{field.label}</label>
-            <p className={`text-sm whitespace-pre-wrap ${textCls}`}>{(tract as any)[field.id] || "—"}</p>
+            <p className={`text-sm whitespace-pre-wrap ${textCls}`}>{legalFieldValue(tract, field.id) || "—"}</p>
           </div>
         ) : (
           <div key={field.id}>
             <label className={labelCls}>{field.label}</label>
-            <p className={`text-sm ${textCls}`}>{(tract as any)[field.id] || "—"}</p>
+            <p className={`text-sm ${textCls}`}>{legalFieldValue(tract, field.id) || "—"}</p>
           </div>
         ),
       )}

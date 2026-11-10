@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useAtom } from "jotai";
 import { moduleViewAtom } from "../atoms/NavigationAtom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ModuleConfig } from "../config/contactsConfig";
 import {
   FETCH_ACQUISITIONS,
@@ -24,7 +24,7 @@ const transformAcquisition = (acquisition: any): Record<string, any> => ({
   notes: acquisition.notes || "",
 });
 
-const buildAcquisitionMutationVariables = (formData: Record<string, any>, accountId: number) => ({
+export const buildAcquisitionMutationVariables = (formData: Record<string, any>, accountId: number) => ({
   accountId,
   name: formData.name || null,
   acquisitionDate: formData.acquisitionDate || null,
@@ -32,9 +32,20 @@ const buildAcquisitionMutationVariables = (formData: Record<string, any>, accoun
   notes: formData.notes || null,
 });
 
+// Shared by the Acquisitions screen and the Deed form's acquisition picker, so the one
+// ["acquisitions"] cache entry they both read is always fetched the same way.
+export const acquisitionsQuery = queryOptions({
+  queryKey: ["acquisitions"],
+  queryFn: async () => {
+    const result = await executeGraphQL(FETCH_ACQUISITIONS);
+    return result.acquisitions as any[];
+  },
+});
+
+const SEARCH_FIELDS = ["name"];
+
 export const useAcquisitions = ({ config: _config, accountId }: UseAcquisitionsProps) => {
   const queryClient = useQueryClient();
-  const queryKey = ["acquisitions"];
   const [view, setView] = useAtom(moduleViewAtom);
   useEffect(() => () => setView("list"), []);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,17 +53,9 @@ export const useAcquisitions = ({ config: _config, accountId }: UseAcquisitionsP
   const [saveError, setSaveError] = useState<string | null>(null);
   const [pendingDeleteItem, setPendingDeleteItem] = useState<Record<string, any> | null>(null);
 
-  const { data: rawAcquisitions = [], isLoading } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const result = await executeGraphQL(FETCH_ACQUISITIONS);
-      return result.acquisitions as any[];
-    },
-  });
+  const { data: rawAcquisitions = [], isLoading } = useQuery(acquisitionsQuery);
 
   const acquisitions = useMemo(() => rawAcquisitions.map(transformAcquisition), [rawAcquisitions]);
-
-  const SEARCH_FIELDS = ["name"];
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return acquisitions;
@@ -62,7 +65,7 @@ export const useAcquisitions = ({ config: _config, accountId }: UseAcquisitionsP
     );
   }, [acquisitions, searchTerm]);
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: acquisitionsQuery.queryKey });
 
   const handleSave = async (formData: Record<string, any>) => {
     try {

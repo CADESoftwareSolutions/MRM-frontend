@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { FETCH_STATE_COUNTY_REFERENCE } from "@/graphql/ReferenceData";
 import { executeGraphQL } from "@/lib/api";
+import { stateNameWithCode } from "@/lib/stateCounty";
 
 export interface CountyReference {
   name: string;
@@ -43,7 +44,7 @@ export const useLocationFieldOptions = (stateFieldId: string = "stateCode") => {
         ? {
             [stateFieldId]: stateCountyReference.map((state) => ({
               value: state.code,
-              label: state.name,
+              label: stateNameWithCode(state),
             })),
           }
         : {},

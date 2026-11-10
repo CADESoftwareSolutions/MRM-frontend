@@ -12,6 +12,9 @@ const Header = () => {
       style={{
         background:
           "linear-gradient(135deg, #000000 0%, #1e1e3f 40%, #3c0f5f 100%)",
+        // Viewport-anchored so the header shows the same gradient as the page hero beneath it
+        // instead of squashing the whole gradient into its own 72px strip.
+        backgroundAttachment: "fixed",
       }}
     >
       <nav className="flex items-center justify-between px-6 py-4">

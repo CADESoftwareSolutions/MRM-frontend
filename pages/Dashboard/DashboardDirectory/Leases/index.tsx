@@ -130,7 +130,7 @@ const Leases = () => {
       setRecordationDraftKey((k) => k + 1);
     }
 
-    handleSave(formData, finalRecordation, tractsRef.current);
+    await handleSave(formData, finalRecordation, tractsRef.current);
   };
 
   return (

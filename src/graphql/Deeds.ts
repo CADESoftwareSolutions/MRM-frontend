@@ -13,10 +13,19 @@ export const FETCH_DEEDS = `
       stateCode
       countyName
       effectiveDate
-      consideration
       acres
       reservations
       notes
+      createdAt
+      acquisitionLinks {
+        id
+        acquisitionId
+        allocatedCost
+        acquisition {
+          id
+          name
+        }
+      }
       recordations {
         id
         stateCode
@@ -71,7 +80,6 @@ export const CREATE_DEED_MUTATION = `
     $stateCode: String
     $countyName: String
     $effectiveDate: Date
-    $consideration: Float
     $acres: Float
     $reservations: String
     $notes: String
@@ -86,7 +94,6 @@ export const CREATE_DEED_MUTATION = `
       stateCode: $stateCode
       countyName: $countyName
       effectiveDate: $effectiveDate
-      consideration: $consideration
       acres: $acres
       reservations: $reservations
       notes: $notes
@@ -107,7 +114,6 @@ export const UPDATE_DEED_MUTATION = `
     $stateCode: String
     $countyName: String
     $effectiveDate: Date
-    $consideration: Float
     $acres: Float
     $reservations: String
     $notes: String
@@ -122,7 +128,6 @@ export const UPDATE_DEED_MUTATION = `
       stateCode: $stateCode
       countyName: $countyName
       effectiveDate: $effectiveDate
-      consideration: $consideration
       acres: $acres
       reservations: $reservations
       notes: $notes
@@ -137,6 +142,40 @@ export const UPDATE_DEED_MUTATION = `
 export const DELETE_DEED_MUTATION = `
   mutation DeleteDeed($id: Int!) {
     deleteDeed(id: $id) {
+      success
+    }
+  }
+`;
+
+export const CREATE_DEED_ACQUISITION_MUTATION = `
+  mutation CreateDeedAcquisition(
+    $accountId: Int!
+    $deedId: Int!
+    $acquisitionId: Int!
+    $allocatedCost: Float
+  ) {
+    createDeedAcquisition(
+      accountId: $accountId
+      deedId: $deedId
+      acquisitionId: $acquisitionId
+      allocatedCost: $allocatedCost
+    ) {
+      deedAcquisition { id }
+    }
+  }
+`;
+
+export const UPDATE_DEED_ACQUISITION_MUTATION = `
+  mutation UpdateDeedAcquisition($id: Int!, $allocatedCost: Float) {
+    updateDeedAcquisition(id: $id, allocatedCost: $allocatedCost) {
+      deedAcquisition { id }
+    }
+  }
+`;
+
+export const DELETE_DEED_ACQUISITION_MUTATION = `
+  mutation DeleteDeedAcquisition($id: Int!) {
+    deleteDeedAcquisition(id: $id) {
       success
     }
   }

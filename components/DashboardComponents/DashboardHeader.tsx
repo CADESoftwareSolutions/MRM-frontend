@@ -34,9 +34,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ sidebarWidth }) => {
         credentials: "include",
       });
     } finally {
+      // Leave the dashboard before clearing: clearing while DashboardLayout is mounted refetches
+      // /profile, and its 401 handler's push to /login would override this one.
+      await router.push("/");
       queryClient.clear();
       setUserProfile(null);
-      router.push("/");
     }
   };
 

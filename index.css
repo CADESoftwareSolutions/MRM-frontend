@@ -150,6 +150,18 @@ textarea,
   background-color: rgb(147 51 234 / 0.15);
   color: rgb(88 28 135);
 }
+/* The check mark is text-current (select.tsx) so it stays white on the dark highlight;
+   light mode keeps the muted grey it always had. */
+.light-theme [data-slot="select-item-indicator"] svg,
+:root[data-theme="light"] [data-slot="select-item-indicator"] svg { color: var(--muted-foreground); }
+/* The scroll arrows on long lists otherwise inherit select-content's text-popover-foreground —
+   the light palette's near-black (.dark is never set), invisible on the dark popover. */
+[data-slot="select-scroll-up-button"],
+[data-slot="select-scroll-down-button"] { color: rgb(196 181 253); }
+.light-theme [data-slot="select-scroll-up-button"],
+.light-theme [data-slot="select-scroll-down-button"],
+:root[data-theme="light"] [data-slot="select-scroll-up-button"],
+:root[data-theme="light"] [data-slot="select-scroll-down-button"] { color: rgb(124 58 237); }
 
 /* Date picker (Popover + Calendar) — portals to <body> same as Select above, so it's themed
    via [data-slot="popover-content"] rather than a .light-theme ancestor. The cal-* classes

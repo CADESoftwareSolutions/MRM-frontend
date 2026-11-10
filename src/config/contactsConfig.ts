@@ -43,6 +43,8 @@ export interface FieldConfig {
   singleSelect?: boolean;
   /** For county-combobox: state field id used to choose the county option set. */
   countyStateField?: string;
+  /** For county-combobox: show the picked county with its FIPS code ("Gregg (183)") while the field isn't being edited. */
+  showCountyCode?: boolean;
   /** Opt-in: splits the section into independent left/right columns instead of the normal auto-flow grid. Every field in the section must set this for the split to apply. */
   layoutColumn?: "left" | "right";
   /** Opt-in: hides the section's uppercase header text (the border-top divider still shows). Set on any field in the section. */
@@ -63,6 +65,11 @@ export interface ModuleConfig {
   tabs: TabConfig[];
   fields: FieldConfig[];
   listFields: string[]; // Fields to show in list view
+  /** List header (and Columns picker) text per listFields id. Ids left out get a label derived from the id. */
+  listLabels?: Record<string, string>;
+  /** Bump when listFields changes. Each user's saved column choices are kept per version, so ones
+   * made against the old columns are dropped and the new defaults show instead. */
+  listColumnsVersion?: number;
 }
 
 // ============================================================================
@@ -305,6 +312,7 @@ export const locationFields = (
       gridColumn: "span 1",
       countyStateField: stateId,
       placeholder: "Select county",
+      showCountyCode: true,
     },
   ];
 };

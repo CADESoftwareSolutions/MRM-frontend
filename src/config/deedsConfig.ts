@@ -11,12 +11,28 @@ export const deedsConfig: ModuleConfig = {
     { id: "crossReferences", label: "Cross-References" },
     { id: "documents", label: "Documents" },
   ],
+  // blockNo/section/addedOn are list-only values derived in useDeeds.ts's transformDeed.
   listFields: [
-    "documentType",
+    "stateCode",
+    "countyName",
+    "blockNo",
+    "section",
     "grantor",
     "grantee",
-    "interestType",
+    "documentType",
+    "addedOn",
   ],
+  listLabels: {
+    stateCode: "State",
+    countyName: "County",
+    blockNo: "Block",
+    section: "Section",
+    grantor: "Grantor",
+    grantee: "Grantee",
+    documentType: "Doc Type",
+    addedOn: "Added On",
+  },
+  listColumnsVersion: 3,
   fields: [
     // ========== BASIC TAB — identification ==========
     // Deed # is the BE-assigned id, shown read-only — it isn't part of buildDeedMutationVariables
@@ -54,7 +70,16 @@ export const deedsConfig: ModuleConfig = {
     field.select(
       "interestType",
       "Interest Type",
-      ["Mineral", "Royalty", "Mineral and Royalty", "NPRI", "Undivided", "Surface", "Blanchard"],
+      [
+        "Mineral",
+        "Royalty",
+        "Mineral and Royalty",
+        "Mineral and Surface",
+        "NPRI",
+        "Undivided",
+        "Surface",
+        "Blanchard",
+      ],
       {
         required: true,
         tab: "basic",
@@ -118,11 +143,16 @@ export const deedsConfig: ModuleConfig = {
       placeholder: "0.0000",
     }),
 
-    field.number("consideration", "Consideration ($)", {
+    // Acquisition select + Cost ($), both rendered by AcquisitionPickerField. Cost is this deed's
+    // allocated share, stored on the deed↔acquisition link (allocatedCost), not on the deed itself.
+    {
+      id: "acquisition",
+      label: "Acquisition",
+      type: "custom" as const,
       tab: "basic",
       section: "acreage-details",
-      placeholder: "0.00",
-    }),
+      gridColumn: "span 1" as const,
+    },
 
     field.textarea("reservations", "Reservations/Burdens", {
       tab: "basic",

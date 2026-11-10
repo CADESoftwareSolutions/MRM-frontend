@@ -8,6 +8,13 @@ import { LeaseAttachmentsTab } from "../../../../components/FormComponents/Lease
 import { CrossReferencesTab } from "../../../../components/FormComponents/CrossReferencesTab";
 import { TractPickerField, TractPickerFieldHandle, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
 import {
+  AcquisitionPickerField,
+  AcquisitionLinkValue,
+  DeedAcquisitionLink,
+  EMPTY_ACQUISITION_LINK,
+  toAcquisitionLinkValue,
+} from "../../../../components/FormComponents/AcquisitionPickerField";
+import {
   MultiRecordationField,
   RecordationEntry,
   DraftRecordation,
@@ -27,6 +34,7 @@ const Deeds = () => {
   const [, setPageHeader] = useAtom(pageHeaderAtom);
   const [tracts, setTractsState] = useState<TractLinkEntry[]>([]);
   const [recordation, setRecordationState] = useState<RecordationEntry[]>([]);
+  const [acquisitionLink, setAcquisitionLink] = useState<AcquisitionLinkValue>(EMPTY_ACQUISITION_LINK);
   const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   // Mirror state into refs too: onSave below needs tracts/recordation's truly-current value
@@ -44,7 +52,7 @@ const Deeds = () => {
     setRecordationState(next);
   };
 
-  // The Recordation tab's own always-present "New Recordation" draft, mirrored up live via
+  // The Recordation tab's "New Recordation" draft (whenever it's open), mirrored up live via
   // onDraftChange — lets onSave below auto-commit it (as if "Add Recordation" were clicked) if
   // the user filled some of it in but saved the Deed itself without clicking that button.
   const pendingRecordationDraftRef = useRef<DraftRecordation | null>(null);
@@ -60,8 +68,8 @@ const Deeds = () => {
   // immediately instead of only after the next save+reload.
   const [liveLocation, setLiveLocation] = useState<{ stateCode?: string; countyName?: string }>({});
 
-  // Imperative handle onto the Legal Descriptions tab's always-present "New Legal Description"
-  // card — lets onSave below check/commit it the same way, before the Deed's own save proceeds.
+  // Imperative handle onto the Legal Descriptions tab's "New Legal Description" card (whenever
+  // it's open) — lets onSave below check/commit it the same way, before the Deed's own save proceeds.
   const tractPickerRef = useRef<TractPickerFieldHandle>(null);
   // Surfaced at the OUTER form level when that card (or an open "edit" one) fails validation —
   // its own error summary lives inside a `hidden` TabsContent whenever the user isn't on the
@@ -73,6 +81,9 @@ const Deeds = () => {
     view,
     loading,
     searchTerm,
+    stateFilter,
+    stateOptions,
+    sort,
     selectedItem,
     filteredData,
     availableTracts,
@@ -82,6 +93,8 @@ const Deeds = () => {
     confirmDelete,
     cancelDelete,
     setSearchTerm,
+    setStateFilter,
+    handleSortChange,
     handleAdd: _handleAdd,
     handleEdit: _handleEdit,
     handleSave,
@@ -108,6 +121,7 @@ const Deeds = () => {
   const handleAdd = () => {
     setTracts([]);
     setRecordation([]);
+    setAcquisitionLink(EMPTY_ACQUISITION_LINK);
     pendingRecordationDraftRef.current = null;
     setLiveLocation({});
     setLegalDescriptionBlockError(null);
@@ -117,6 +131,7 @@ const Deeds = () => {
   const handleEdit = (item: any) => {
     setTracts(item._tracts || []);
     setRecordation(item._recordation || []);
+    setAcquisitionLink(toAcquisitionLinkValue(item._acquisitionLinks?.[0]));
     pendingRecordationDraftRef.current = null;
     setLiveLocation({ stateCode: item.stateCode, countyName: item.countyName });
     setLegalDescriptionBlockError(null);
@@ -125,7 +140,7 @@ const Deeds = () => {
 
   const onSave = async (formData: any) => {
     setLegalDescriptionBlockError(null);
-    // If the Legal Descriptions tab's always-present add card has anything typed into it,
+    // If the Legal Descriptions tab's add card is open with anything typed into it,
     // commit it first (same flow its own Save button runs) and wait for that to fully settle
     // before saving the Deed, so an in-progress legal description never gets silently dropped.
     if (tractPickerRef.current?.hasAnyValue()) {
@@ -143,7 +158,7 @@ const Deeds = () => {
       }
     }
 
-    // Same idea for Recordation's always-present draft, but simpler — it's local data, not a
+    // Same idea for Recordation's open draft, but simpler — it's local data, not a
     // separate mutation, so "committing" it just means including it in this save's payload.
     let finalRecordation = recordationRef.current;
     const pendingDraft = pendingRecordationDraftRef.current;
@@ -160,7 +175,7 @@ const Deeds = () => {
       setRecordationDraftKey((k) => k + 1);
     }
 
-    handleSave(formData, finalRecordation, tractsRef.current);
+    await handleSave(formData, finalRecordation, tractsRef.current, acquisitionLink);
   };
 
   return (
@@ -188,6 +203,17 @@ const Deeds = () => {
               setSearchTerm={setSearchTerm}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              sort={sort}
+              onSortChange={handleSortChange}
+              filters={[
+                {
+                  id: "stateCode",
+                  value: stateFilter,
+                  onChange: setStateFilter,
+                  allLabel: "All states",
+                  options: stateOptions,
+                },
+              ]}
             />
           )}
 
@@ -210,6 +236,16 @@ const Deeds = () => {
                 setLiveLocation({ stateCode: values.stateCode, countyName: values.countyName })
               }
               customContent={{
+                acquisition: (
+                  <AcquisitionPickerField
+                    value={acquisitionLink}
+                    onChange={setAcquisitionLink}
+                    accountId={userProfile?.account?.id ?? 0}
+                    lockedAcquisitionIds={(selectedItem?._acquisitionLinks ?? [])
+                      .slice(1)
+                      .map((link: DeedAcquisitionLink) => link.acquisitionId)}
+                  />
+                ),
                 tracts: (
                   <TractPickerField
                     ref={tractPickerRef}

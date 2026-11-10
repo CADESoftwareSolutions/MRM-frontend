@@ -1,10 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowDown, ArrowUp, Edit, Lock, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { ModuleConfig } from "../../src/config/contactsConfig";
 import { useAtom } from "jotai";
 import { themeAtom } from "@/atoms/NavigationAtom";
+import { Z_INDEX } from "@/lib/zIndex";
+
+export interface ListSort {
+  column: string;
+  direction: "asc" | "desc";
+}
+
+export interface ListFilter {
+  id: string;
+  /** "" means unfiltered, shown as allLabel. */
+  value: string;
+  onChange: (value: string) => void;
+  allLabel: string;
+  options: string[];
+}
 
 interface ListProps {
   config: ModuleConfig;
@@ -14,7 +30,17 @@ interface ListProps {
   setSearchTerm: (term: string) => void;
   onEdit: (item: any) => void;
   onDelete: (item: any) => void;
+  /** Opt-in header sorting. List only draws clickable headers and the active column's arrow; the
+   * caller decides what each click changes and orders `data` itself. */
+  sort?: ListSort;
+  onSortChange?: (column: string) => void;
+  /** Opt-in dropdown filters beside the search box. The caller applies them to `data`. */
+  filters?: ListFilter[];
 }
+
+// Radix Select won't take "" as an item value (it's reserved for clearing back to the
+// placeholder), so the "all" choice needs a real one.
+const ALL_FILTER_VALUE = "__all__";
 
 const CLASSIFICATION_COLORS_DARK: Record<string, string> = {
   REV: "bg-green-500/20 text-green-300 border-green-400/30",
@@ -79,13 +105,19 @@ export const List: React.FC<ListProps> = ({
   setSearchTerm,
   onEdit,
   onDelete,
+  sort,
+  onSortChange,
+  filters,
 }) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
 
-  const storageKey = `mrm-columns-${config.name}`;
+  const storageKey = config.listColumnsVersion
+    ? `mrm-columns-${config.name}-v${config.listColumnsVersion}`
+    : `mrm-columns-${config.name}`;
   const widthKey = `mrm-colwidths-${config.name}`;
   const firstField = config.listFields[0];
+  const columnLabel = (col: string) => config.listLabels?.[col] ?? toLabel(col);
 
   const [visibleCols, setVisibleCols] = useState<string[]>([...config.listFields]);
   const [colWidths, setColWidths] = useState<Record<string, number>>(() => {
@@ -241,6 +273,48 @@ export const List: React.FC<ListProps> = ({
           />
         </div>
 
+        {filters?.map((filter) => (
+          <Select
+            key={filter.id}
+            value={filter.value || ALL_FILTER_VALUE}
+            onValueChange={(next) => filter.onChange(next === ALL_FILTER_VALUE ? "" : next)}
+          >
+            <SelectTrigger
+              className={`w-36 shrink-0 cursor-pointer ${
+                isLight
+                  ? "bg-white border-purple-200 text-gray-800"
+                  : "bg-white/5 border-purple-300/30 text-white"
+              }`}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              // Portals to <body>, so it needs its own layer to stay above the fixed app bar if
+              // it flips open upward.
+              style={{ zIndex: Z_INDEX.modalDropdown }}
+              className={`max-h-[300px] overflow-y-auto ${
+                isLight ? "bg-white border-purple-200" : "bg-[#1a1a2e] border-purple-300/30"
+              }`}
+              position="popper"
+              sideOffset={4}
+            >
+              {[ALL_FILTER_VALUE, ...filter.options].map((option) => (
+                <SelectItem
+                  key={option}
+                  value={option}
+                  className={`cursor-pointer ${
+                    isLight
+                      ? "text-gray-800"
+                      : "text-white hover:bg-purple-400/30 focus:bg-purple-400/30 data-[highlighted]:bg-purple-400/30"
+                  }`}
+                >
+                  {option === ALL_FILTER_VALUE ? filter.allLabel : option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ))}
+
         {/* Column picker */}
         <div className="relative shrink-0" ref={pickerRef}>
           <button
@@ -285,7 +359,7 @@ export const List: React.FC<ListProps> = ({
                   >
                     <span className="flex items-center gap-2">
                       {locked && <Lock className="w-3 h-3 opacity-50" />}
-                      {toLabel(col)}
+                      {columnLabel(col)}
                     </span>
                     <span
                       className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
@@ -327,11 +401,34 @@ export const List: React.FC<ListProps> = ({
                   ref={(el) => {
                     thRefs.current[col] = el;
                   }}
-                  className={`relative text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden ${
+                  aria-sort={sort?.column === col ? (sort.direction === "asc" ? "ascending" : "descending") : undefined}
+                  className={`relative text-left ${onSortChange ? "" : "px-5 py-3"} text-xs font-semibold uppercase tracking-wider whitespace-nowrap overflow-hidden ${
                     isLight ? "text-gray-500" : "text-purple-200/80"
                   }`}
                 >
-                  {toLabel(col)}
+                  {onSortChange ? (
+                    // The resize handle below is this button's sibling, not its child, so a click
+                    // or drag that starts on the handle never reaches onSortChange.
+                    <button
+                      type="button"
+                      onClick={() => onSortChange(col)}
+                      className={`flex w-full items-center gap-1.5 px-5 py-3 uppercase cursor-pointer transition-colors ${
+                        sort?.column === col
+                          ? isLight ? "text-purple-700" : "text-white"
+                          : isLight ? "hover:text-purple-700" : "hover:text-white"
+                      }`}
+                    >
+                      <span className="truncate">{columnLabel(col)}</span>
+                      {sort?.column === col &&
+                        (sort.direction === "asc" ? (
+                          <ArrowUp className="w-3 h-3 shrink-0" />
+                        ) : (
+                          <ArrowDown className="w-3 h-3 shrink-0" />
+                        ))}
+                    </button>
+                  ) : (
+                    columnLabel(col)
+                  )}
                   <div
                     onMouseDown={(e) => startResize(col, e)}
                     className="absolute right-0 top-0 h-full w-2 cursor-col-resize flex items-center justify-center group"
