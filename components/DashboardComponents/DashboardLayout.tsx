@@ -49,8 +49,12 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   // pushing the route you're already on does nothing — reset the view to get back to the list.
   // asPath, not pathname: next.config.js rewrites e.g. /Dashboard/deeds to
   // /Dashboard/DashboardDirectory/Deeds, and pathname is the rewritten page path.
+  const currentPath = router.asPath.split(/[?#]/)[0].replace(/(.)\/$/, "$1");
+  const isCurrentRoute = (route: string) =>
+    currentPath.toLowerCase() === route.toLowerCase() || router.pathname === route;
+
   const navigate = (route: string) => {
-    if (router.asPath.split(/[?#]/)[0] === route) setModuleView("list");
+    if (isCurrentRoute(route)) setModuleView("list");
     else router.push(route);
   };
 
@@ -102,7 +106,12 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       type: "group",
       text: "Accounting",
       icon: FileText,
-      items: [{ text: "Checks", route: "/Dashboard/checks" }],
+      items: [
+        { text: "Chart of Accounts", route: "/Dashboard/chart-of-accounts" },
+        { text: "Revenue Checks", route: "/Dashboard/revenue-checks" },
+        { text: "A/P Invoices", route: "/Dashboard/ap-invoices" },
+        { text: "Pay Bills", route: "/Dashboard/pay-bills" },
+      ],
     },
     {
       type: "link",
@@ -203,7 +212,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
           {menuItems.map((group) => {
             const Icon = group.icon;
             const isActive =
-              group.type === "link" && router.pathname === group.route;
+              group.type === "link" && isCurrentRoute(group.route!);
 
             const navText = isLight ? "text-purple-900" : "text-white";
             const navHover = isLight
@@ -285,7 +294,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                           variant="ghost"
                           onClick={() => navigate(subItem.route)}
                           className={`w-full justify-start h-9 text-sm cursor-pointer px-4 ${subText} ${navHover} ${
-                            router.pathname === subItem.route ? subActive : ""
+                            isCurrentRoute(subItem.route) ? subActive : ""
                           }`}
                         >
                           {subItem.text}

@@ -35,11 +35,11 @@ const NewUserDashboard: React.FC<NewUserDashboardProps> = () => {
   const onboardingSteps: OnboardingStep[] = [
     {
       icon: CheckSquare,
-      title: "Upload Your First Check",
+      title: "Record Your First Revenue Check",
       description:
-        "Scan and upload check images to track payments and deposits automatically.",
-      action: "Upload Check",
-      route: "/Dashboard/DashboardDirectory/Checks",
+        "Enter or import a check from an operator and code its taxes and deducts.",
+      action: "Enter Check",
+      route: "/Dashboard/revenue-checks",
       color: "text-pink-500",
       bgColor: "bg-pink-500/10",
     },

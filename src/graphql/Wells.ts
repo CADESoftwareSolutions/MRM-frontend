@@ -1,3 +1,18 @@
+export const FETCH_WELL_OPTIONS = `
+  query {
+    wells {
+      id
+      name
+      leaseName
+      wellNumber
+      apiNumber
+      operatorName
+      stateCode
+      countyName
+    }
+  }
+`;
+
 export const FETCH_WELLS = `
   query {
     wells {

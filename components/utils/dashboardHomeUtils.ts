@@ -179,7 +179,7 @@ export const alerts = [
     detail: "Pioneer Natural Resources",
     time: "2 hours ago",
     amount: "$2,500",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/revenue-checks",
     iconColor: "bg-pink-500/20 text-pink-400",
   },
   {
@@ -197,7 +197,7 @@ export const alerts = [
     detail: "Anadarko Petroleum",
     time: "1 day ago",
     amount: "$5,200",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/ap-invoices",
     iconColor: "bg-amber-500/20 text-amber-400",
   },
   {
@@ -223,12 +223,12 @@ export const quickAccess: QuickAccessItem[] = [
   {
     icon: CheckSquare,
     label: "Process Revenue Checks",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/revenue-checks",
   },
   {
     icon: CreditCard,
     label: "Process AP Payments",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/pay-bills",
   },
   {
     split: [
