@@ -8,6 +8,7 @@ const nextConfig = {
       { source: "/Dashboard/contacts",      destination: "/Dashboard/DashboardDirectory/Contacts" },
       { source: "/Dashboard/leases",        destination: "/Dashboard/DashboardDirectory/Leases" },
       { source: "/Dashboard/chart-of-accounts", destination: "/Dashboard/DashboardDirectory/ChartOfAccounts" },
+      { source: "/Dashboard/revenue-check-input", destination: "/Dashboard/DashboardDirectory/RevenueCheckInput" },
       { source: "/Dashboard/revenue-checks",    destination: "/Dashboard/DashboardDirectory/RevenueChecks" },
       { source: "/Dashboard/ap-invoices",       destination: "/Dashboard/DashboardDirectory/APInvoices" },
       { source: "/Dashboard/pay-bills",         destination: "/Dashboard/DashboardDirectory/PayBills" },

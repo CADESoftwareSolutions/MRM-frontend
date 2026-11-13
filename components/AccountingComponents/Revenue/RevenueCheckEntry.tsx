@@ -83,7 +83,7 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const usePageHeader = (subtitle: string) => {
   const setPageHeader = useSetAtom(pageHeaderAtom);
   useEffect(() => {
-    setPageHeader({ title: "Revenue Checks", subtitle });
+    setPageHeader({ title: "Revenue Check Input", subtitle });
   }, [setPageHeader, subtitle]);
   useEffect(() => () => setPageHeader({}), [setPageHeader]);
 };

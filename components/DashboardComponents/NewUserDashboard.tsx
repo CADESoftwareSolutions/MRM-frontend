@@ -39,7 +39,7 @@ const NewUserDashboard: React.FC<NewUserDashboardProps> = () => {
       description:
         "Enter or import a check from an operator and code its taxes and deducts.",
       action: "Enter Check",
-      route: "/Dashboard/revenue-checks",
+      route: "/Dashboard/revenue-check-input",
       color: "text-pink-500",
       bgColor: "bg-pink-500/10",
     },

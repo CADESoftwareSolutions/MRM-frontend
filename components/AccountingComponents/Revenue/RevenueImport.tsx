@@ -81,7 +81,7 @@ export const RevenueImport = ({ onCancel, onDone }: RevenueImportProps) => {
   const firstStep = useRef(true);
 
   useEffect(() => {
-    setPageHeader({ title: "Revenue Checks", subtitle: "Import check detail" });
+    setPageHeader({ title: "Revenue Check Input", subtitle: "Import check detail" });
     return () => setPageHeader({});
   }, [setPageHeader]);
 
