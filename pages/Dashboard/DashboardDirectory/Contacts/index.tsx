@@ -8,10 +8,19 @@ import { ContactListToolbar } from "../../../../components/FormComponents/Contac
 import { useContactListRows } from "../../../../components/FormComponents/ContactList/useContactListRows";
 import { useContactListView } from "../../../../components/FormComponents/ContactList/useContactListView";
 import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmModal";
-import { MultiAddressField, AddressEntry } from "../../../../components/FormComponents/MultiAddressField";
-import { MultiPhoneField, PhoneEntry } from "../../../../components/FormComponents/MultiPhoneField";
+import {
+  MultiAddressField,
+  AddressEntry,
+} from "../../../../components/FormComponents/MultiAddressField";
+import {
+  MultiPhoneField,
+  PhoneEntry,
+} from "../../../../components/FormComponents/MultiPhoneField";
 import { ContactAuditLine } from "../../../../components/FormComponents/ContactRecord/ContactAuditLine";
-import { NotificationRecap, RecapLiveValues } from "../../../../components/FormComponents/ContactRecord/NotificationRecap";
+import {
+  NotificationRecap,
+  RecapLiveValues,
+} from "../../../../components/FormComponents/ContactRecord/NotificationRecap";
 import { CommentLog } from "../../../../components/FormComponents/ContactRecord/CommentLog";
 import { ContactPersonCard } from "../../../../components/FormComponents/ContactRecord/ContactPersonCard";
 import { CustomClassificationAddon } from "../../../../components/FormComponents/ContactRecord/CustomClassificationAddon";
@@ -23,7 +32,10 @@ import { W9UploadAddon } from "../../../../components/FormComponents/ContactReco
 import { MinimumPaymentField } from "../../../../components/FormComponents/ContactRecord/MinimumPaymentField";
 import { TaxRestrictedBanner } from "../../../../components/FormComponents/ContactRecord/TaxRestrictedBanner";
 import { TaxIdAccessLog } from "../../../../components/FormComponents/ContactRecord/TaxIdAccessLog";
-import { describeTaxChanges, taxIdChangeKind } from "../../../../components/FormComponents/ContactRecord/taxChanges";
+import {
+  describeTaxChanges,
+  taxIdChangeKind,
+} from "../../../../components/FormComponents/ContactRecord/taxChanges";
 import { VendorInfoBanner } from "../../../../components/FormComponents/ContactRecord/VendorInfoBanner";
 import { VendorPayOptions } from "../../../../components/FormComponents/ContactRecord/VendorPayOptions";
 import { VendorRemitToSelect } from "../../../../components/FormComponents/ContactRecord/VendorRemitToSelect";
@@ -55,19 +67,37 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { NettingEntry } from "../../../../components/FormComponents/NettingTab";
 import { useAtom, useSetAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
-import { moduleViewAtom, pageHeaderAtom, themeAtom } from "@/atoms/NavigationAtom";
+import {
+  moduleViewAtom,
+  pageHeaderAtom,
+  themeAtom,
+} from "@/atoms/NavigationAtom";
 
 const DEFAULT_ADDRESSES: AddressEntry[] = [
-  { type: "Physical", address: "", addressLine2: "", city: "", state: "", zip: "" },
+  {
+    type: "Physical",
+    address: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    zip: "",
+  },
 ];
 
 const DEFAULT_PHONES: PhoneEntry[] = [{ type: "Home", number: "" }];
 
-const BUILT_IN_CLASSIFICATIONS = (contactsConfig.fields.find((f) => f.id === "classifications")?.options ??
-  []) as string[];
+const BUILT_IN_CLASSIFICATIONS = (contactsConfig.fields.find(
+  (f) => f.id === "classifications",
+)?.options ?? []) as string[];
 
 // Read live by the recap (Name & Address) and the Vendor Snapshot.
-const LIVE_WATCH_FIELDS = ["w9OnFile", "send1099", "form1099Type", "ownerNettingApplies", "type1099"];
+const LIVE_WATCH_FIELDS = [
+  "w9OnFile",
+  "send1099",
+  "form1099Type",
+  "ownerNettingApplies",
+  "type1099",
+];
 type LiveValues = RecapLiveValues & { type1099?: string };
 
 const AP_ACCOUNT_CATEGORIES: AccountCategory[] = ["LIABILITY"];
@@ -150,9 +180,16 @@ const Contacts = () => {
     accountId: userProfile?.account?.id ?? 0,
   });
 
-  const { view: listView, setView: setListView, ready: listViewReady } = useContactListView(userProfile?.user?.id);
+  const {
+    view: listView,
+    setView: setListView,
+    ready: listViewReady,
+  } = useContactListView(userProfile?.user?.id);
   // Only the list needs the per-row extras, so nothing is read for them while a record is open.
-  const contactList = useContactListRows({ rows: view === "list" ? filteredData : NO_ROWS, allRows: data });
+  const contactList = useContactListRows({
+    rows: view === "list" ? filteredData : NO_ROWS,
+    allRows: data,
+  });
 
   const partyKey = selectedItem?.id != null ? String(selectedItem.id) : null;
   const partyId = partyKey ? parseInt(partyKey, 10) : null;
@@ -167,13 +204,19 @@ const Contacts = () => {
   } = useContactDetails(partyKey);
   const recap = useRecapWithMoneyFacts(
     partyKey,
-    ((selectedItem?.classifications as string[] | undefined) ?? []).includes("REV"),
+    ((selectedItem?.classifications as string[] | undefined) ?? []).includes(
+      "REV",
+    ),
     details.recap,
   );
-  const { attachments } = useFileUpload({ entityType: "party", entityId: partyId });
+  const { attachments } = useFileUpload({
+    entityType: "party",
+    entityId: partyId,
+  });
   const { settings: companySettings } = useCompanySettings();
   // A contact's A/P vendor id is its party id.
-  const { defaults: vendorDefaults, loading: vendorDefaultsLoading } = useVendorDefaults(partyKey);
+  const { defaults: vendorDefaults, loading: vendorDefaultsLoading } =
+    useVendorDefaults(partyKey);
   const queueVendorDefaults = useQueuedVendorDefaultsSave();
   const { getAccount } = useChartOfAccounts();
   const accountLabel = (id: string) => {
@@ -192,19 +235,23 @@ const Contacts = () => {
             ...pickMockedFormValues(details),
             ...vendorFormValues(vendorDefaults, {
               pay: selectedItem.pay,
-              duplicateInvoiceValidation: selectedItem.duplicateInvoiceValidation,
+              duplicateInvoiceValidation:
+                selectedItem.duplicateInvoiceValidation,
               form1099Type: details.form1099Type,
             }),
           }
         : vendorFormValues(vendorDefaults),
     [view, selectedItem, details, vendorDefaults],
   );
-  const recordLoading = view === "edit" && (detailsLoading || vendorDefaultsLoading);
+  const recordLoading =
+    view === "edit" && (detailsLoading || vendorDefaultsLoading);
   // The Form reports its live values from an effect, so until then show the loaded ones rather
   // than "Missing" / "Not set".
   const recapLive = useMemo<LiveValues>(
     () => ({
-      ...Object.fromEntries(LIVE_WATCH_FIELDS.map((id) => [id, initialFormValues[id]])),
+      ...Object.fromEntries(
+        LIVE_WATCH_FIELDS.map((id) => [id, initialFormValues[id]]),
+      ),
       ...liveValues,
     }),
     [initialFormValues, liveValues],
@@ -230,7 +277,9 @@ const Contacts = () => {
     if (view === "edit" && selectedItem) {
       setPageHeader({
         title: "Contacts",
-        subtitle: [selectedItem.name, selectedItem.nameId].filter(Boolean).join(" · "),
+        subtitle: [selectedItem.name, selectedItem.nameId]
+          .filter(Boolean)
+          .join(" · "),
       });
     } else if (view === "add") {
       setPageHeader({ title: "Contacts", subtitle: "New contact" });
@@ -268,7 +317,7 @@ const Contacts = () => {
 
   const onSave = async (formData: any) => {
     const anyInvalid = addressesRef.current.some(
-      (a) => !a.address || !a.city || !a.state
+      (a) => !a.address || !a.city || !a.state,
     );
     if (anyInvalid) {
       setShowAddressValidation(true);
@@ -279,24 +328,45 @@ const Contacts = () => {
     const isNew = view === "add";
     const before: Record<string, any> = isNew ? {} : initialFormValues;
     const addressTypes = addressesRef.current.map((a) => a.type);
-    const isVendor = ((formData.classifications as string[] | undefined) ?? []).includes("VENDOR");
+    const isVendor = (
+      (formData.classifications as string[] | undefined) ?? []
+    ).includes("VENDOR");
     // A new contact's vendor tab started from the defaults, so only the user's own picks count.
-    const vendorBeforeTypes = isNew ? addressTypes : addressesFromItem(selectedItem).map((a) => a.type);
+    const vendorBeforeTypes = isNew
+      ? addressTypes
+      : addressesFromItem(selectedItem).map((a) => a.type);
     const autoComments: AutoComment[] = [
-      ...(isNew ? [] : describeAddressChanges(addressesFromItem(selectedItem), addressesRef.current)),
+      ...(isNew
+        ? []
+        : describeAddressChanges(
+            addressesFromItem(selectedItem),
+            addressesRef.current,
+          )),
       ...describeTaxChanges(before, formData),
       ...(isVendor
         ? describeVendorChanges(
-            vendorDisplayValues(initialFormValues, vendorBeforeTypes, accountLabel),
+            vendorDisplayValues(
+              initialFormValues,
+              vendorBeforeTypes,
+              accountLabel,
+            ),
             vendorDisplayValues(formData, addressTypes, accountLabel),
             isNew,
           )
         : []),
     ];
     const taxIdChange = taxIdChangeKind(before.taxId, formData.taxId);
-    const savedId = await handleSave(formData, addressesRef.current, phonesRef.current);
+    const savedId = await handleSave(
+      formData,
+      addressesRef.current,
+      phonesRef.current,
+    );
     if (savedId != null) {
-      if (isVendor) queueVendorDefaults(String(savedId), vendorDefaultsPatch(formData, addressTypes));
+      if (isVendor)
+        queueVendorDefaults(
+          String(savedId),
+          vendorDefaultsPatch(formData, addressTypes),
+        );
       await recordSave(String(savedId), {
         isNew,
         autoComments,
@@ -307,7 +377,9 @@ const Contacts = () => {
   };
 
   const rawParty = selectedItem?._rawData;
-  const legacyNote = rawParty?.notes ? { text: rawParty.notes, createdAt: rawParty.createdAt } : null;
+  const legacyNote = rawParty?.notes
+    ? { text: rawParty.notes, createdAt: rawParty.createdAt }
+    : null;
 
   return (
     <DashboardLayout>
@@ -350,10 +422,14 @@ const Contacts = () => {
             </>
           )}
 
-          {view === "import" && <ContactImport onClose={() => setModuleView("list")} />}
+          {view === "import" && (
+            <ContactImport onClose={() => setModuleView("list")} />
+          )}
 
           {recordLoading && (
-            <p className="py-10 text-center text-sm text-white/70">Loading contact…</p>
+            <p className="py-10 text-center text-sm text-white/70">
+              Loading contact…
+            </p>
           )}
 
           {(view === "add" || (view === "edit" && !recordLoading)) && (
@@ -372,7 +448,10 @@ const Contacts = () => {
               onDeleteContact={handleDeleteContact}
               nettingEntries={nettingEntries}
               onNettingChange={setNettingEntries}
-              allParties={filteredData.map((p: any) => ({ id: String(p.id), name: p.name }))}
+              allParties={filteredData.map((p: any) => ({
+                id: String(p.id),
+                name: p.name,
+              }))}
               activeTab={activeTab}
               onActiveTabChange={setActiveTab}
               headerContent={
@@ -403,7 +482,10 @@ const Contacts = () => {
                     partyId={partyId}
                     isLight={isLight}
                     onUploaded={(fileName) =>
-                      addComment(`W-9 uploaded: ${fileName}.`, { auto: true, category: "tax" })
+                      addComment(`W-9 uploaded: ${fileName}.`, {
+                        auto: true,
+                        category: "tax",
+                      })
                     }
                   />
                 ),
@@ -426,12 +508,23 @@ const Contacts = () => {
                     onChange={onChange}
                     onBlur={onBlur}
                     invalid={invalid}
-                    companyDefault={companySettings?.minimumPaymentAmount ?? null}
-                    savedValue={view === "edit" ? selectedItem?.minPaymentAmount : undefined}
+                    companyDefault={
+                      companySettings?.minimumPaymentAmount ?? null
+                    }
+                    savedValue={
+                      view === "edit"
+                        ? selectedItem?.minPaymentAmount
+                        : undefined
+                    }
                   />
                 ),
                 pay: ({ value, onChange, onBlur }) => (
-                  <VendorPayOptions value={value} onChange={onChange} onBlur={onBlur} isLight={isLight} />
+                  <VendorPayOptions
+                    value={value}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                    isLight={isLight}
+                  />
                 ),
                 apAccountId: ({ value, onChange, onBlur, invalid }) => (
                   <AccountPicker
@@ -443,7 +536,12 @@ const Contacts = () => {
                     aria-label="A/P account"
                   />
                 ),
-                defaultExpenseAccountId: ({ value, onChange, onBlur, invalid }) => (
+                defaultExpenseAccountId: ({
+                  value,
+                  onChange,
+                  onBlur,
+                  invalid,
+                }) => (
                   <AccountPicker
                     value={value || null}
                     onChange={(id) => onChange(id)}
@@ -469,7 +567,8 @@ const Contacts = () => {
                 vendor: <VendorInfoBanner isLight={isLight} />,
               }}
               externalErrors={
-                showAddressValidation && addresses.some((a) => !a.address || !a.city || !a.state)
+                showAddressValidation &&
+                addresses.some((a) => !a.address || !a.city || !a.state)
                   ? { basic: ["Each address needs a street, city and state."] }
                   : undefined
               }
@@ -497,10 +596,17 @@ const Contacts = () => {
                     <CommentLog
                       comments={details.comments}
                       legacyNote={legacyNote}
-                      onAdd={partyKey ? (text) => addComment(text, { category: "tax" }) : undefined}
+                      onAdd={
+                        partyKey
+                          ? (text) => addComment(text, { category: "tax" })
+                          : undefined
+                      }
                       filterCategory="tax"
                     />
-                    <TaxIdAccessLog entries={details.taxIdAccessLog} saved={partyKey != null} />
+                    <TaxIdAccessLog
+                      entries={details.taxIdAccessLog}
+                      saved={partyKey != null}
+                    />
                   </>
                 ),
                 vendor: (
@@ -514,12 +620,21 @@ const Contacts = () => {
                 ),
               }}
               tabContent={{
-                documents: activeTab === "documents" ? <ContactDocumentsTab partyId={partyId} isLight={isLight} /> : null,
+                documents:
+                  activeTab === "documents" ? (
+                    <ContactDocumentsTab partyId={partyId} isLight={isLight} />
+                  ) : null,
                 linked: (
-                  <LinkedRecordsTab records={details.linkedRecords} saved={partyId != null} isLight={isLight} />
+                  <LinkedRecordsTab
+                    records={details.linkedRecords}
+                    saved={partyId != null}
+                    isLight={isLight}
+                  />
                 ),
               }}
-              tabBadges={{ documents: attachments.length > 0 ? attachments.length : null }}
+              tabBadges={{
+                documents: attachments.length > 0 ? attachments.length : null,
+              }}
               customContent={{
                 addresses: (
                   <MultiAddressField
@@ -533,10 +648,7 @@ const Contacts = () => {
                     <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
                       Phone Numbers
                     </Label>
-                    <MultiPhoneField
-                      value={phones}
-                      onChange={setPhones}
-                    />
+                    <MultiPhoneField value={phones} onChange={setPhones} />
                   </div>
                 ),
                 contactPerson: (
@@ -553,7 +665,11 @@ const Contacts = () => {
                     bare
                     comments={details.comments}
                     legacyNote={legacyNote}
-                    onAdd={partyKey ? (text) => addComment(text, { category: "vendor" }) : undefined}
+                    onAdd={
+                      partyKey
+                        ? (text) => addComment(text, { category: "vendor" })
+                        : undefined
+                    }
                     filterCategory="vendor"
                   />
                 ),

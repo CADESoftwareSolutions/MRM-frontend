@@ -94,7 +94,7 @@ const UserSettings = () => {
 
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs flex items-center gap-1">
+                      <Label className="form-field-label font-semibold mb-1 text-xs flex items-center gap-1">
                         First Name <span className="text-red-500 font-bold">*</span>
                       </Label>
                       <Input
@@ -104,7 +104,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs flex items-center gap-1">
+                      <Label className="form-field-label font-semibold mb-1 text-xs flex items-center gap-1">
                         Last Name <span className="text-red-500 font-bold">*</span>
                       </Label>
                       <Input
@@ -114,7 +114,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs flex items-center gap-1">
+                      <Label className="form-field-label font-semibold mb-1 text-xs flex items-center gap-1">
                         <Mail className="w-3 h-3" /> Email Address <span className="text-red-500 font-bold">*</span>
                       </Label>
                       <Input
@@ -125,7 +125,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs flex items-center gap-1">
+                      <Label className="form-field-label font-semibold mb-1 text-xs flex items-center gap-1">
                         <Phone className="w-3 h-3" /> Phone Number
                       </Label>
                       <Input
@@ -136,7 +136,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs">Job Title</Label>
+                      <Label className="form-field-label font-semibold mb-1 text-xs">Job Title</Label>
                       <Input
                         placeholder="Land Manager"
                         defaultValue="Land Manager"
@@ -144,7 +144,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs flex items-center gap-1">
+                      <Label className="form-field-label font-semibold mb-1 text-xs flex items-center gap-1">
                         <Building2 className="w-3 h-3" /> Company Name
                       </Label>
                       <Input
@@ -154,7 +154,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs">Bio</Label>
+                      <Label className="form-field-label font-semibold mb-1 text-xs">Bio</Label>
                       <Textarea
                         placeholder="Tell us about yourself..."
                         rows={2}
@@ -183,7 +183,7 @@ const UserSettings = () => {
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold text-purple-100">Change Password</h3>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs">Current Password</Label>
+                      <Label className="form-field-label font-semibold mb-1 text-xs">Current Password</Label>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
@@ -200,7 +200,7 @@ const UserSettings = () => {
                       </div>
                     </div>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs">New Password</Label>
+                      <Label className="form-field-label font-semibold mb-1 text-xs">New Password</Label>
                       <Input
                         type="password"
                         placeholder="••••••••"
@@ -208,7 +208,7 @@ const UserSettings = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-purple-100 font-semibold mb-1 text-xs">Confirm New Password</Label>
+                      <Label className="form-field-label font-semibold mb-1 text-xs">Confirm New Password</Label>
                       <Input
                         type="password"
                         placeholder="••••••••"

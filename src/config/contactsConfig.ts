@@ -53,7 +53,7 @@ export interface FieldConfig {
   singleSelect?: boolean;
   /** For county-combobox: state field id used to choose the county option set. */
   countyStateField?: string;
-  /** For county-combobox: show the picked county with its FIPS code ("Gregg (183)") while the field isn't being edited. */
+  /** For county-combobox: show the picked county with its FIPS code ("389 - Reeves County") while the field isn't being edited. */
   showCountyCode?: boolean;
   /** Opt-in: splits the section into independent left/right columns instead of the normal auto-flow grid. Every field in the section must set this for the split to apply. */
   layoutColumn?: "left" | "right";

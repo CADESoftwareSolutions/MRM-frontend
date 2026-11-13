@@ -79,7 +79,10 @@ interface FormProps {
   onActiveTabChange?: (tabId: string) => void;
   /** Extra controls rendered with a field, keyed by field id, given the field's live value and
    * setter. A multi-badge field renders it at the end of its badge row; other types below the input. */
-  fieldAddons?: Record<string, (field: { value: any; onChange: (value: any) => void }) => React.ReactNode>;
+  fieldAddons?: Record<
+    string,
+    (field: { value: any; onChange: (value: any) => void }) => React.ReactNode
+  >;
   /** Replaces a field's input control, keyed by field id. The label, help text, validation rules
    * and error message stay the Form's. */
   fieldRenderers?: Record<string, (field: FieldRenderProps) => React.ReactNode>;
@@ -177,7 +180,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     return acc;
   }, {});
 
-  const [internalActiveTab, setInternalActiveTab] = React.useState(config.tabs[0].id);
+  const [internalActiveTab, setInternalActiveTab] = React.useState(
+    config.tabs[0].id,
+  );
   const activeTab = controlledActiveTab ?? internalActiveTab;
   const setActiveTab = (tabId: string) => {
     if (controlledActiveTab === undefined) setInternalActiveTab(tabId);
@@ -203,7 +208,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
   // Editable field ids only — "custom" (e.g. nested TractPickerField/MultiRecordationField
   // content) and "readonly" (e.g. Deed #) fields aren't something a user "filled in" here.
   const editableFieldIds = new Set(
-    config.fields.filter((f) => f.type !== "custom" && f.type !== "readonly").map((f) => f.id),
+    config.fields
+      .filter((f) => f.type !== "custom" && f.type !== "readonly")
+      .map((f) => f.id),
   );
 
   React.useImperativeHandle(ref, () => ({
@@ -230,7 +237,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
 
   // Key off the watched fields' actual values, not a fresh watchFields
   // array reference, so this only fires when one of those specific values really changes.
-  const watchFieldsKey = watchFields ? watchFields.map((f) => watchedValues[f]).join("\u0000") : undefined;
+  const watchFieldsKey = watchFields
+    ? watchFields.map((f) => watchedValues[f]).join("\u0000")
+    : undefined;
   React.useEffect(() => {
     if (!watchFields || !onFieldsChange) return;
     onFieldsChange(
@@ -243,11 +252,15 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
   }, [watchFieldsKey]);
 
   const autoFillFields = config.fields.filter((f) => f.autoFill);
-  const autoFillSourceKey = autoFillFields.map((f) => watchedValues[f.autoFill!.from]).join("\u0000");
+  const autoFillSourceKey = autoFillFields
+    .map((f) => watchedValues[f.autoFill!.from])
+    .join("\u0000");
   // Seeded with the loaded values so opening a record never rewrites them; only a later change
   // to the source field fills anything.
   const autoFillPrevSources = React.useRef<Record<string, any>>(
-    Object.fromEntries(autoFillFields.map((f) => [f.id, watchedValues[f.autoFill!.from]])),
+    Object.fromEntries(
+      autoFillFields.map((f) => [f.id, watchedValues[f.autoFill!.from]]),
+    ),
   );
   React.useEffect(() => {
     autoFillFields.forEach((f) => {
@@ -260,9 +273,13 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
       if (next === undefined) return;
       const current = watchedValues[f.id];
       // Still following the old source value (or never set) means the user hasn't overridden it.
-      const userOverrode = !isEmptyValue(current) && current !== derive(prevSource);
+      const userOverrode =
+        !isEmptyValue(current) && current !== derive(prevSource);
       if (!userOverrode && current !== next) {
-        setValue(f.id, next, { shouldDirty: true, shouldValidate: isSubmitted });
+        setValue(f.id, next, {
+          shouldDirty: true,
+          shouldValidate: isSubmitted,
+        });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,7 +288,10 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
   const isAutoFilled = (field: FieldConfig) => {
     if (!field.autoFill) return false;
     const value = watchedValues[field.id];
-    return !isEmptyValue(value) && value === field.autoFill.value(watchedValues[field.autoFill.from]);
+    return (
+      !isEmptyValue(value) &&
+      value === field.autoFill.value(watchedValues[field.autoFill.from])
+    );
   };
 
   const getFieldOptions = (field: FieldConfig) =>
@@ -293,7 +313,8 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     const stateCode = watchedValues[stateFieldId];
     if (!stateCode) return [];
     return (
-      stateCountyReference.find((state) => state.code === stateCode)?.counties ?? []
+      stateCountyReference.find((state) => state.code === stateCode)
+        ?.counties ?? []
     );
   };
 
@@ -301,7 +322,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     if (!field.dependsOn) return true;
     const val = watchedValues[field.dependsOn];
     // dependsOnValue may be a single value or an array of values to OR-match against.
-    const targets = Array.isArray(field.dependsOnValue) ? field.dependsOnValue : [field.dependsOnValue];
+    const targets = Array.isArray(field.dependsOnValue)
+      ? field.dependsOnValue
+      : [field.dependsOnValue];
     return Array.isArray(val)
       ? val.some((v) => targets.includes(v))
       : targets.includes(val);
@@ -335,12 +358,21 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
   // required at all — unregistering those too would wipe a value just because the user
   // clicked through other options before settling back on the original one, for no
   // corresponding validation benefit.
-  const everRequiredIds = new Set(config.fields.filter((f) => f.required).map((f) => f.id));
-  const shownIds = new Set(config.fields.filter((f) => shouldShowField(f)).map((f) => f.id));
+  const everRequiredIds = new Set(
+    config.fields.filter((f) => f.required).map((f) => f.id),
+  );
+  const shownIds = new Set(
+    config.fields.filter((f) => shouldShowField(f)).map((f) => f.id),
+  );
   const vanishedIds = Array.from(
     new Set(
       config.fields
-        .filter((f) => !shouldShowField(f) && !shownIds.has(f.id) && everRequiredIds.has(f.id))
+        .filter(
+          (f) =>
+            !shouldShowField(f) &&
+            !shownIds.has(f.id) &&
+            everRequiredIds.has(f.id),
+        )
         .map((f) => f.id),
     ),
   );
@@ -363,23 +395,38 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     // the SAME Controller with new rules rather than mounting a fresh one — without an explicit
     // false here, a field required under one type would stay silently required forever after
     // switching to a type where it's optional.
-    const lengthRule = f.maxLength && f.maxLengthMode !== "warn"
-      ? { maxLength: { value: f.maxLength, message: `${f.label} must be ${f.maxLength} characters or fewer` } }
-      : {};
-    const validators: Record<string, (v: any, values: Record<string, any>) => true | string> = {};
-    if (f.validate) validators.custom = (v) => f.validate!(v, initialData?.[f.id]);
+    const lengthRule =
+      f.maxLength && f.maxLengthMode !== "warn"
+        ? {
+            maxLength: {
+              value: f.maxLength,
+              message: `${f.label} must be ${f.maxLength} characters or fewer`,
+            },
+          }
+        : {};
+    const validators: Record<
+      string,
+      (v: any, values: Record<string, any>) => true | string
+    > = {};
+    if (f.validate)
+      validators.custom = (v) => f.validate!(v, initialData?.[f.id]);
     if (f.requiredWhen) {
       validators.requiredWhen = (v, values) =>
-        !f.requiredWhen!(values) || !isEmptyValue(v) || `${f.label} is required`;
+        !f.requiredWhen!(values) ||
+        !isEmptyValue(v) ||
+        `${f.label} is required`;
     }
-    const extraRules = Object.keys(validators).length ? { ...lengthRule, validate: validators } : lengthRule;
+    const extraRules = Object.keys(validators).length
+      ? { ...lengthRule, validate: validators }
+      : lengthRule;
     if (!f.required) return { required: false, ...extraRules };
     if (f.type === "multi-badge") {
       return {
         ...extraRules,
         validate: {
           ...validators,
-          required: (v: string[]) => (v && v.length > 0) || `${f.label} is required`,
+          required: (v: string[]) =>
+            (v && v.length > 0) || `${f.label} is required`,
         },
       };
     }
@@ -390,14 +437,18 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     fieldAddons[field.id]?.({
       value: watchedValues[field.id],
       onChange: (value: any) =>
-        setValue(field.id, value, { shouldDirty: true, shouldValidate: isSubmitted }),
+        setValue(field.id, value, {
+          shouldDirty: true,
+          shouldValidate: isSubmitted,
+        }),
     });
 
   // A required field on a tab the user isn't looking at (e.g. Basic Information's State/County
   // while they're on Recordation) fails silently into the bottom error summary otherwise —
   // nothing on the tab strip itself points back to which tab it's actually on.
   const tabHasError = (tabId: string) =>
-    (isSubmitted && config.fields.some((f) => f.tab === tabId && errors[f.id])) ||
+    (isSubmitted &&
+      config.fields.some((f) => f.tab === tabId && errors[f.id])) ||
     Boolean(externalErrors?.[tabId]?.length);
   const externalMessages = Object.values(externalErrors ?? {}).flat();
 
@@ -426,7 +477,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
       );
     }
 
-    const renderControl = fieldRenderers[field.id] as ((field: FieldRenderProps) => React.ReactNode) | undefined;
+    const renderControl = fieldRenderers[field.id] as
+      | ((field: FieldRenderProps) => React.ReactNode)
+      | undefined;
     const controlType = renderControl ? null : field.type;
 
     return (
@@ -483,8 +536,15 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
 
         {controlType === "readonly" && (
           <p className="h-9 flex items-center px-3 rounded-md bg-white/5 border border-purple-300/20 text-white/70 text-sm">
-            {field.lockIcon && <Lock className="w-3.5 h-3.5 mr-2 shrink-0 text-purple-300" aria-hidden="true" />}
-            {watchedValues[field.id] ?? field.placeholder ?? "Assigned after save"}
+            {field.lockIcon && (
+              <Lock
+                className="w-3.5 h-3.5 mr-2 shrink-0 text-purple-300"
+                aria-hidden="true"
+              />
+            )}
+            {watchedValues[field.id] ??
+              field.placeholder ??
+              "Assigned after save"}
           </p>
         )}
 
@@ -502,7 +562,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                   onChange={f.onChange}
                   onBlur={f.onBlur}
                   placeholder={field.placeholder}
-                  maxLength={warnsOnLength ? field.hardMaxLength : field.maxLength}
+                  maxLength={
+                    warnsOnLength ? field.hardMaxLength : field.maxLength
+                  }
                   className={`${commonClasses} ${field.maxLength ? "pr-16" : ""} ${errors[field.id] ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 />
               );
@@ -515,7 +577,11 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                     {input}
                     <span
                       className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs tabular-nums ${
-                        over ? (warnsOnLength ? warnTextClass : "text-red-400") : "text-white/50"
+                        over
+                          ? warnsOnLength
+                            ? warnTextClass
+                            : "text-red-400"
+                          : "text-white/50"
                       }`}
                     >
                       {length} / {field.maxLength}
@@ -523,7 +589,8 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                   </div>
                   {warnsOnLength && over && (
                     <p className={`text-xs mt-1 ${warnTextClass}`}>
-                      {field.maxLengthWarning ?? `Over ${field.maxLength} characters.`}
+                      {field.maxLengthWarning ??
+                        `Over ${field.maxLength} characters.`}
                     </p>
                   )}
                 </>
@@ -562,7 +629,11 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                 rows={field.rows || 4}
                 placeholder={field.placeholder}
                 className="bg-white/5 border-purple-300/30 text-white min-h-[100px] resize-y"
-                style={field.textareaMinHeight ? { minHeight: `${field.textareaMinHeight}px` } : undefined}
+                style={
+                  field.textareaMinHeight
+                    ? { minHeight: `${field.textareaMinHeight}px` }
+                    : undefined
+                }
               />
             )}
           />
@@ -642,7 +713,8 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                   disabled={!hasState}
                   placeholder={
                     hasState
-                      ? field.placeholder || `Select ${field.label.toLowerCase()}`
+                      ? field.placeholder ||
+                        `Select ${field.label.toLowerCase()}`
                       : "Select state first"
                   }
                   className={`${commonClasses} ${errors[field.id] ? "border-red-500" : ""}`}
@@ -668,7 +740,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                 options={getFieldOptions(field).map((option) =>
                   typeof option === "string" ? option : option.value,
                 )}
-                placeholder={field.placeholder || `Select ${field.label.toLowerCase()}`}
+                placeholder={
+                  field.placeholder || `Select ${field.label.toLowerCase()}`
+                }
                 className={`${commonClasses} cursor-pointer ${errors[field.id] ? "border-red-500" : ""}`}
                 invalid={Boolean(errors[field.id])}
               />
@@ -825,8 +899,10 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
 
   const saveButtonLabel = isSubmitting
     ? "Saving..."
-    : submitLabel ??
-      (mode === "add" ? `Save ${(config as any).itemName || config.title}` : "Save Changes");
+    : (submitLabel ??
+      (mode === "add"
+        ? `Save ${(config as any).itemName || config.title}`
+        : "Save Changes"));
 
   const formBody = (
     <>
@@ -835,8 +911,13 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           <TabsList className="flex w-full bg-white/5 border border-purple-300/20 rounded-xl gap-1 h-auto p-1">
             {config.tabs.map((tab) => {
               const classifications = watchedValues.classifications ?? [];
-              if (tab.id === "vendor" && !classifications.includes("VENDOR")) return null;
-              if (tab.id === "netting" && watchedValues.ownerNettingApplies !== "Yes") return null;
+              if (tab.id === "vendor" && !classifications.includes("VENDOR"))
+                return null;
+              if (
+                tab.id === "netting" &&
+                watchedValues.ownerNettingApplies !== "Yes"
+              )
+                return null;
               const hasError = tabHasError(tab.id);
               return (
                 <TabsTrigger
@@ -856,7 +937,10 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                         </span>
                       )}
                     {hasError && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" aria-hidden="true" />
+                      <span
+                        className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"
+                        aria-hidden="true"
+                      />
                     )}
                   </span>
                 </TabsTrigger>
@@ -882,30 +966,28 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
             )}
             {withSidePanel(
               tab.id,
-              tabContent[tab.id] !== undefined ? (
-                tabContent[tab.id]
-              ) : tab.id === "contacts" ? (
-                activeTab === "contacts" && (
-                  <ContactsTab
-                    partyId={partyId}
-                    contacts={contacts}
-                    onAdd={onAddContact!}
-                    onUpdate={onUpdateContact!}
-                    onDelete={onDeleteContact!}
-                  />
-                )
-              ) : tab.id === "netting" ? (
-                activeTab === "netting" && (
-                  <NettingTab
-                    partyId={partyId}
-                    entries={nettingEntries}
-                    allParties={allParties}
-                    onChange={onNettingChange ?? (() => {})}
-                  />
-                )
-              ) : (
-                renderTabContent(tab.id)
-              ),
+              tabContent[tab.id] !== undefined
+                ? tabContent[tab.id]
+                : tab.id === "contacts"
+                  ? activeTab === "contacts" && (
+                      <ContactsTab
+                        partyId={partyId}
+                        contacts={contacts}
+                        onAdd={onAddContact!}
+                        onUpdate={onUpdateContact!}
+                        onDelete={onDeleteContact!}
+                      />
+                    )
+                  : tab.id === "netting"
+                    ? activeTab === "netting" && (
+                        <NettingTab
+                          partyId={partyId}
+                          entries={nettingEntries}
+                          allParties={allParties}
+                          onChange={onNettingChange ?? (() => {})}
+                        />
+                      )
+                    : renderTabContent(tab.id),
             )}
           </TabsContent>
         ))}
@@ -923,7 +1005,8 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
         </div>
       )}
 
-      {((isSubmitted && Object.keys(errors).length > 0) || externalMessages.length > 0) && (
+      {((isSubmitted && Object.keys(errors).length > 0) ||
+        externalMessages.length > 0) && (
         <div className="mt-3 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
           <div>
@@ -1007,7 +1090,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
   return (
     <Card className="bg-white/10 backdrop-blur-md border-purple-300/30 gap-3 py-4">
       <CardHeader>
-        <div className={`flex justify-between ${headerContent ? "items-start gap-3" : "items-center"}`}>
+        <div
+          className={`flex justify-between ${headerContent ? "items-start gap-3" : "items-center"}`}
+        >
           {headerContent ? (
             <div className="min-w-0">
               {cardTitle}

@@ -52,9 +52,9 @@ export const NettingTab: React.FC<NettingTabProps> = ({
     <div className="space-y-3">
       {entries.length > 0 && (
         <div className="grid grid-cols-3 gap-4 mb-1">
-          <Label className="text-white font-semibold text-sm">Name</Label>
-          <Label className="text-white font-semibold text-sm">Name ID</Label>
-          <Label className="text-white font-semibold text-sm">Comments</Label>
+          <Label className="form-field-label font-semibold text-sm">Name</Label>
+          <Label className="form-field-label font-semibold text-sm">Name ID</Label>
+          <Label className="form-field-label font-semibold text-sm">Comments</Label>
         </div>
       )}
 

@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const content = (
     <div
-      className={`fixed inset-0 flex items-center justify-center bg-black/40 p-4 ${
+      className={`dashboard-content fixed inset-0 flex items-center justify-center bg-black/40 p-4 ${
         isLight ? "light-theme" : ""
       }`}
       style={{ zIndex: Z_INDEX.modal }}

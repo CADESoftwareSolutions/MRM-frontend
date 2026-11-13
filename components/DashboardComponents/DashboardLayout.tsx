@@ -51,7 +51,8 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   // /Dashboard/DashboardDirectory/Deeds, and pathname is the rewritten page path.
   const currentPath = router.asPath.split(/[?#]/)[0].replace(/(.)\/$/, "$1");
   const isCurrentRoute = (route: string) =>
-    currentPath.toLowerCase() === route.toLowerCase() || router.pathname === route;
+    currentPath.toLowerCase() === route.toLowerCase() ||
+    router.pathname === route;
 
   // A query string means the page is showing one record by URL (e.g. revenue-check-input?id=…),
   // so going to the bare route is the way back to its starting view.
@@ -111,7 +112,10 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       icon: FileText,
       items: [
         { text: "Chart of Accounts", route: "/Dashboard/chart-of-accounts" },
-        { text: "Revenue Check Input", route: "/Dashboard/revenue-check-input" },
+        {
+          text: "Revenue Check Input",
+          route: "/Dashboard/revenue-check-input",
+        },
         { text: "Revenue Checks", route: "/Dashboard/revenue-checks" },
         { text: "A/P Invoices", route: "/Dashboard/ap-invoices" },
         { text: "Pay Bills", route: "/Dashboard/pay-bills" },
@@ -320,7 +324,9 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         }}
       >
         <DashboardHeader sidebarWidth={sidebarWidth} />
-        <div className={isLight ? "light-theme" : ""}>{children}</div>
+        <div className={`dashboard-content ${isLight ? "light-theme" : ""}`}>
+          {children}
+        </div>
       </main>
 
       <ToastHost />

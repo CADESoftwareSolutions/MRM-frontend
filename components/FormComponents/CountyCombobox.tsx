@@ -11,7 +11,7 @@ interface CountyComboboxProps {
   onChange: (value: string) => void;
   onBlur?: () => void;
   counties: CountyReference[];
-  /** Show the picked county with its FIPS code ("Gregg (183)") while the field isn't being edited. */
+  /** Show the picked county with its FIPS code ("389 - Reeves County") while the field isn't being edited. */
   showCode?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -109,11 +109,8 @@ export const CountyCombobox: React.FC<CountyComboboxProps> = ({
               isActive ? "bg-purple-400/40" : "hover:bg-purple-400/30",
             )}
           >
-            <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
-              <span className="truncate">{countyLabel(county)}</span>
-              {countyFips(county) && (
-                <span className="shrink-0 text-xs text-white/50">FIPS {countyFips(county)}</span>
-              )}
+            <span className="min-w-0 flex-1 truncate">
+              {countyFips(county) ? `${countyFips(county)} - ${countyLabel(county)}` : countyLabel(county)}
             </span>
             {selected && <Check className="size-4 shrink-0" />}
           </button>

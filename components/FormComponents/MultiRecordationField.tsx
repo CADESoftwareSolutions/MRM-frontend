@@ -24,7 +24,7 @@ interface MultiRecordationFieldProps {
   value: RecordationEntry[];
   onChange: (entries: RecordationEntry[]) => void;
   /** Same reference data Basic Information's State/County pair uses — looked up here only to
-   * label the read-only State/County lines below with names and codes ("Texas (TX)", "Gregg (183)"). */
+   * label the read-only State/County lines below with names and codes ("48 - Texas", "389 - Reeves County"). */
   stateCountyReference: StateCountyReference[];
   /** The parent Lease/Deed/Well's own current State/County (Basic Information tab) — the only
    * source of a recordation's State/County now. Shown here as a small read-only line and kept in
@@ -71,7 +71,7 @@ export const buildCommittedRecordation = (
 
 const inputCls =
   "w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-purple-400 transition-colors";
-const labelCls = "block text-xs font-medium text-purple-200 mb-1";
+const labelCls = "block text-xs font-medium form-field-label mb-1";
 
 export const MultiRecordationField = ({
   value,

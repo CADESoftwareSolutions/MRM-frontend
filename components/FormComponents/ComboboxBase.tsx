@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 interface ComboboxBaseProps<T> {
   inputValue: string;
-  /** Shown in place of inputValue while the input isn't focused (e.g. "Gregg (183)"). Focusing
+  /** Shown in place of inputValue while the input isn't focused (e.g. "389 - Reeves County"). Focusing
    * swaps back to inputValue, so typing always edits the real value, never the decorated one. */
   displayValue?: string;
   onInputChange: (value: string) => void;

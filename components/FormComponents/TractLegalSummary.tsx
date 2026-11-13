@@ -1,7 +1,9 @@
 import { TractOption } from "@/hooks/useTracts";
+import { useStateCountyReference } from "@/hooks/useStateCountyReference";
+import { formatCountyWithCode, formatStateWithCode } from "@/lib/stateCounty";
 import { TRACT_TYPE_LABELS, legalFieldValue, visibleLegalFieldsFor } from "./legalDescriptionFields";
 
-const labelCls = "block text-xs font-medium text-purple-200 mb-1";
+const labelCls = "block text-xs font-medium form-field-label mb-1";
 
 interface TractLegalSummaryProps {
   tract: TractOption;
@@ -15,6 +17,7 @@ interface TractLegalSummaryProps {
 // to tell matches apart before picking one), rather than each re-deriving the same field set.
 export const TractLegalSummary = ({ tract, isLight, columns = 3 }: TractLegalSummaryProps) => {
   const visibleLegalFields = visibleLegalFieldsFor(tract.tractType);
+  const { data: stateCountyReference = [] } = useStateCountyReference();
   const textCls = isLight ? "text-gray-800" : "text-white";
 
   return (
@@ -27,11 +30,13 @@ export const TractLegalSummary = ({ tract, isLight, columns = 3 }: TractLegalSum
       </div>
       <div>
         <label className={labelCls}>State</label>
-        <p className={`text-sm ${textCls}`}>{tract.stateCode || "—"}</p>
+        <p className={`text-sm ${textCls}`}>{formatStateWithCode(stateCountyReference, tract.stateCode)}</p>
       </div>
       <div>
         <label className={labelCls}>County</label>
-        <p className={`text-sm ${textCls}`}>{tract.countyName || "—"}</p>
+        <p className={`text-sm ${textCls}`}>
+          {formatCountyWithCode(stateCountyReference, tract.stateCode, tract.countyName)}
+        </p>
       </div>
       {visibleLegalFields.map((field) =>
         field.type === "textarea" ? (
