@@ -1,3 +1,13 @@
+import {
+  BOXES_1099,
+  DUPLICATE_VALIDATION_OPTIONS,
+  DuplicateValidation,
+  PAY_OPTIONS,
+  PAYMENT_TERMS,
+  SAME_AMOUNT_WINDOW_OPTIONS,
+  TYPES_1099,
+} from "../types/apInvoices";
+
 export type FieldType =
   | "text"
   | "select"
@@ -49,6 +59,36 @@ export interface FieldConfig {
   layoutColumn?: "left" | "right";
   /** Opt-in: hides the section's uppercase header text (the border-top divider still shows). Set on any field in the section. */
   hideSectionHeader?: boolean;
+  /** For text-like fields: caps the length (input limit + validation) and shows a live "n / max" counter inside the input. */
+  maxLength?: number;
+  /** How maxLength is enforced. "block" (default) caps the input and fails validation; "warn"
+   * accepts any length, turns the counter amber once over and shows maxLengthWarning under the field. */
+  maxLengthMode?: "block" | "warn";
+  /** For maxLengthMode "warn": the note shown under the field while it's over maxLength. */
+  maxLengthWarning?: string;
+  /** For readonly fields: shows a lock icon before the value. `placeholder` sets the text shown while it's empty. */
+  lockIcon?: boolean;
+  /** Opt-in: shows helpText under the input instead of above it, so a row of inputs where only
+   * some have help still lines up. */
+  helpBelow?: boolean;
+  /** Opt-in: fills this field from another field (`from`) each time that one changes, until the
+   * user picks a value of their own. The label shows an AUTO tag while the value still matches.
+   * `value` returns undefined to leave the field alone. */
+  autoFill?: { from: string; value: (sourceValue: any) => any };
+  /** Opt-in: emptying this field when it held a value on load sends "" to GraphQL (the BE ignores
+   * null) so the stored value is cleared. Needs a graphqlKey; used by the Contacts save. */
+  clearable?: boolean;
+  /** For maxLengthMode "warn": a hard cap applied as the input's maxLength (the counter and
+   * warning still use maxLength). */
+  hardMaxLength?: number;
+  /** Extra check run with the field's other rules. Return a message to fail it. Also receives the
+   * value the form opened with, so a check can skip values the user hasn't changed. */
+  validate?: (value: any, initialValue?: any) => true | string;
+  /** Opt-in: required only while this returns true for the form's current values. */
+  requiredWhen?: (values: Record<string, any>) => boolean;
+  /** Opt-in: leaves out the label row (e.g. a field that is its section's only control, under
+   * the section header). The control must label itself, e.g. with aria-label. */
+  hideLabel?: boolean;
 }
 
 export interface TabConfig {
@@ -317,6 +357,94 @@ export const locationFields = (
   ];
 };
 
+export const TAX_TYPES = [
+  "Individual/Sole Proprietor",
+  "C-Corp",
+  "S-Corp",
+  "Partnership",
+  "Trust/Estate",
+  "LLC (C-Corp)",
+  "LLC (S-Corp)",
+  "LLC (Partnership)",
+];
+
+/** Tax Types whose Tax ID is an SSN (###-##-####); every other type uses an EIN (##-#######). */
+export const SSN_TAX_TYPES = ["Individual/Sole Proprietor"];
+
+/** Send 1099 default per Tax Type: corporations don't get one. */
+export const SEND_1099_BY_TAX_TYPE: Record<string, "Yes" | "No"> = {
+  "Individual/Sole Proprietor": "Yes",
+  Partnership: "Yes",
+  "Trust/Estate": "Yes",
+  "LLC (Partnership)": "Yes",
+  "C-Corp": "No",
+  "S-Corp": "No",
+  "LLC (C-Corp)": "No",
+  "LLC (S-Corp)": "No",
+};
+
+export const FORM_1099_TYPES = ["1099-MISC", "1099-RENTAL", "1099-SALES", "1099-NEC"];
+
+/** What the BE's vendorInfo.duplicateInvoiceValidation stores for each A/P duplicate rule. */
+export const DUPLICATE_VALIDATION_BE_VALUES: Record<DuplicateValidation, string> = {
+  "Invoice #": "Validate by Invoice #",
+  "Invoice Amount": "Validate by Invoice Amount",
+};
+
+/** The vendor tab's explicit "no 1099" choice for 1099 Type / Box. Blank means not set yet. */
+export const NO_1099 = "None";
+
+export type ContactListView = "brief" | "detailed";
+
+export const CONTACT_LIST_VIEWS: Record<ContactListView, { label: string; help: string; fields: string[] }> = {
+  brief: {
+    label: "Brief",
+    help: "Brief: who they are and what needs attention",
+    fields: ["nameId", "name", "classifications", "cityState", "phone", "status", "alerts"],
+  },
+  detailed: {
+    label: "Detailed",
+    help: "Detailed: every column the Name & Address report can include",
+    fields: [
+      "nameId",
+      "name",
+      "classifications",
+      "mailingAddress",
+      "phone",
+      "email",
+      "taxClassification",
+      "w9OnFile",
+      "form1099",
+      "netting",
+      "status",
+      "updated",
+    ],
+  },
+};
+
+const CONTACT_LIST_LABELS: Record<string, string> = {
+  nameId: "Name ID",
+  name: "Name",
+  classifications: "Classification",
+  cityState: "City, State",
+  phone: "Phone",
+  status: "Status",
+  alerts: "Alerts",
+  mailingAddress: "Mailing Address",
+  email: "Email",
+  taxClassification: "Tax Type",
+  w9OnFile: "W-9",
+  form1099: "1099",
+  netting: "Netting",
+  updated: "Updated",
+};
+
+const VENDOR_ONLY: Partial<FieldConfig> = {
+  tab: "vendor",
+  dependsOn: "classifications",
+  dependsOnValue: "VENDOR",
+};
+
 export const contactsConfig: ModuleConfig = {
   name: "directory",
   title: "Contacts",
@@ -324,32 +452,31 @@ export const contactsConfig: ModuleConfig = {
   tabs: [
     { id: "basic", label: "Name & Address" },
     { id: "tax", label: "Tax Information" },
+    { id: "netting", label: "Netting", noOuterSave: true },
     { id: "vendor", label: "A/P Vendor Info" },
     { id: "contacts", label: "Internal Contacts", noOuterSave: true },
-    { id: "netting", label: "Netting", noOuterSave: true },
+    { id: "documents", label: "Documents", noOuterSave: true },
+    { id: "linked", label: "Linked Records", noOuterSave: true },
   ],
-  listFields: [
-    "name",
-    "classifications",
-    "phone",
-    "email",
-    "fullAddress",
-    "status",
-  ],
+  // The Contacts page swaps in CONTACT_LIST_VIEWS[view].fields; this is the default (Brief) set.
+  listFields: CONTACT_LIST_VIEWS.brief.fields,
+  listLabels: CONTACT_LIST_LABELS,
   fields: [
-    field.text("nameLine1", "Name Line 1", {
-      required: true,
+    // Name ID will come from the BE; until then useContacts fills it with mockNameId(party.id).
+    {
+      id: "nameId",
+      label: "Name ID",
+      type: "readonly",
+      tab: "basic",
       section: "default",
       gridColumn: "span 1",
-      graphqlKey: "nameFirst",
-    }),
+      lockIcon: true,
+      placeholder: "Assigned when saved",
+      helpText: "Generated by CADE when the contact is first saved. Read only.",
+    },
 
-    field.text("nameLine2", "Name Line 2", {
-      section: "default",
-      gridColumn: "span 1",
-      graphqlKey: "nameMiddle",
-    }),
-
+    // partyTypes is a free-form string list in the BE, so custom classifications save like the
+    // built-in ones; the page adds them to the badge row through dynamicOptions.
     field.multiBadge(
       "classifications",
       "Classification Type",
@@ -357,8 +484,9 @@ export const contactsConfig: ModuleConfig = {
       {
         required: true,
         section: "default",
-        gridColumn: "span 2",
+        gridColumn: "span 1",
         defaultValue: [],
+        helpText: "Select all that apply. VENDOR adds the A/P Vendor tab.",
         graphqlKey: "partyTypes",
         toGraphQL: (v: string | string[]) => {
           const arr = Array.isArray(v) ? v : [v];
@@ -369,35 +497,54 @@ export const contactsConfig: ModuleConfig = {
       },
     ),
 
+    field.text("nameLine1", "Name", {
+      required: true,
+      section: "default",
+      gridColumn: "span 1",
+      maxLength: 35,
+      maxLengthMode: "warn",
+      maxLengthWarning: "Over 35 characters. The full name may not show through a window envelope.",
+      helpText: "Up to 35 characters shows in full through a window envelope.",
+      hardMaxLength: 100,
+      validate: (v: string) => !v || v.length <= 100 || "Name can be at most 100 characters",
+      graphqlKey: "nameFirst",
+    }),
+
+    field.text("nameLine2", "Name Line 2", {
+      section: "default",
+      gridColumn: "span 1",
+      placeholder: "c/o, attention, or second owner",
+      maxLength: 100,
+      clearable: true,
+      graphqlKey: "nameMiddle",
+    }),
+
     {
       id: "addresses",
       label: "Addresses",
       type: "custom",
       tab: "basic",
-      section: "contact-details",
-      layoutColumn: "left",
+      section: "addresses",
+      gridColumn: "span 2",
     },
 
     {
       id: "phones",
       label: "Phone Numbers",
-      type: "custom" as const,
+      type: "custom",
       tab: "basic",
-      section: "contact-details",
-      layoutColumn: "right",
-      gridColumn: "span 2" as const,
+      section: "phone-&-email",
+      gridColumn: "span 1",
     },
 
     field.email("email", "Email Address", {
-      section: "contact-details",
-      layoutColumn: "right",
-      gridColumn: "span 2",
+      section: "phone-&-email",
+      clearable: true,
       graphqlKey: "email",
     }),
 
     field.select("status", "Active Status", ["Active", "Inactive"], {
-      section: "contact-details",
-      layoutColumn: "right",
+      section: "status",
       defaultValue: "Active",
       graphqlKey: "isActive",
       toGraphQL: (v: string) => v === "Active",
@@ -406,107 +553,110 @@ export const contactsConfig: ModuleConfig = {
     }),
 
     field.boolean("ownerNettingApplies", "Owner Netting Applies", {
-      section: "contact-details",
-      layoutColumn: "right",
+      section: "status",
       defaultValue: "No",
+      helpText: "Yes shows the Netting tab.",
     }),
 
-    field.textarea("comments", "Comments", {
-      section: "notes",
+    // Renders its own header row (with the link to Internal Contacts), so the section's is hidden.
+    {
+      id: "contactPerson",
+      label: "Contact Person",
+      type: "custom",
+      tab: "basic",
+      section: "contact-person",
+      gridColumn: "span 2",
       hideSectionHeader: true,
-      gridColumn: "span 2",
-      helpText: "Auto-populate if address was changed or transfer was done",
-      graphqlKey: "notes",
-    }),
+    },
 
-    field.textarea("notificationRecap", "Notification Recap", {
-      section: "notes",
-      gridColumn: "span 2",
-      helpText:
-        "Snapshot of items to track: suspense balances, outstanding checks, missing W-9, etc.",
+    // Tax tab. The page supplies the Tax ID, W-9 and minimum-payment controls (fieldRenderers /
+    // fieldAddons); form1099Type has no BE column yet, so it's saved through useContactDetails.
+    field.select("taxClassification", "Tax Type", TAX_TYPES, {
+      tab: "tax",
+      section: "tax-identification",
+      sectionColumns: 3,
+      requiredWhen: (values) =>
+        ((values.classifications as string[] | undefined) ?? []).some((c) => c === "REV" || c === "VENDOR"),
+      helpText: "Required for REV and VENDOR contacts.",
+      graphqlKey: "taxInfo.taxClassification",
     }),
-
-    field.select(
-      "taxClassification",
-      "Tax Classification",
-      [
-        "Individual/Sole Proprietor",
-        "C-Corp",
-        "S-Corp",
-        "Partnership",
-        "Trust/Estate",
-        "LLC (C-Corp)",
-        "LLC (S-Corp)",
-        "LLC (Partnership)",
-      ],
-      {
-        tab: "tax",
-        section: "tax-basic",
-        graphqlKey: "taxInfo.taxClassification",
-      },
-    ),
 
     field.text("taxId", "Tax ID", {
       tab: "tax",
-      section: "tax-basic",
-      placeholder: "SSN or TIN format",
+      section: "tax-identification",
       graphqlKey: "taxInfo.taxId",
+      clearable: true,
+      // Legacy IDs that were saved in another shape shouldn't block unrelated saves.
+      validate: (v: string | undefined, initial?: string) =>
+        !v || v === initial || String(v).replace(/\D/g, "").length === 9 || "Tax ID must be 9 digits",
     }),
 
-    field.boolean("internalInHouse", "Internal/In House", {
+    field.boolean("w9OnFile", "W-9 on File", {
       tab: "tax",
-      section: "tax-options",
+      section: "tax-identification",
+      graphqlKey: "taxInfo.w9OnFile",
+    }),
+
+    field.boolean("send1099", "Send 1099", {
+      tab: "tax",
+      section: "1099-reporting",
+      sectionColumns: 3,
+      helpText: "Filled in from Tax Type. Change it to override.",
+      helpBelow: true,
+      autoFill: { from: "taxClassification", value: (taxType: string) => SEND_1099_BY_TAX_TYPE[taxType] },
+      graphqlKey: "taxInfo.send1099",
+    }),
+
+    field.select("form1099Type", "Type of 1099", FORM_1099_TYPES, {
+      tab: "tax",
+      section: "1099-reporting",
+    }),
+
+    field.boolean("nonEmployeeComp", "Non-Employee Compensation", {
+      tab: "tax",
+      section: "1099-reporting",
+      graphqlKey: "taxInfo.nonEmployeeComp",
+    }),
+
+    field.boolean("internalInHouse", "Internal / In House", {
+      tab: "tax",
+      section: "withholding-&-exemptions",
       graphqlKey: "taxInfo.internalInHouse",
     }),
 
     field.boolean("federalTaxWithheld", "Federal Tax Withheld", {
       tab: "tax",
-      section: "tax-options",
+      section: "withholding-&-exemptions",
       graphqlKey: "taxInfo.federalTaxWithheld",
-    }),
-
-    field.boolean("nonEmployeeComp", "Non-Employee Compensation", {
-      tab: "tax",
-      section: "tax-options",
-      graphqlKey: "taxInfo.nonEmployeeComp",
-    }),
-
-    field.boolean("send1099", "Send 1099", {
-      tab: "tax",
-      section: "tax-options",
-      graphqlKey: "taxInfo.send1099",
-    }),
-
-    field.boolean("w9OnFile", "W-9 on File", {
-      tab: "tax",
-      section: "tax-options",
-      graphqlKey: "taxInfo.w9OnFile",
     }),
 
     field.boolean("backupWithholding", "Backup Withholding", {
       tab: "tax",
-      section: "tax-options",
+      section: "withholding-&-exemptions",
+      helpText: "Usually Yes while no W-9 / TIN is on file.",
+      helpBelow: true,
       graphqlKey: "taxInfo.backupWithholding",
     }),
 
     field.boolean("severanceTaxExempt", "Severance Tax Exempt", {
       tab: "tax",
-      section: "tax-options",
+      section: "withholding-&-exemptions",
       graphqlKey: "taxInfo.severanceTaxExempt",
     }),
 
     field.boolean("otherExempt", "Other Exempt", {
       tab: "tax",
-      section: "tax-options",
+      section: "withholding-&-exemptions",
       graphqlKey: "taxInfo.otherExempt",
     }),
 
+    // Empty means "use the company default" (useCompanySettings), so no amount is sent.
     field.number("minPaymentAmount", "Minimum Payment Amount", {
       tab: "tax",
       section: "payment",
-      placeholder: "$0.00",
-      gridColumn: "span 2",
-      helpText: "Optional per-party minimum payment threshold",
+      helpText:
+        "Revenue below this amount is held until it adds up. The company default is set in Settings › Accounting.",
+      helpBelow: true,
       graphqlKey: "taxInfo.minPaymentAmount",
       toGraphQL: (value: string | number) =>
         value === "" || value === undefined || value === null
@@ -514,25 +664,88 @@ export const contactsConfig: ModuleConfig = {
           : Number(value),
     }),
 
-    field.select("pay", "Pay", ["Yes", "No", "Monthly", "Check per entry"], {
-      tab: "vendor",
-      section: "vendor-options",
-      dependsOn: "classifications",
-      dependsOnValue: "VENDOR",
+    // A/P Vendor Info tab. Pay and duplicate validation are BE columns (vendorInfo); the rest have
+    // none yet and are saved through useVendorDefaults, which the A/P screens read. The page
+    // supplies the Pay cards, account pickers and remit-to choices (fieldRenderers).
+    field.select("pay", "Pay", PAY_OPTIONS, {
+      ...VENDOR_ONLY,
+      section: "pay",
+      gridColumn: "span 2",
+      hideLabel: true,
       graphqlKey: "vendorInfo.pay",
     }),
 
     field.select(
       "duplicateInvoiceValidation",
-      "Duplicate Invoice Validation",
-      ["Validate by Invoice #", "Validate by Invoice Amount"],
+      "Validate by",
+      DUPLICATE_VALIDATION_OPTIONS.map((rule) => ({ value: DUPLICATE_VALIDATION_BE_VALUES[rule], label: rule })),
       {
-        tab: "vendor",
-        section: "vendor-options",
-        dependsOnValue: "VENDOR",
-        dependsOn: "classifications",
+        ...VENDOR_ONLY,
+        section: "duplicate-invoice-validation",
+        helpText: "Both checks run when an invoice is entered, and matches show on its Duplicates tab.",
+        helpBelow: true,
         graphqlKey: "vendorInfo.duplicateInvoiceValidation",
       },
     ),
+
+    field.select(
+      "sameAmountWindowDays",
+      "Same-amount window",
+      SAME_AMOUNT_WINDOW_OPTIONS.map((days) => ({ value: String(days), label: `${days} days` })),
+      {
+        ...VENDOR_ONLY,
+        section: "duplicate-invoice-validation",
+        helpText: "Used when validating by amount.",
+        helpBelow: true,
+      },
+    ),
+
+    field.text("apAccountId", "A/P Account #", {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+      sectionColumns: 3,
+    }),
+
+    field.text("defaultExpenseAccountId", "Default Expense Account", {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+    }),
+
+    field.select("paymentTerms", "Payment Terms", PAYMENT_TERMS, {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+      helpText: "Sets Due Date from Invoice Date.",
+      helpBelow: true,
+    }),
+
+    field.select("type1099", "1099 Type", [NO_1099, ...TYPES_1099], {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+      placeholder: NO_1099,
+      autoFill: { from: "form1099Type", value: (taxTabType: string) => taxTabType || undefined },
+    }),
+
+    field.select("box1099", "1099 Box", [NO_1099, ...BOXES_1099], {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+      placeholder: NO_1099,
+    }),
+
+    field.select("remitToAddressType", "Remit-to Address", [], {
+      ...VENDOR_ONLY,
+      section: "invoice-defaults",
+    }),
+
+    // The comment log draws its own header row (with the All / Vendor toggle).
+    {
+      id: "vendorComments",
+      label: "Comments",
+      type: "custom",
+      ...VENDOR_ONLY,
+      tab: "vendor",
+      section: "comments",
+      gridColumn: "span 2",
+      hideSectionHeader: true,
+    },
   ],
 };

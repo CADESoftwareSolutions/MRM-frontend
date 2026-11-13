@@ -20,6 +20,10 @@ export interface ListFilter {
   onChange: (value: string) => void;
   allLabel: string;
   options: string[];
+  /** Opt-in: the trigger reads "Label: value" (e.g. "Status: All") instead of just the value. */
+  label?: string;
+  /** Opt-in: replaces the trigger's default `w-36` width class. */
+  widthClass?: string;
 }
 
 interface ListProps {
@@ -36,6 +40,16 @@ interface ListProps {
   onSortChange?: (column: string) => void;
   /** Opt-in dropdown filters beside the search box. The caller applies them to `data`. */
   filters?: ListFilter[];
+  /** Opt-in: draws a cell itself. Returning undefined falls back to the built-in rendering. */
+  renderCell?: (column: string, item: any) => React.ReactNode | undefined;
+  /** Opt-in: replaces config.name in the saved column and width keys, so one module can keep
+   * several independent column sets (e.g. one per view). */
+  storageKey?: string;
+  searchPlaceholder?: string;
+  /** Opt-in starting widths (px) per column; a column the user resizes keeps their width. */
+  columnWidths?: Record<string, number>;
+  /** Opt-in: below this width (px) the table scrolls sideways instead of squeezing its columns. */
+  minTableWidth?: number;
 }
 
 // Radix Select won't take "" as an item value (it's reserved for clearing back to the
@@ -108,14 +122,20 @@ export const List: React.FC<ListProps> = ({
   sort,
   onSortChange,
   filters,
+  renderCell: customCell,
+  storageKey: storageKeyOverride,
+  searchPlaceholder,
+  columnWidths,
+  minTableWidth,
 }) => {
   const [theme] = useAtom(themeAtom);
   const isLight = theme === "light";
 
+  const storageBase = storageKeyOverride ?? config.name;
   const storageKey = config.listColumnsVersion
-    ? `mrm-columns-${config.name}-v${config.listColumnsVersion}`
-    : `mrm-columns-${config.name}`;
-  const widthKey = `mrm-colwidths-${config.name}`;
+    ? `mrm-columns-${storageBase}-v${config.listColumnsVersion}`
+    : `mrm-columns-${storageBase}`;
+  const widthKey = `mrm-colwidths-${storageBase}`;
   const firstField = config.listFields[0];
   const columnLabel = (col: string) => config.listLabels?.[col] ?? toLabel(col);
 
@@ -262,7 +282,7 @@ export const List: React.FC<ListProps> = ({
         <div className="relative flex-1">
           <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isLight ? "text-gray-400" : "text-purple-300/60"}`} />
           <Input
-            placeholder={`Search ${config.title.toLowerCase()}...`}
+            placeholder={searchPlaceholder ?? `Search ${config.title.toLowerCase()}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`pl-9 h-9 border ${
@@ -280,13 +300,19 @@ export const List: React.FC<ListProps> = ({
             onValueChange={(next) => filter.onChange(next === ALL_FILTER_VALUE ? "" : next)}
           >
             <SelectTrigger
-              className={`w-36 shrink-0 cursor-pointer ${
+              className={`${filter.widthClass ?? "w-36"} shrink-0 cursor-pointer ${
                 isLight
                   ? "bg-white border-purple-200 text-gray-800"
                   : "bg-white/5 border-purple-300/30 text-white"
               }`}
             >
-              <SelectValue />
+              {filter.label ? (
+                <SelectValue>
+                  {filter.label}: {filter.value || filter.allLabel}
+                </SelectValue>
+              ) : (
+                <SelectValue />
+              )}
             </SelectTrigger>
             <SelectContent
               // Portals to <body>, so it needs its own layer to stay above the fixed app bar if
@@ -386,11 +412,12 @@ export const List: React.FC<ListProps> = ({
 
       {/* Table — overflow-hidden here clips the table corners at the bottom */}
       <div className="overflow-x-auto rounded-b-xl">
-        <table className="w-full text-sm" style={{ tableLayout: "fixed" }}>
+        <table className="w-full text-sm" style={{ tableLayout: "fixed", minWidth: minTableWidth }}>
           <colgroup>
-            {columns.map((col) => (
-              <col key={col} style={colWidths[col] ? { width: colWidths[col] } : undefined} />
-            ))}
+            {columns.map((col) => {
+              const width = colWidths[col] ?? columnWidths?.[col];
+              return <col key={col} style={width ? { width } : undefined} />;
+            })}
             <col style={{ width: 96 }} />
           </colgroup>
           <thead>
@@ -471,11 +498,14 @@ export const List: React.FC<ListProps> = ({
                       : "border-purple-300/10 hover:bg-purple-500/[0.18]"
                   }`}
                 >
-                  {columns.map((col) => (
-                    <td key={col} className="px-5 py-3 h-12 overflow-hidden">
-                      {renderCell(col, item[col], item)}
-                    </td>
-                  ))}
+                  {columns.map((col) => {
+                    const custom = customCell?.(col, item);
+                    return (
+                      <td key={col} className="px-5 py-3 h-12 overflow-hidden">
+                        {custom !== undefined ? custom : renderCell(col, item[col], item)}
+                      </td>
+                    );
+                  })}
                   <td className="px-3 py-3 h-12 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-1.5">
                       <button

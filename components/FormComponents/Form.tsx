@@ -1,5 +1,6 @@
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useAtomValue } from "jotai";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, FileText, X } from "lucide-react";
+import { AlertCircle, FileText, Lock, X } from "lucide-react";
 import { FieldConfig, ModuleConfig } from "../../src/config/contactsConfig";
 import { ContactsTab, Contact } from "./ContactsTab";
 import { NettingTab, NettingEntry } from "./NettingTab";
@@ -23,6 +24,7 @@ import { Combobox } from "./Combobox";
 import { DatePicker } from "@/components/ui/date-picker";
 import type { StateCountyReference } from "@/hooks/useStateCountyReference";
 import { Z_INDEX } from "@/lib/zIndex";
+import { themeAtom } from "@/atoms/NavigationAtom";
 
 interface FormProps {
   config: ModuleConfig;
@@ -62,7 +64,45 @@ interface FormProps {
    * form's own State/County) without re-rendering on every keystroke across the whole form. */
   watchFields?: string[];
   onFieldsChange?: (values: Record<string, any>) => void;
+  /** Rendered under the card title (e.g. a created/updated audit line). Not shown when bare. */
+  headerContent?: React.ReactNode;
+  /** Right-hand panel beside a tab's content, keyed by tab id. Wraps below the content on
+   * narrow screens. */
+  sidePanels?: Record<string, React.ReactNode>;
+  /** Replaces a tab's field grid with custom content, keyed by tab id. */
+  tabContent?: Record<string, React.ReactNode>;
+  /** Small pill after a tab's label (e.g. a document count), keyed by tab id. Empty values hide it. */
+  tabBadges?: Record<string, React.ReactNode>;
+  /** Controlled active tab, so a parent can switch tabs (e.g. from a link inside a tab). Omit to
+   * let the form manage it. */
+  activeTab?: string;
+  onActiveTabChange?: (tabId: string) => void;
+  /** Extra controls rendered with a field, keyed by field id, given the field's live value and
+   * setter. A multi-badge field renders it at the end of its badge row; other types below the input. */
+  fieldAddons?: Record<string, (field: { value: any; onChange: (value: any) => void }) => React.ReactNode>;
+  /** Replaces a field's input control, keyed by field id. The label, help text, validation rules
+   * and error message stay the Form's. */
+  fieldRenderers?: Record<string, (field: FieldRenderProps) => React.ReactNode>;
+  /** Rendered at the top of a tab, above its content and side panel (e.g. a notice), keyed by tab id. */
+  tabIntro?: Record<string, React.ReactNode>;
+  /** Problems the parent found outside the form's own fields (e.g. an incomplete address), keyed
+   * by tab id. The tab gets the error dot and each message joins the error summary. */
+  externalErrors?: Record<string, string[]>;
 }
+
+export interface FieldRenderProps {
+  value: any;
+  onChange: (value: any) => void;
+  onBlur: () => void;
+  invalid: boolean;
+  /** Every field's live value, for a control that depends on another field. */
+  values: Record<string, any>;
+}
+
+const AUTO_TAG =
+  "inline-flex h-[18px] items-center rounded-[5px] px-1.5 text-[10px] font-bold tracking-wider bg-blue-500/20 text-blue-300";
+
+const isEmptyValue = (v: any) => v === undefined || v === null || v === "";
 
 export interface FormHandle {
   /** True once any editable field (custom/readonly fields don't count) currently holds a
@@ -115,15 +155,34 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     submitLabel,
     watchFields,
     onFieldsChange,
+    headerContent,
+    sidePanels = {},
+    tabContent = {},
+    tabBadges = {},
+    activeTab: controlledActiveTab,
+    onActiveTabChange,
+    fieldAddons = {},
+    fieldRenderers = {},
+    tabIntro = {},
+    externalErrors,
   },
   ref,
 ) => {
+  const isLight = useAtomValue(themeAtom) === "light";
+  // index.css has no light-theme override for amber, so it's picked here.
+  const warnTextClass = isLight ? "text-amber-700" : "text-amber-300";
+
   const configDefaults = config.fields.reduce<Record<string, any>>((acc, f) => {
     if (f.defaultValue !== undefined) acc[f.id] = f.defaultValue;
     return acc;
   }, {});
 
-  const [activeTab, setActiveTab] = React.useState(config.tabs[0].id);
+  const [internalActiveTab, setInternalActiveTab] = React.useState(config.tabs[0].id);
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const setActiveTab = (tabId: string) => {
+    if (controlledActiveTab === undefined) setInternalActiveTab(tabId);
+    onActiveTabChange?.(tabId);
+  };
   const showOuterSave = !config.tabs.find((t) => t.id === activeTab)
     ?.noOuterSave;
 
@@ -182,6 +241,38 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchFieldsKey]);
+
+  const autoFillFields = config.fields.filter((f) => f.autoFill);
+  const autoFillSourceKey = autoFillFields.map((f) => watchedValues[f.autoFill!.from]).join("\u0000");
+  // Seeded with the loaded values so opening a record never rewrites them; only a later change
+  // to the source field fills anything.
+  const autoFillPrevSources = React.useRef<Record<string, any>>(
+    Object.fromEntries(autoFillFields.map((f) => [f.id, watchedValues[f.autoFill!.from]])),
+  );
+  React.useEffect(() => {
+    autoFillFields.forEach((f) => {
+      const { from, value: derive } = f.autoFill!;
+      const source = watchedValues[from];
+      const prevSource = autoFillPrevSources.current[f.id];
+      if (source === prevSource) return;
+      autoFillPrevSources.current[f.id] = source;
+      const next = derive(source);
+      if (next === undefined) return;
+      const current = watchedValues[f.id];
+      // Still following the old source value (or never set) means the user hasn't overridden it.
+      const userOverrode = !isEmptyValue(current) && current !== derive(prevSource);
+      if (!userOverrode && current !== next) {
+        setValue(f.id, next, { shouldDirty: true, shouldValidate: isSubmitted });
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFillSourceKey]);
+
+  const isAutoFilled = (field: FieldConfig) => {
+    if (!field.autoFill) return false;
+    const value = watchedValues[field.id];
+    return !isEmptyValue(value) && value === field.autoFill.value(watchedValues[field.autoFill.from]);
+  };
 
   const getFieldOptions = (field: FieldConfig) =>
     dynamicOptions[field.id] ?? field.options ?? [];
@@ -272,21 +363,43 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     // the SAME Controller with new rules rather than mounting a fresh one — without an explicit
     // false here, a field required under one type would stay silently required forever after
     // switching to a type where it's optional.
-    if (!f.required) return { required: false };
+    const lengthRule = f.maxLength && f.maxLengthMode !== "warn"
+      ? { maxLength: { value: f.maxLength, message: `${f.label} must be ${f.maxLength} characters or fewer` } }
+      : {};
+    const validators: Record<string, (v: any, values: Record<string, any>) => true | string> = {};
+    if (f.validate) validators.custom = (v) => f.validate!(v, initialData?.[f.id]);
+    if (f.requiredWhen) {
+      validators.requiredWhen = (v, values) =>
+        !f.requiredWhen!(values) || !isEmptyValue(v) || `${f.label} is required`;
+    }
+    const extraRules = Object.keys(validators).length ? { ...lengthRule, validate: validators } : lengthRule;
+    if (!f.required) return { required: false, ...extraRules };
     if (f.type === "multi-badge") {
       return {
-        validate: (v: string[]) =>
-          (v && v.length > 0) || `${f.label} is required`,
+        ...extraRules,
+        validate: {
+          ...validators,
+          required: (v: string[]) => (v && v.length > 0) || `${f.label} is required`,
+        },
       };
     }
-    return { required: `${f.label} is required` };
+    return { required: `${f.label} is required`, ...extraRules };
   };
+
+  const renderFieldAddon = (field: FieldConfig) =>
+    fieldAddons[field.id]?.({
+      value: watchedValues[field.id],
+      onChange: (value: any) =>
+        setValue(field.id, value, { shouldDirty: true, shouldValidate: isSubmitted }),
+    });
 
   // A required field on a tab the user isn't looking at (e.g. Basic Information's State/County
   // while they're on Recordation) fails silently into the bottom error summary otherwise —
   // nothing on the tab strip itself points back to which tab it's actually on.
   const tabHasError = (tabId: string) =>
-    isSubmitted && config.fields.some((f) => f.tab === tabId && errors[f.id]);
+    (isSubmitted && config.fields.some((f) => f.tab === tabId && errors[f.id])) ||
+    Boolean(externalErrors?.[tabId]?.length);
+  const externalMessages = Object.values(externalErrors ?? {}).flat();
 
   const commonClasses = "bg-white/5 border-purple-300/30 text-white h-9";
 
@@ -313,6 +426,9 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
       );
     }
 
+    const renderControl = fieldRenderers[field.id] as ((field: FieldRenderProps) => React.ReactNode) | undefined;
+    const controlType = renderControl ? null : field.type;
+
     return (
       <div
         key={field.id}
@@ -326,41 +442,97 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                 : ""
         }
       >
-        <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
-          {field.label}
-          {field.required && (
-            <span className="text-red-500 text-sm font-bold">*</span>
-          )}
-        </Label>
-        {field.helpText && (
+        {!field.hideLabel && (
+          <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
+            {field.label}
+            {(field.required || field.requiredWhen?.(watchedValues)) && (
+              <span className="text-red-500 text-sm font-bold">*</span>
+            )}
+            {isAutoFilled(field) && (
+              <span
+                className={`${AUTO_TAG} ml-1`}
+                title={`Filled in from ${config.fields.find((f) => f.id === field.autoFill!.from)?.label ?? field.autoFill!.from}`}
+              >
+                AUTO
+              </span>
+            )}
+          </Label>
+        )}
+        {field.helpText && !field.helpBelow && (
           <p className="form-help-text text-xs mb-1">{field.helpText}</p>
         )}
 
-        {field.type === "readonly" && (
-          <p className="h-9 flex items-center px-3 rounded-md bg-white/5 border border-purple-300/20 text-white/70 text-sm">
-            {watchedValues[field.id] ?? "Assigned after save"}
-          </p>
-        )}
-
-        {INPUT_TYPES[field.type] !== undefined && (
+        {renderControl && (
           <Controller
             name={field.id}
             control={control}
             rules={getFieldRules(field)}
             render={({ field: f }) => (
-              <Input
-                type={INPUT_TYPES[field.type]}
-                value={f.value ?? ""}
-                onChange={f.onChange}
-                onBlur={f.onBlur}
-                placeholder={field.placeholder}
-                className={`${commonClasses} ${errors[field.id] ? "border-red-500" : ""}`}
-              />
+              <>
+                {renderControl({
+                  value: f.value,
+                  onChange: f.onChange,
+                  onBlur: f.onBlur,
+                  invalid: Boolean(errors[field.id]),
+                  values: watchedValues,
+                })}
+              </>
             )}
           />
         )}
 
-        {field.type === "date" && (
+        {controlType === "readonly" && (
+          <p className="h-9 flex items-center px-3 rounded-md bg-white/5 border border-purple-300/20 text-white/70 text-sm">
+            {field.lockIcon && <Lock className="w-3.5 h-3.5 mr-2 shrink-0 text-purple-300" aria-hidden="true" />}
+            {watchedValues[field.id] ?? field.placeholder ?? "Assigned after save"}
+          </p>
+        )}
+
+        {controlType && INPUT_TYPES[controlType] !== undefined && (
+          <Controller
+            name={field.id}
+            control={control}
+            rules={getFieldRules(field)}
+            render={({ field: f }) => {
+              const warnsOnLength = field.maxLengthMode === "warn";
+              const input = (
+                <Input
+                  type={INPUT_TYPES[field.type]}
+                  value={f.value ?? ""}
+                  onChange={f.onChange}
+                  onBlur={f.onBlur}
+                  placeholder={field.placeholder}
+                  maxLength={warnsOnLength ? field.hardMaxLength : field.maxLength}
+                  className={`${commonClasses} ${field.maxLength ? "pr-16" : ""} ${errors[field.id] ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                />
+              );
+              if (!field.maxLength) return input;
+              const length = String(f.value ?? "").length;
+              const over = length > field.maxLength;
+              return (
+                <>
+                  <div className="relative">
+                    {input}
+                    <span
+                      className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs tabular-nums ${
+                        over ? (warnsOnLength ? warnTextClass : "text-red-400") : "text-white/50"
+                      }`}
+                    >
+                      {length} / {field.maxLength}
+                    </span>
+                  </div>
+                  {warnsOnLength && over && (
+                    <p className={`text-xs mt-1 ${warnTextClass}`}>
+                      {field.maxLengthWarning ?? `Over ${field.maxLength} characters.`}
+                    </p>
+                  )}
+                </>
+              );
+            }}
+          />
+        )}
+
+        {controlType === "date" && (
           <Controller
             name={field.id}
             control={control}
@@ -378,7 +550,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           />
         )}
 
-        {field.type === "textarea" && (
+        {controlType === "textarea" && (
           <Controller
             name={field.id}
             control={control}
@@ -396,7 +568,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           />
         )}
 
-        {(field.type === "select" || field.type === "boolean") && (
+        {(controlType === "select" || controlType === "boolean") && (
           <Controller
             name={field.id}
             control={control}
@@ -413,7 +585,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
               >
                 <SelectTrigger
                   style={{ width: "100%" }}
-                  className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70 ${errors[field.id] ? "border-red-500" : ""}`}
+                  className={`${commonClasses} cursor-pointer data-[placeholder]:text-white/70 ${errors[field.id] ? "border-red-500 ring-1 ring-red-500" : ""}`}
                 >
                   <SelectValue
                     placeholder={
@@ -451,7 +623,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           />
         )}
 
-        {field.type === "county-combobox" && (
+        {controlType === "county-combobox" && (
           <Controller
             name={field.id}
             control={control}
@@ -481,7 +653,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           />
         )}
 
-        {field.type === "combobox" && (
+        {controlType === "combobox" && (
           <Controller
             name={field.id}
             control={control}
@@ -504,7 +676,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
           />
         )}
 
-        {field.type === "multi-badge" && (
+        {controlType === "multi-badge" && (
           <Controller
             name={field.id}
             control={control}
@@ -512,7 +684,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
             defaultValue={field.defaultValue || []}
             render={({ field: f }) => (
               <div className="flex flex-wrap gap-2">
-                {field.options?.map((option) => {
+                {getFieldOptions(field).map((option) => {
                   const val =
                     typeof option === "string" ? option : option.value;
                   const label =
@@ -541,9 +713,18 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                     </Badge>
                   );
                 })}
+                {renderFieldAddon(field)}
               </div>
             )}
           />
+        )}
+
+        {controlType !== "multi-badge" && fieldAddons[field.id] && (
+          <div className="mt-1">{renderFieldAddon(field)}</div>
+        )}
+
+        {field.helpText && field.helpBelow && (
+          <p className="form-help-text text-xs mt-1">{field.helpText}</p>
         )}
 
         {errors[field.id] && (
@@ -631,6 +812,17 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     );
   };
 
+  const withSidePanel = (tabId: string, content: React.ReactNode) => {
+    const panel = sidePanels[tabId];
+    if (panel === undefined || panel === null) return content;
+    return (
+      <div className="flex flex-wrap items-start gap-5">
+        <div className="min-w-0 grow-[999] basis-[560px]">{content}</div>
+        <aside className="max-w-full grow basis-80 space-y-3">{panel}</aside>
+      </div>
+    );
+  };
+
   const saveButtonLabel = isSubmitting
     ? "Saving..."
     : submitLabel ??
@@ -656,6 +848,13 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                 >
                   <span className="inline-flex items-center gap-1.5">
                     {tab.label}
+                    {tabBadges[tab.id] !== undefined &&
+                      tabBadges[tab.id] !== null &&
+                      tabBadges[tab.id] !== "" && (
+                        <span className="rounded-md bg-white/10 px-1.5 text-[11px] leading-[18px] tabular-nums">
+                          {tabBadges[tab.id]}
+                        </span>
+                      )}
                     {hasError && (
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" aria-hidden="true" />
                     )}
@@ -678,36 +877,35 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
             hidden={activeTab !== tab.id}
             className="mt-2"
           >
-            {tab.id === "vendor" && (
-              <div className="flex items-center gap-2 mb-3 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-blue-300" />
-                <p className="text-sm text-blue-200">
-                  A/P Vendor information only appears for contacts with VENDOR
-                  classification
-                </p>
-              </div>
+            {tabIntro[tab.id] !== undefined && tabIntro[tab.id] !== null && (
+              <div className="mb-3">{tabIntro[tab.id]}</div>
             )}
-            {tab.id === "contacts" ? (
-              activeTab === "contacts" && (
-                <ContactsTab
-                  partyId={partyId}
-                  contacts={contacts}
-                  onAdd={onAddContact!}
-                  onUpdate={onUpdateContact!}
-                  onDelete={onDeleteContact!}
-                />
-              )
-            ) : tab.id === "netting" ? (
-              activeTab === "netting" && (
-                <NettingTab
-                  partyId={partyId}
-                  entries={nettingEntries}
-                  allParties={allParties}
-                  onChange={onNettingChange ?? (() => {})}
-                />
-              )
-            ) : (
-              renderTabContent(tab.id)
+            {withSidePanel(
+              tab.id,
+              tabContent[tab.id] !== undefined ? (
+                tabContent[tab.id]
+              ) : tab.id === "contacts" ? (
+                activeTab === "contacts" && (
+                  <ContactsTab
+                    partyId={partyId}
+                    contacts={contacts}
+                    onAdd={onAddContact!}
+                    onUpdate={onUpdateContact!}
+                    onDelete={onDeleteContact!}
+                  />
+                )
+              ) : tab.id === "netting" ? (
+                activeTab === "netting" && (
+                  <NettingTab
+                    partyId={partyId}
+                    entries={nettingEntries}
+                    allParties={allParties}
+                    onChange={onNettingChange ?? (() => {})}
+                  />
+                )
+              ) : (
+                renderTabContent(tab.id)
+              ),
             )}
           </TabsContent>
         ))}
@@ -725,7 +923,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
         </div>
       )}
 
-      {isSubmitted && Object.keys(errors).length > 0 && (
+      {((isSubmitted && Object.keys(errors).length > 0) || externalMessages.length > 0) && (
         <div className="mt-3 p-3 bg-red-500/10 border border-red-500/40 rounded-lg flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
           <div>
@@ -733,6 +931,11 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
               Please fill in the required fields:
             </p>
             <ul className="mt-1 space-y-0.5">
+              {externalMessages.map((message) => (
+                <li key={message} className="text-xs text-red-400">
+                  {message}
+                </li>
+              ))}
               {Object.entries(errors).map(([, err]) => (
                 <li
                   key={err?.message as string}
@@ -792,16 +995,27 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
     return formBody;
   }
 
+  const cardTitle = (
+    <CardTitle className="text-white flex items-center gap-2">
+      <FileText className="w-6 h-6" />
+      {mode === "add"
+        ? `Add New ${(config as any).itemName || config.title}`
+        : `Edit ${(config as any).itemName || config.title}`}
+    </CardTitle>
+  );
+
   return (
     <Card className="bg-white/10 backdrop-blur-md border-purple-300/30 gap-3 py-4">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-white flex items-center gap-2">
-            <FileText className="w-6 h-6" />
-            {mode === "add"
-              ? `Add New ${(config as any).itemName || config.title}`
-              : `Edit ${(config as any).itemName || config.title}`}
-          </CardTitle>
+        <div className={`flex justify-between ${headerContent ? "items-start gap-3" : "items-center"}`}>
+          {headerContent ? (
+            <div className="min-w-0">
+              {cardTitle}
+              {headerContent}
+            </div>
+          ) : (
+            cardTitle
+          )}
           <Button
             variant="ghost"
             onClick={onCancel}

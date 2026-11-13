@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useAtom } from "jotai";
 import { moduleViewAtom } from "../atoms/NavigationAtom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ModuleConfig } from "../config/contactsConfig";
+import { FieldConfig, ModuleConfig } from "../config/contactsConfig";
 import {
   FETCH_PARTIES,
   CREATE_PARTY_MUTATION,
@@ -23,8 +23,13 @@ import {
 import { AddressEntry } from "../../components/FormComponents/MultiAddressField";
 import { PhoneEntry } from "../../components/FormComponents/MultiPhoneField";
 import { Contact } from "../../components/FormComponents/ContactsTab";
+import { ContactAddressLine, formatAddressLine, pickMailingAddress, toAddressLine } from "../lib/contactAddress";
 
 import { executeGraphQL } from "../lib/api";
+import { mockNameId } from "../lib/nameId";
+
+/** An internal contact plus whether its relationship is flagged primary. */
+export type ContactPerson = Contact & { _isPrimary?: boolean };
 
 interface UseContactsDataProps {
   config: ModuleConfig;
@@ -44,6 +49,14 @@ const readConfigFields = (party: any, config: ModuleConfig): Record<string, any>
   return result;
 };
 
+/** Same dependsOn rule the Form uses to show a field. */
+const isFieldShown = (f: FieldConfig, formData: Record<string, any>): boolean => {
+  if (!f.dependsOn) return true;
+  const val = formData[f.dependsOn];
+  const targets = Array.isArray(f.dependsOnValue) ? f.dependsOnValue : [f.dependsOnValue];
+  return Array.isArray(val) ? val.some((v) => targets.includes(v)) : targets.includes(val);
+};
+
 const assignGraphQLValue = (target: any, key: string, value: any) => {
   const [head, ...rest] = key.split(".");
   if (!head) return;
@@ -56,7 +69,7 @@ const assignGraphQLValue = (target: any, key: string, value: any) => {
   assignGraphQLValue(target[head], rest.join("."), value);
 };
 
-const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
+const transformRelatedContacts = (relationships: any[] = []): ContactPerson[] =>
   relationships.map((relationship: any) => {
     const relatedParty = relationship.relatedParty || {};
     const primaryPhone =
@@ -76,6 +89,7 @@ const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
       _addressId: primaryAddress?.address?.id
         ? parseInt(primaryAddress.address.id, 10)
         : undefined,
+      _isPrimary: Boolean(relationship.isPrimary),
       nameFirst: relatedParty.nameFirst || relatedParty.nameFull || "",
       nameMiddle: relatedParty.nameMiddle || "",
       nameLast: relatedParty.nameLast || "",
@@ -93,6 +107,64 @@ const transformRelatedContacts = (relationships: any[] = []): Contact[] =>
     };
   });
 
+export type { ContactAddressLine };
+export { formatAddressLine };
+
+export interface ContactPhoneLine {
+  type: string;
+  number: string;
+}
+
+const digitsOf = (value: unknown) => String(value ?? "").replace(/\D/g, "");
+
+/** List and search extras derived from the party's real addresses, phones and Tax ID. */
+const listExtras = (party: any) => {
+  const rawAddresses: any[] = party.addresses ?? [];
+  const addressList = rawAddresses.map(toAddressLine);
+  const phoneList: ContactPhoneLine[] = (party.phones ?? [])
+    .map((pp: any) => ({ type: pp.phoneType || "", number: pp.phone?.number || "" }))
+    .filter((p: ContactPhoneLine) => p.number);
+  const mailing = pickMailingAddress(addressList, rawAddresses);
+  const taxDigits = digitsOf(party.taxInfo?.taxId);
+  const displayName =
+    [party.nameFirst, party.nameLast].filter(Boolean).join(" ") || party.nameFull || "";
+  return {
+    // nameFull also holds Name Line 2 (Contacts saves Line 2 as nameMiddle), so the list draws
+    // Line 1 and Line 2 separately from these.
+    displayName,
+    cityState: mailing ? [mailing.city, mailing.state].filter(Boolean).join(", ") : "",
+    mailingAddress: formatAddressLine(mailing),
+    addressList,
+    phoneList,
+    taxIdLast4: taxDigits.length >= 4 ? taxDigits.slice(-4) : "",
+    _searchText: [
+      displayName,
+      party.nameFull,
+      party.nameMiddle,
+      mockNameId(party.id),
+      party.email,
+      ...addressList.flatMap((a) => [a.line1, a.line2, a.city, a.state, a.zip]),
+      ...phoneList.map((p) => p.number),
+    ]
+      .filter(Boolean)
+      .join("\n")
+      .toLowerCase(),
+    _searchPhoneDigits: phoneList.map((p) => digitsOf(p.number)).join(" "),
+  };
+};
+
+/** Name, Name ID, Name Line 2, address parts, email and phone as typed; phone by digits alone
+ * ("432555" finds "(432) 555-0148"); and an exact Tax ID last 4. */
+const matchesSearch = (item: Record<string, any>, term: string): boolean => {
+  const lower = term.trim().toLowerCase();
+  if (!lower) return true;
+  if (String(item._searchText ?? "").includes(lower)) return true;
+  if (/[a-z]/.test(lower)) return false;
+  const digits = digitsOf(lower);
+  if (digits.length === 4 && item.taxIdLast4 === digits) return true;
+  return digits.length >= 3 && String(item._searchPhoneDigits ?? "").includes(digits);
+};
+
 const transformParties = (parties: any[], config: ModuleConfig) =>
   parties.map((party: any) => {
     const primaryPhone =
@@ -101,6 +173,7 @@ const transformParties = (parties: any[], config: ModuleConfig) =>
       null;
     return {
       id: party.id,
+      nameId: mockNameId(party.id),
       name: party.nameFull,
       phone: primaryPhone,
       phoneNumber: primaryPhone,
@@ -114,6 +187,7 @@ const transformParties = (parties: any[], config: ModuleConfig) =>
         : [],
       contacts: transformRelatedContacts(party.relatedContacts),
       _rawData: party,
+      ...listExtras(party),
       ...readConfigFields(party, config),
     };
   });
@@ -134,7 +208,7 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
     string,
     any
   > | null>(null);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<ContactPerson[]>([]);
 
   const { data = [], isLoading: loading } = useQuery({
     queryKey,
@@ -155,14 +229,32 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey });
 
+  // Ids created during a failed add, so a retry updates them instead of creating duplicates.
+  const createdPartyIdRef = useRef<number | null>(null);
+  const createdAddressIdsRef = useRef<Record<number, number>>({});
+  const createdPhoneIdsRef = useRef<Record<number, number>>({});
+  const resetCreatedRefs = () => {
+    createdPartyIdRef.current = null;
+    createdAddressIdsRef.current = {};
+    createdPhoneIdsRef.current = {};
+  };
+
   const transformFormDataToGraphQL = (formData: any) => {
     const result: any = { accountId };
     config.fields.forEach((f) => {
-      if (!f.graphqlKey) return;
+      // The vendor tab's fields always hold starting values (so adding VENDOR shows defaults),
+      // so a hidden one would otherwise write vendorInfo for every non-vendor contact.
+      if (!f.graphqlKey || !isFieldShown(f, formData)) return;
       const raw = formData[f.id];
       const val = f.toGraphQL ? f.toGraphQL(raw) : raw;
       if (val !== undefined && val !== null && val !== "") {
         assignGraphQLValue(result, f.graphqlKey, val);
+      } else if (f.clearable && view === "edit" && String(raw ?? "").trim() === "") {
+        // The BE only skips null, so "" is the only way to empty a column that held a value.
+        const loaded = selectedItem?.[f.id];
+        if (loaded !== undefined && loaded !== null && String(loaded) !== "") {
+          assignGraphQLValue(result, f.graphqlKey, "");
+        }
       }
     });
     return result;
@@ -187,9 +279,19 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
       }
     }
 
-    for (const addr of addresses) {
+    for (const [index, addr] of addresses.entries()) {
       if (!addr.address && !addr.city) continue;
-      if (!isNew && addr._addressId) {
+      const createdAddressId = isNew ? createdAddressIdsRef.current[index] : undefined;
+      if (createdAddressId) {
+        await executeGraphQL(UPDATE_ADDRESS_MUTATION, {
+          id: createdAddressId,
+          line1: addr.address || undefined,
+          line2: addr.addressLine2 || undefined,
+          city: addr.city || undefined,
+          stateCode: addr.state || undefined,
+          postalCode: addr.zip || undefined,
+        });
+      } else if (!isNew && addr._addressId) {
         await executeGraphQL(UPDATE_ADDRESS_MUTATION, {
           id: addr._addressId,
           line1: addr.address || undefined,
@@ -214,6 +316,7 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
           addressType: addr.type,
           isPrimary: addr.type === "Physical",
         });
+        if (isNew) createdAddressIdsRef.current[index] = addressId;
       }
     }
   };
@@ -236,9 +339,12 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
       }
     }
 
-    for (const phone of phones) {
+    for (const [index, phone] of phones.entries()) {
       if (!phone.number) continue;
-      if (!isNew && phone._phoneId) {
+      const createdPhoneId = isNew ? createdPhoneIdsRef.current[index] : undefined;
+      if (createdPhoneId) {
+        await executeGraphQL(UPDATE_PHONE_MUTATION, { id: createdPhoneId, number: phone.number });
+      } else if (!isNew && phone._phoneId) {
         const original = ((selectedItem as any)?._rawData?.phones || []).find(
           (p: any) => parseInt(p.id, 10) === phone._partyPhoneId,
         );
@@ -260,15 +366,17 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
           phoneType: phone.type,
           isPrimary: false,
         });
+        if (isNew) createdPhoneIdsRef.current[index] = phoneId;
       }
     }
   };
 
+  /** Resolves to the saved party's id, or null when the save failed (saveError is set). */
   const handleSave = async (
     formData: any,
     addresses: AddressEntry[],
     phones: PhoneEntry[],
-  ) => {
+  ): Promise<number | null> => {
     try {
       const variables = transformFormDataToGraphQL(formData);
       const {
@@ -281,40 +389,44 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
         ...partyVariables
       } = variables;
 
-      const nameFull = [
-        partyVariables.nameFirst,
-        partyVariables.nameMiddle,
-        partyVariables.nameLast,
-      ]
+      // The form has no last-name field, so imported parties keep the one they were loaded with.
+      const nameLast = partyVariables.nameLast || selectedItem?._rawData?.nameLast;
+      const nameFull = [partyVariables.nameFirst, partyVariables.nameMiddle, nameLast]
         .filter(Boolean)
         .join(" ");
 
-      if (view === "add") {
+      const isNew = view === "add";
+      let savedPartyId: number;
+      if (isNew && createdPartyIdRef.current == null) {
         const partyResult = await executeGraphQL(CREATE_PARTY_MUTATION, {
           ...partyVariables,
           partyTypes: partyVariables.partyTypes ?? [],
           nameFull,
         });
-        const partyId = parseInt(partyResult.createParty.party.id, 10);
-        await saveAddresses(partyId, addresses, true);
-        await savePhones(partyId, phones, true);
+        savedPartyId = parseInt(partyResult.createParty.party.id, 10);
+        createdPartyIdRef.current = savedPartyId;
       } else {
-        const partyId = parseInt(selectedItem?.id, 10);
+        savedPartyId = isNew ? createdPartyIdRef.current! : parseInt(selectedItem?.id, 10);
+        // notes isn't sent: updateParty only writes the arguments it's given, so the BE notes
+        // (shown as the oldest entry in the comment log) are left as they are.
         await executeGraphQL(UPDATE_PARTY_MUTATION, {
-          id: partyId,
+          id: savedPartyId,
           ...partyVariables,
           nameFull,
         });
-        await saveAddresses(partyId, addresses, false);
-        await savePhones(partyId, phones, false);
       }
+      await saveAddresses(savedPartyId, addresses, isNew);
+      await savePhones(savedPartyId, phones, isNew);
 
+      resetCreatedRefs();
       await invalidate();
       setView("list");
       setSelectedItem(null);
+      return savedPartyId;
     } catch (error) {
       console.error("Failed to save party:", error);
       setSaveError((error as Error).message);
+      return null;
     }
   };
 
@@ -344,7 +456,11 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
 
   const cancelDelete = () => setPendingDeleteItem(null);
 
-  const buildContactName = (c: Omit<Contact, "id">) =>
+  /** The new text, "" when it was emptied from a loaded value (the BE ignores null), else undefined. */
+  const clearableText = (next: string | undefined, loaded: string | undefined) =>
+    next ? next : loaded ? "" : undefined;
+
+  const buildContactName =(c: Omit<Contact, "id">) =>
     [c.nameFirst, c.nameMiddle, c.nameLast].filter(Boolean).join(" ");
 
   const saveContactAddress = async (partyId: number, contact: Omit<Contact, "id">) => {
@@ -386,8 +502,8 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
     contact: Omit<Contact, "id">,
     existing?: Contact,
   ) => {
-    if (!contact.phone) return;
     if (existing?._phoneId) {
+      if (contact.phone === (existing.phone ?? "")) return;
       await executeGraphQL(UPDATE_PHONE_MUTATION, {
         id: existing._phoneId,
         number: contact.phone,
@@ -469,9 +585,9 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
           id: existing._relatedPartyId,
           nameFull: buildContactName(contact),
           nameFirst: contact.nameFirst,
-          nameMiddle: contact.nameMiddle || undefined,
+          nameMiddle: clearableText(contact.nameMiddle, existing.nameMiddle),
           nameLast: contact.nameLast,
-          email: contact.email || undefined,
+          email: clearableText(contact.email, existing.email),
         });
         await updateContactPhone(existing._relatedPartyId, contact, existing);
         await updateContactAddress(existing._relatedPartyId, contact, existing);
@@ -479,7 +595,7 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
       await executeGraphQL(UPDATE_PARTY_RELATIONSHIP_MUTATION, {
         id,
         relationshipType: "internal_contact",
-        notes: contact.role || undefined,
+        notes: clearableText(contact.role, existing?.role),
       });
       setContacts((prev: Contact[]) =>
         prev.map((c: Contact) =>
@@ -512,22 +628,9 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
     }
   };
 
-  const SEARCH_FIELDS = ["name", "nameId", "address", "city", "state", "zip"];
-
   const filteredData = useMemo(() => {
-    if (!searchTerm) return data;
-    const searchLower = searchTerm.toLowerCase();
-    return data.filter((item: Record<string, any>) =>
-      SEARCH_FIELDS.some((fieldId) => {
-        const value = (item as Record<string, any>)[fieldId];
-        if (Array.isArray(value)) {
-          return value.some((v) =>
-            v?.toString().toLowerCase().includes(searchLower),
-          );
-        }
-        return value?.toString().toLowerCase().includes(searchLower);
-      }),
-    );
+    if (!searchTerm.trim()) return data;
+    return data.filter((item: Record<string, any>) => matchesSearch(item, searchTerm));
   }, [data, searchTerm]);
 
   return {
@@ -544,12 +647,14 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
     filteredData,
     setSearchTerm,
     handleAdd: () => {
+      resetCreatedRefs();
       setSelectedItem(null);
       setView("add");
     },
     handleEdit: (item: Record<string, any>) => {
+      resetCreatedRefs();
       setSelectedItem(item);
-      setContacts((item.contacts as Contact[]) || []);
+      setContacts((item.contacts as ContactPerson[]) || []);
       setSaveError(null);
       setView("edit");
     },
@@ -560,6 +665,7 @@ export const useContacts = ({ config, accountId }: UseContactsDataProps) => {
     handleSave,
     handleDelete,
     handleCancel: () => {
+      resetCreatedRefs();
       setView("list");
       setSelectedItem(null);
       setSaveError(null);
