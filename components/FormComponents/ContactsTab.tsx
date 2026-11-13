@@ -180,7 +180,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
           <div className="grid grid-cols-2 gap-4">
             {/* Name */}
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 First Name{" "}
                 <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
@@ -194,7 +194,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Middle Name
               </Label>
               <Input
@@ -207,7 +207,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Last Name{" "}
                 <span className="text-red-500 text-sm font-bold">*</span>
               </Label>
@@ -219,7 +219,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Role / Department
               </Label>
               <Input
@@ -232,7 +232,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Phone & Email */}
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Phone
               </Label>
               <Input
@@ -244,7 +244,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Email
               </Label>
               <Input
@@ -258,7 +258,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address Type */}
             <div className="col-span-2">
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Address Type
               </Label>
               <div className="flex flex-wrap gap-2">
@@ -288,7 +288,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* Address */}
             <div className="col-span-2">
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Address
               </Label>
               <Input
@@ -299,7 +299,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div className="col-span-2">
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Address Line 2
               </Label>
               <Input
@@ -314,7 +314,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
 
             {/* City / State / Zip */}
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 City
               </Label>
               <Input
@@ -325,7 +325,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               />
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 State
               </Label>
               <Select
@@ -349,7 +349,7 @@ export const ContactsTab: React.FC<ContactsTabProps> = ({
               </Select>
             </div>
             <div>
-              <Label className="text-white font-semibold text-sm mb-2 block">
+              <Label className="form-field-label font-semibold text-sm mb-2 block">
                 Zip
               </Label>
               <Input

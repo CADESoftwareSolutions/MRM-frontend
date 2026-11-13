@@ -45,12 +45,16 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
   const router = useRouter();
   const setModuleView = useSetAtom(moduleViewAtom);
 
+  // asPath, not pathname: next.config.js rewrites e.g. /Dashboard/deeds to
+  // /Dashboard/DashboardDirectory/Deeds, and pathname is the rewritten page path, which never
+  // matches the menu's routes.
+  const isCurrentRoute = (route: string) =>
+    router.asPath.split(/[?#]/)[0].toLowerCase() === route.toLowerCase();
+
   // Module pages switch between their list and add/edit form via moduleViewAtom, not the URL, so
   // pushing the route you're already on does nothing — reset the view to get back to the list.
-  // asPath, not pathname: next.config.js rewrites e.g. /Dashboard/deeds to
-  // /Dashboard/DashboardDirectory/Deeds, and pathname is the rewritten page path.
   const navigate = (route: string) => {
-    if (router.asPath.split(/[?#]/)[0] === route) setModuleView("list");
+    if (isCurrentRoute(route)) setModuleView("list");
     else router.push(route);
   };
 
@@ -203,7 +207,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
           {menuItems.map((group) => {
             const Icon = group.icon;
             const isActive =
-              group.type === "link" && router.pathname === group.route;
+              group.type === "link" && isCurrentRoute(group.route!);
 
             const navText = isLight ? "text-purple-900" : "text-white";
             const navHover = isLight
@@ -285,7 +289,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
                           variant="ghost"
                           onClick={() => navigate(subItem.route)}
                           className={`w-full justify-start h-9 text-sm cursor-pointer px-4 ${subText} ${navHover} ${
-                            router.pathname === subItem.route ? subActive : ""
+                            isCurrentRoute(subItem.route) ? subActive : ""
                           }`}
                         >
                           {subItem.text}
@@ -307,7 +311,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
         }}
       >
         <DashboardHeader sidebarWidth={sidebarWidth} />
-        <div className={isLight ? "light-theme" : ""}>{children}</div>
+        <div className={`dashboard-content ${isLight ? "light-theme" : ""}`}>{children}</div>
       </main>
 
       <ToastHost />

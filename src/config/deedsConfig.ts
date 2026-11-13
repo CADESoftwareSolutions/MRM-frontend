@@ -43,7 +43,18 @@ export const deedsConfig: ModuleConfig = {
       type: "readonly" as const,
       tab: "basic",
       section: "identification",
-      gridColumn: "span 2" as const,
+      gridColumn: "span 1" as const,
+    },
+
+    // Read-only, beside Deed #: the Tract #s linked on the Legal Descriptions tab
+    // (LinkedTractNumbers, wired up in Deeds/index.tsx). Not part of the deed mutation.
+    {
+      id: "tractNumbers",
+      label: "Tract #",
+      type: "custom" as const,
+      tab: "basic",
+      section: "identification",
+      gridColumn: "span 1" as const,
     },
 
     // documentType + interestType share a row

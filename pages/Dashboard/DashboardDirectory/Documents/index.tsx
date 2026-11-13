@@ -13,8 +13,8 @@ const Documents = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen px-6 pb-6 pt-20">
-        <div className="max-w-7xl mx-auto" />
+      <div className="min-h-screen px-3 pb-6 pt-20">
+        <div className="max-w-[92rem] mx-auto" />
       </div>
     </DashboardLayout>
   );

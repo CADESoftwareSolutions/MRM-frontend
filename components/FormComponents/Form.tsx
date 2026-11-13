@@ -326,7 +326,7 @@ const FormImpl: React.ForwardRefRenderFunction<FormHandle, FormProps> = (
                 : ""
         }
       >
-        <Label className="text-white font-semibold flex items-center gap-1 mb-1 text-sm">
+        <Label className="form-field-label font-semibold flex items-center gap-1 mb-1 text-sm">
           {field.label}
           {field.required && (
             <span className="text-red-500 text-sm font-bold">*</span>

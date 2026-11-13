@@ -15,9 +15,28 @@ export const tractsConfig: ModuleConfig = {
     { id: "legal", label: "Legal Description" },
     { id: "crossReferences", label: "Cross-References" },
   ],
-  listFields: ["label", "tractTypeLabel", "stateCode", "countyName", "grossAcres"],
+  listFields: ["id", "tractLabel", "tractTypeLabel", "stateCode", "countyName", "grossAcres"],
+  listLabels: { id: "Tract #", tractLabel: "Name" },
+  listColumnsVersion: 2,
   fields: [
     // ========== LEGAL DESCRIPTION TAB ==========
+    // Tract # + optional name sit above the legal description, in Form's header-less "default"
+    // section, rather than inside it: Tract # is the BE-assigned id (read-only, like Deed #) and is
+    // what ties a Deed/Lease/Well's legal description back to this record on the Tracts screen.
+    {
+      id: "id",
+      label: "Tract #",
+      type: "readonly" as const,
+      tab: "legal",
+      section: "default",
+    },
+
+    field.text("tractLabel", "Tract Name", {
+      placeholder: "Optional, e.g. North 40",
+      tab: "legal",
+      section: "default",
+    }),
+
     // State/County moved here from Tract Details — a legal description reads as incomplete
     // without them, and they're now the row directly under the type selector. sectionColumns: 6
     // opts this whole section into a 6-column grid (Form.tsx) so rows of 1, 2, or 3 fields can
@@ -57,6 +76,7 @@ export const tractsConfig: ModuleConfig = {
       gridColumn: "span 3" as const,
       countyStateField: "stateCode",
       placeholder: "Select county",
+      showCountyCode: true,
     },
 
     // Required status below mirrors the backend's own per-type rule exactly (mrm_geo.constants'
@@ -143,24 +163,12 @@ export const tractsConfig: ModuleConfig = {
       dependsOnValue: ["block_section_survey", "metes_and_bounds", "freeform"],
     }),
 
-    // ── Row: Tract Name + Lot + Township (Block/Section/Survey only) — tractLabel (below) is
-    //     the one free-text field tractDisplayLabel() falls back to for a tract's name/label
-    //     wherever it's listed or picked (useTracts.ts), so it's present on every type. ──
-    field.text("tractLabel", "Tract Name", {
-      placeholder: "e.g. North 40",
-      tab: "legal",
-      section: "legal-description",
-      sectionColumns: 6,
-      gridColumn: "span 2",
-      dependsOn: "tractType",
-      dependsOnValue: ["block_section_survey"],
-    }),
-
+    // ── Row: Lot + Township (Block/Section/Survey only) ──
     field.text("lotNo", "Lot", {
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
-      gridColumn: "span 2",
+      gridColumn: "span 3",
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey"],
     }),
@@ -169,7 +177,7 @@ export const tractsConfig: ModuleConfig = {
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
-      gridColumn: "span 2",
+      gridColumn: "span 3",
       dependsOn: "tractType",
       dependsOnValue: ["block_section_survey"],
     }),
@@ -224,55 +232,15 @@ export const tractsConfig: ModuleConfig = {
       dependsOnValue: ["rectangular_str"],
     }),
 
-    // ── Quarter Calls, alone on its own row (Block/Section/Survey only — it already has its
-    //     own Tract Name field above, paired with Lot/Township instead). ──
+    // ── Quarter Calls, alone on its own row (every type) — placed after every type's own rows
+    //     above, so it lands last before the Legal Description text for each of them. ──
     field.text("quarterCalls", "Quarter Calls/Aliquot", {
       tab: "legal",
       section: "legal-description",
       sectionColumns: 6,
       gridColumn: "span 6",
       dependsOn: "tractType",
-      dependsOnValue: ["block_section_survey"],
-    }),
-
-    // ── Row: Tract Name + Quarter Calls (Rectangular STR only) ──
-    field.text("tractLabel", "Tract Name", {
-      placeholder: "e.g. North 40",
-      tab: "legal",
-      section: "legal-description",
-      sectionColumns: 6,
-      gridColumn: "span 3",
-      dependsOn: "tractType",
-      dependsOnValue: ["rectangular_str"],
-    }),
-
-    field.text("quarterCalls", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-description",
-      sectionColumns: 6,
-      gridColumn: "span 3",
-      dependsOn: "tractType",
-      dependsOnValue: ["rectangular_str"],
-    }),
-
-    // ── Row: Tract Name + Quarter Calls (Metes and Bounds, Freeform only) ──
-    field.text("tractLabel", "Tract Name", {
-      placeholder: "e.g. North 40",
-      tab: "legal",
-      section: "legal-description",
-      sectionColumns: 6,
-      gridColumn: "span 3",
-      dependsOn: "tractType",
-      dependsOnValue: ["metes_and_bounds", "freeform"],
-    }),
-
-    field.text("quarterCalls", "Quarter Calls/Aliquot", {
-      tab: "legal",
-      section: "legal-description",
-      sectionColumns: 6,
-      gridColumn: "span 3",
-      dependsOn: "tractType",
-      dependsOnValue: ["metes_and_bounds", "freeform"],
+      dependsOnValue: ["block_section_survey", "rectangular_str", "metes_and_bounds", "freeform"],
     }),
 
     field.textarea("legalDescription", "Legal Description", {

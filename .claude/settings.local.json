@@ -3,5 +3,8 @@
     "allow": [
       "Bash(npm install:*)"
     ]
+  },
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   }
 }

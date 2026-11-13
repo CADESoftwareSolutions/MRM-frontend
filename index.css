@@ -41,25 +41,63 @@ body {
 .text-white\/40 { color: rgb(255 255 255 / 0.60); }
 .text-white\/30 { color: rgb(255 255 255 / 0.48); }
 
+/* Same boost for faded purple text. Scoped to dark mode (light mode has its own mapping below),
+   and :not(:hover) so these unlayered rules don't override each element's own hover:text-* utility. */
+:root[data-theme="dark"] .text-purple-300\/80:not(:hover) { color: rgb(216 180 254 / 0.95); }
+:root[data-theme="dark"] .text-purple-300\/70:not(:hover) { color: rgb(216 180 254 / 0.9); }
+:root[data-theme="dark"] .text-purple-300\/60:not(:hover) { color: rgb(216 180 254 / 0.85); }
+:root[data-theme="dark"] .text-purple-300\/50:not(:hover) { color: rgb(216 180 254 / 0.75); }
+:root[data-theme="dark"] .text-purple-200\/80:not(:hover) { color: rgb(233 213 255 / 0.95); }
+:root[data-theme="dark"] .text-purple-200\/70:not(:hover) { color: rgb(233 213 255 / 0.9); }
+
+/* ── Dashboard text size: every size 2px up ──
+   Tailwind v4's text-* utilities read their size from these theme variables, so redefining them
+   on the content wrapper resizes every page's text without touching each component. Line heights
+   are ratios and scale along. Portaled popups render outside the wrapper, hence the data-slot list. */
+.dashboard-content,
+:root[data-theme] [data-slot="select-content"],
+:root[data-theme] [data-slot="popover-content"],
+:root[data-theme] [data-slot="tooltip-content"] {
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.625rem;
+}
+.dashboard-content { font-size: 1.125rem; }
+
 /* ── Light theme overrides ──
    No !important needed: this CSS is outside @layer so it has higher
    cascade priority than Tailwind's @layer utilities automatically.
    Only exception is the scroll-lock rule above which fights Radix UI. */
 
+/* Most light-mode text is an isLight ? "text-gray-*" ternary, and those utilities read these
+   variables — shifting each down one shade darkens all of it in one place, and unlike per-class
+   overrides it leaves their hover:text-* variants working. */
+.light-theme {
+  color: rgb(3 7 18);
+  --color-gray-500: oklch(44.6% 0.03 256.802);
+  --color-gray-600: oklch(37.3% 0.034 259.733);
+  --color-gray-700: oklch(27.8% 0.033 256.848);
+  --color-gray-800: oklch(21% 0.034 264.665);
+  --color-gray-900: oklch(13% 0.028 261.692);
+}
+
 /* Text colours */
-.light-theme .text-white          { color: rgb(17 24 39); }
+.light-theme .text-white          { color: rgb(3 7 18); }
 .light-theme .text-white\/90,
-.light-theme .text-white\/80      { color: rgb(17 24 39); }
-.light-theme .text-white\/70      { color: rgb(75 85 99); }
+.light-theme .text-white\/80      { color: rgb(3 7 18); }
+.light-theme .text-white\/70      { color: rgb(55 65 81); }
 .light-theme .text-white\/60,
-.light-theme .text-white\/50      { color: rgb(107 114 128); }
-.light-theme .text-white\/40      { color: rgb(156 163 175); }
-.light-theme .text-white\/30      { color: rgb(209 213 219); }
-.light-theme .text-purple-100     { color: rgb(55 65 81); }
+.light-theme .text-white\/50      { color: rgb(75 85 99); }
+.light-theme .text-white\/40      { color: rgb(107 114 128); }
+.light-theme .text-white\/30      { color: rgb(156 163 175); }
+.light-theme .text-purple-100     { color: rgb(31 41 55); }
 .light-theme .text-purple-200     { color: rgb(88 28 135); }
 .light-theme .text-purple-300     { color: rgb(124 58 237); }
 .light-theme .text-purple-300\/70 { color: rgb(100 80 180); }
-.light-theme .text-gray-300       { color: rgb(75 85 99); }
+.light-theme .text-gray-300       { color: rgb(55 65 81); }
 .light-theme .text-blue-200,
 .light-theme .text-blue-300       { color: rgb(29 78 216); }
 .light-theme .text-red-300        { color: rgb(185 28 28); }
@@ -81,9 +119,14 @@ body {
 .light-theme .bg-purple-700,
 .light-theme .bg-purple-700:hover { color: white; }
 
+/* Field labels — tinted purple in both themes so they read as distinct from the white
+   (dark) / near-black (light) values typed into the inputs beneath them. */
+.form-field-label { color: rgb(216 180 254); }
+.light-theme .form-field-label { color: rgb(126 34 206); }
+
 /* Help text */
 .form-help-text { color: rgb(216 180 254); }
-.light-theme .form-help-text { color: rgb(107 114 128); }
+.light-theme .form-help-text { color: rgb(75 85 99); }
 
 /* Backgrounds */
 .light-theme .bg-white\/5  { background-color: rgb(255 255 255); }
@@ -129,7 +172,7 @@ textarea,
 .light-theme [data-slot="textarea"],
 .light-theme [data-slot="select-trigger"] {
   background-color: rgb(252 250 255);
-  color: rgb(17 24 39);
+  color: rgb(3 7 18);
   border-color: rgb(124 58 237);
 }
 .light-theme input::placeholder,
@@ -141,7 +184,7 @@ textarea,
   border-color: rgb(196 181 253);
 }
 .light-theme [data-slot="select-item"],
-:root[data-theme="light"] [data-slot="select-item"] { color: rgb(17 24 39); }
+:root[data-theme="light"] [data-slot="select-item"] { color: rgb(3 7 18); }
 .light-theme [data-slot="select-item"]:hover,
 .light-theme [data-slot="select-item"]:focus,
 :root[data-theme="light"] [data-slot="select-item"]:hover,
@@ -174,7 +217,7 @@ textarea,
 }
 [data-slot="popover-content"] .cal-caption { color: rgb(255 255 255); }
 .light-theme [data-slot="popover-content"] .cal-caption,
-:root[data-theme="light"] [data-slot="popover-content"] .cal-caption { color: rgb(17 24 39); }
+:root[data-theme="light"] [data-slot="popover-content"] .cal-caption { color: rgb(3 7 18); }
 
 [data-slot="popover-content"] .cal-weekday { color: rgb(196 181 253 / 0.7); }
 .light-theme [data-slot="popover-content"] .cal-weekday,
@@ -193,7 +236,7 @@ textarea,
 [data-slot="popover-content"] .cal-day-btn { color: rgb(255 255 255 / 0.9); }
 [data-slot="popover-content"] .cal-day-btn:hover { background-color: rgb(147 51 234 / 0.2); }
 .light-theme [data-slot="popover-content"] .cal-day-btn,
-:root[data-theme="light"] [data-slot="popover-content"] .cal-day-btn { color: rgb(17 24 39); }
+:root[data-theme="light"] [data-slot="popover-content"] .cal-day-btn { color: rgb(3 7 18); }
 .light-theme [data-slot="popover-content"] .cal-day-btn:hover,
 :root[data-theme="light"] [data-slot="popover-content"] .cal-day-btn:hover { background-color: rgb(147 51 234 / 0.12); }
 

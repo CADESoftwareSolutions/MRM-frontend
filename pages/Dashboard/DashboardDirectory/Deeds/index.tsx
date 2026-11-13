@@ -7,6 +7,7 @@ import { DeleteConfirmModal } from "../../../../components/modals/DeleteConfirmM
 import { LeaseAttachmentsTab } from "../../../../components/FormComponents/LeaseAttachmentsTab";
 import { CrossReferencesTab } from "../../../../components/FormComponents/CrossReferencesTab";
 import { TractPickerField, TractPickerFieldHandle, TractLinkEntry } from "../../../../components/FormComponents/TractPickerField";
+import { LinkedTractNumbers } from "../../../../components/FormComponents/LinkedTractNumbers";
 import {
   AcquisitionPickerField,
   AcquisitionLinkValue,
@@ -180,8 +181,8 @@ const Deeds = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen px-6 pb-6 pt-20">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen px-3 pb-6 pt-20">
+        <div className="max-w-[92rem] mx-auto">
           {view === "list" && (
             <div className="flex justify-end mb-4">
               <Button
@@ -236,6 +237,7 @@ const Deeds = () => {
                 setLiveLocation({ stateCode: values.stateCode, countyName: values.countyName })
               }
               customContent={{
+                tractNumbers: <LinkedTractNumbers tracts={tracts} />,
                 acquisition: (
                   <AcquisitionPickerField
                     value={acquisitionLink}

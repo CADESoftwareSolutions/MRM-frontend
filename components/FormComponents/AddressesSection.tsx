@@ -47,7 +47,7 @@ const emptyAddress = (type: string): AddressEntry => ({
 });
 
 const commonInput = "bg-white/5 border-purple-300/30 text-white h-9 placeholder:text-white/30";
-const labelClass = "text-purple-100 font-semibold text-sm mb-2 block";
+const labelClass = "form-field-label font-semibold text-sm mb-2 block";
 
 export const AddressesSection = ({
   value,

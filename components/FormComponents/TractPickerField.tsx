@@ -47,7 +47,7 @@ export type TractPickerFieldHandle = LegalDescriptionFormHandle;
 
 const inputCls =
   "w-full h-9 bg-white/5 border border-purple-300/30 rounded-md px-2 text-sm text-white placeholder:text-white/30 outline-none focus:border-purple-400 transition-colors";
-const labelCls = "block text-xs font-medium text-purple-200 mb-1";
+const labelCls = "block text-xs font-medium form-field-label mb-1";
 
 // Shared by useLeases.ts/useDeeds.ts/useWells.ts: all three bind their record to tracts
 // through an identically-shaped tract_join row (tractId, sortOrder, grossAcres, netAcres,
@@ -86,11 +86,16 @@ const filterTracts = (tracts: TractOption[], query: string, excludeIds: Set<numb
   const available = tracts.filter((tract) => !excludeIds.has(toTractId(tract.id)));
   const lower = query.trim().toLowerCase();
   if (!lower) return available.slice(0, 25);
+  // "12", "#12" and "tract #12" all find Tract #12 (and #120…, as it's typed).
+  const idQuery = lower.replace(/^(tract\s*)?#?\s*/, "");
+  const isIdQuery = /^\d+$/.test(idQuery);
   return available
-    .filter((tract) =>
-      [tract.tractNo, tract.tractLabel, tract.stateCode, tract.countyName].some((field) =>
-        field?.toLowerCase().includes(lower),
-      ),
+    .filter(
+      (tract) =>
+        (isIdQuery && String(tract.id).startsWith(idQuery)) ||
+        [tract.tractNo, tract.tractLabel, tract.stateCode, tract.countyName].some((field) =>
+          field?.toLowerCase().includes(lower),
+        ),
     )
     .slice(0, 25);
 };
@@ -247,7 +252,7 @@ const TractPickerFieldImpl = (
                 setOpen(true);
               }}
               onFocus={() => setOpen(true)}
-              placeholder="Search tracts by number, state, or county"
+              placeholder="Search tracts by Tract #, name, state, or county"
               className={`${inputCls} pl-9`}
             />
           </div>
@@ -318,7 +323,9 @@ const TractPickerFieldImpl = (
             const fullTract = tractsById.get(toTractId(entry.tractId));
             const expanded = expandedIds.has(entry.tractId);
             const keyValues = fullTract ? keyLegalValues(fullTract) : [];
-            const name = entry.tractName || `Tract #${entry.tractId}`;
+            const tractNumber = `Tract #${entry.tractId}`;
+            const tractName = fullTract ? fullTract.tractLabel || fullTract.tractNo : null;
+            const name = fullTract ? tractDisplayLabel(fullTract) : entry.tractName || tractNumber;
             const dividerCls = `h-6 w-px shrink-0 ${isLight ? "bg-purple-300" : "bg-purple-300/40"}`;
 
             return (
@@ -352,8 +359,9 @@ const TractPickerFieldImpl = (
                   {/* Each value's divider sits in the gap to its left, so the one starting a
                       wrapped line falls outside this box and overflow-hidden clips it. */}
                   <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-9 gap-y-1 overflow-hidden">
-                    <span title={name} className="min-w-0 max-w-full truncate text-sm font-semibold text-purple-200">
-                      {name}
+                    <span title={name} className="flex min-w-0 max-w-full items-baseline gap-2">
+                      <span className="shrink-0 text-sm font-semibold text-purple-200">{tractNumber}</span>
+                      {tractName && <span className="truncate text-sm text-white/80">{tractName}</span>}
                     </span>
                     {keyValues.map(({ id, label, value }) => (
                       <span key={id} className="relative flex min-w-0 max-w-full items-baseline gap-1.5">

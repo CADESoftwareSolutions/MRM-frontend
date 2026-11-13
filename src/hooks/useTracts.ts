@@ -50,13 +50,13 @@ export interface TractOption extends TractFields {
   joins?: any[];
 }
 
-// Tract has no single "name" column — build a display label from whatever identifying fields
-// are set. Used by the standalone Tracts screen's list/search.
-export const tractDisplayLabel = (tract: { id: number; tractNo?: string | null; tractLabel?: string | null; stateCode?: string | null; countyName?: string | null }): string =>
-  tract.tractNo ||
-  tract.tractLabel ||
-  [tract.countyName, tract.stateCode].filter(Boolean).join(", ") ||
-  `Tract #${tract.id}`;
+// "Tract #12", plus its optional name when it has one ("Tract #12 - North 40"). Tract # is the id,
+// so it's what matches a linked legal description to its row on the Tracts screen. tractNo has no
+// form field; it's only the name fallback for older tracts that carry one and no tractLabel.
+export const tractDisplayLabel = (tract: { id: number; tractNo?: string | null; tractLabel?: string | null }): string => {
+  const name = tract.tractLabel || tract.tractNo;
+  return name ? `Tract #${tract.id} - ${name}` : `Tract #${tract.id}`;
+};
 
 const TRACT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   TRACT_TYPE_OPTIONS.map((option) => [option.value, option.label])

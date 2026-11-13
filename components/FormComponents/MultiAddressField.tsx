@@ -48,7 +48,7 @@ const emptyAddress = (type: string): AddressEntry => ({
 });
 
 const inputCls = "bg-white/5 border-purple-300/30 text-white h-9 placeholder:text-white/30";
-const labelCls = "text-purple-100 font-semibold text-sm mb-1.5 block";
+const labelCls = "form-field-label font-semibold text-sm mb-1.5 block";
 
 export const MultiAddressField = ({
   value,

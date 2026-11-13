@@ -66,7 +66,7 @@ export const toAcquisitionLinkValue = (link?: DeedAcquisitionLink | null): Acqui
 const NO_ACQUISITION = "__none__";
 
 const inputClasses = "bg-white/5 border-purple-300/30 text-white h-9";
-const labelClasses = "text-white font-semibold flex items-center gap-1 text-sm";
+const labelClasses = "form-field-label font-semibold flex items-center gap-1 text-sm";
 const itemClasses =
   "hover:bg-purple-400/30 focus:bg-purple-400/40 data-[highlighted]:bg-purple-400/30 cursor-pointer text-white";
 

@@ -9,6 +9,7 @@ import { Modal, ModalHeader } from "../modals/Modal";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { showToastAtom } from "@/atoms/toastAtom";
 import tractsConfig from "@/config/tractsConfig";
+import type { FieldConfig } from "@/config/contactsConfig";
 import { buildTractInput, tractDisplayLabel, TractOption } from "@/hooks/useTracts";
 import { useStateCountyReference } from "@/hooks/useStateCountyReference";
 import { formatCountyWithCode, formatStateWithCode } from "@/lib/stateCounty";
@@ -70,24 +71,40 @@ export interface LegalDescriptionFormHandle {
 // TRACT_TYPE_REQUIRED_FIELDS and applies here unchanged via react-hook-form's normal validation.
 //
 // stateCode/countyName are excluded entirely — State/County is set once on the parent Lease/
-// Deed/Well's own Basic Information tab and shown here as a plain read-only line (see the JSX
+// Deed/Well's own Basic Information tab and shown here read-only (the "location" custom field
 // below), not as editable fields on three different tabs that can drift out of sync with each
 // other. The standalone Tracts screen is unaffected — it renders tractsConfig directly, not
 // this filtered copy, so stateCode/countyName stay fully editable there.
 const legalOnlyFields = tractsConfig.fields.filter(
   (f) => f.tab === "legal" && f.id !== "stateCode" && f.id !== "countyName",
 );
-// The "LEGAL DESCRIPTION" section header Form.tsx would otherwise print is redundant here —
-// this card already has its own "New/Edit Legal Description" label right above it. Cloning
-// (rather than mutating) keeps tractsConfig's own field objects — shared with the standalone
-// Tracts screen — untouched; hideSectionHeader only needs to be set on one field since it's
-// read off the whole section.
+const LOCATION_FIELD: FieldConfig = {
+  id: "location",
+  label: "Location",
+  type: "custom",
+  tab: "legal",
+  section: "default",
+  gridColumn: "span 2",
+};
+// The read-only State/County row goes right after Tract # / Tract Name, so the card leads with
+// which tract this is and the section divider below separates that from the legal description
+// body. The "LEGAL DESCRIPTION" header Form.tsx would print over that divider is redundant here —
+// this card already has its own "New/Edit Legal Description" label. Cloning (rather than
+// mutating) keeps tractsConfig's own field objects — shared with the standalone Tracts screen —
+// untouched; hideSectionHeader only needs to be on one field since it's read off the whole section.
 const legalOnlyConfig = {
   ...tractsConfig,
   itemName: "Legal Description",
   tabs: tractsConfig.tabs.filter((t) => t.id === "legal"),
-  fields: legalOnlyFields.map((f, i) => (i === 0 ? { ...f, hideSectionHeader: true } : f)),
+  fields: legalOnlyFields.flatMap((f) => {
+    if (f.id === "tractLabel") return [f, LOCATION_FIELD];
+    if (f.id === "tractType") return [{ ...f, hideSectionHeader: true }];
+    return [f];
+  }),
 };
+
+const readonlyValueCls =
+  "h-9 flex items-center px-3 rounded-md bg-white/5 border border-purple-300/20 text-white/70 text-sm";
 
 const normalize = (value: unknown): string => String(value ?? "").trim().toLowerCase();
 
@@ -185,11 +202,8 @@ const LegalDescriptionFormImpl = (
           id,
           tractNo: tract.tractNo != null ? String(tract.tractNo) : null,
           tractLabel: tract.tractLabel != null ? String(tract.tractLabel) : null,
-          stateCode: tract.stateCode,
-          countyName: tract.countyName,
         });
-        const tractNumber = `Tract #${id}`;
-        showToast(savedLabel === tractNumber ? `${tractNumber} added` : `${tractNumber} added (${savedLabel})`);
+        showToast(`${savedLabel} added`);
       }
       // Not awaited: the caller already has everything it needs from onSaved above, so the
       // card shouldn't sit open waiting on a full tract-list refetch just to close itself.
@@ -250,19 +264,6 @@ const LegalDescriptionFormImpl = (
         {mode === "add" ? "New Legal Description" : "Edit Legal Description"}
       </span>
 
-      {/* Read-only — State/County is set once on Basic Information and just reflected here,
-          never independently edited from this card. */}
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-purple-200 mb-1">State</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{stateLine}</p>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-purple-200 mb-1">County</label>
-          <p className={`text-sm ${isLight ? "text-gray-800" : "text-white"}`}>{countyLine}</p>
-        </div>
-      </div>
-
       <Form
         ref={innerFormRef}
         config={legalOnlyConfig}
@@ -274,6 +275,22 @@ const LegalDescriptionFormImpl = (
         onClearSaveError={() => setSaveError(null)}
         bare
         compactActions
+        customContent={{
+          // Read-only — State/County is set once on Basic Information and just reflected here,
+          // never independently edited from this card.
+          location: (
+            <div className="grid grid-cols-2 gap-x-4">
+              <div>
+                <label className="block form-field-label font-semibold mb-1 text-sm">State</label>
+                <p className={readonlyValueCls}>{stateLine}</p>
+              </div>
+              <div>
+                <label className="block form-field-label font-semibold mb-1 text-sm">County</label>
+                <p className={readonlyValueCls}>{countyLine}</p>
+              </div>
+            </div>
+          ),
+        }}
       />
 
       {pendingMatch && (

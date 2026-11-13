@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Plus } from "lucide-react";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { List } from "../../../../components/FormComponents/List";
@@ -11,25 +11,12 @@ import { useAtom } from "jotai";
 import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { pageHeaderAtom } from "@/atoms/NavigationAtom";
 import { Button } from "@/components/ui/button";
-import { useStateCountyReference } from "@/hooks/useStateCountyReference";
+import { useLocationFieldOptions } from "@/hooks/useStateCountyReference";
 
 const Tracts = () => {
   const [userProfile] = useAtom(userProfileAtom);
   const [, setPageHeader] = useAtom(pageHeaderAtom);
-  const { data: stateCountyReference = [] } = useStateCountyReference();
-
-  const dynamicOptions = useMemo(
-    () =>
-      stateCountyReference.length
-        ? {
-            stateCode: stateCountyReference.map((state) => ({
-              value: state.code,
-              label: state.name,
-            })),
-          }
-        : {},
-    [stateCountyReference],
-  );
+  const { stateCountyReference, dynamicOptions } = useLocationFieldOptions();
 
   const {
     view,
@@ -72,8 +59,8 @@ const Tracts = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen px-6 pb-6 pt-20">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen px-3 pb-6 pt-20">
+        <div className="max-w-[92rem] mx-auto">
           {view === "list" && (
             <div className="flex justify-end mb-4">
               <Button

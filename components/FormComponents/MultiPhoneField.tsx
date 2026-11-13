@@ -20,7 +20,7 @@ interface MultiPhoneFieldProps {
 const emptyPhone = (type: string): PhoneEntry => ({ type, number: "" });
 
 const inputCls = "bg-white/5 border-purple-300/30 text-white h-9 placeholder:text-white/30";
-const labelCls = "text-purple-100 font-semibold text-sm mb-1.5 block";
+const labelCls = "form-field-label font-semibold text-sm mb-1.5 block";
 
 export const MultiPhoneField = ({ value, onChange }: MultiPhoneFieldProps) => {
   const [activeType, setActiveType] = useState("Home");
