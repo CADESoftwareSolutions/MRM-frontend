@@ -376,3 +376,22 @@ export const DELETE_PARTY_PHONE_MUTATION = `
     }
   }
 `;
+
+export const FETCH_VENDOR_ADDRESSES = `
+  query FetchVendorAddresses($id: Int!) {
+    party(id: $id) {
+      id
+      addresses {
+        addressType
+        isPrimary
+        address {
+          line1
+          line2
+          city
+          stateCode
+          postalCode
+        }
+      }
+    }
+  }
+`;
