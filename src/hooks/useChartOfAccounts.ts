@@ -3,6 +3,8 @@ import { useAtomValue } from "jotai";
 import { QueryClient, queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { userProfileAtom } from "../atoms/userProfileAtom";
 import { MOCK_CHART_OF_ACCOUNTS } from "../mocks/chartOfAccounts";
+import { taxDeductTypesQuery } from "./useTaxDeductTypes";
+import { vendorDefaultsQuery } from "./useVendorDefaults";
 import {
   ChartAccount,
   ChartAccountInput,
@@ -40,12 +42,25 @@ export const bumpTransactionCounts = async (
   );
 };
 
-// Where an account is referenced by records outside the chart, for the delete guard. Vendor
-// defaults (A/P) and tax/deduct mappings (Revenue) are added with those modules.
+// Where an account is referenced by records outside the chart, for the delete guard.
+// Mocked: no BE support yet — the backend will answer this from its foreign keys.
 export const findAccountUsages = async (queryClient: QueryClient, accountId: string): Promise<string[]> => {
-  void queryClient;
-  void accountId;
-  return [];
+  const [vendorDefaults, taxTypes] = await Promise.all([
+    queryClient.ensureQueryData(vendorDefaultsQuery),
+    queryClient.ensureQueryData(taxDeductTypesQuery),
+  ]);
+  const defaults = Object.values(vendorDefaults);
+  const expenseCount = defaults.filter((d) => d.defaultExpenseAccountId === accountId).length;
+  const apCount = defaults.filter((d) => d.apAccountId === accountId).length;
+  const usages: string[] = [];
+  if (expenseCount) {
+    usages.push(`Default expense account for ${expenseCount} ${expenseCount === 1 ? "vendor" : "vendors"}`);
+  }
+  if (apCount) usages.push(`A/P account for ${apCount} ${apCount === 1 ? "vendor" : "vendors"}`);
+  taxTypes
+    .filter((t) => t.accountId === accountId)
+    .forEach((t) => usages.push(`Mapped to ${t.kind} label ${t.label}`));
+  return usages;
 };
 
 const isWholeInRange = (n: unknown) => Number.isInteger(n) && (n as number) >= 1 && (n as number) <= 9999;
