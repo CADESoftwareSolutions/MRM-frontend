@@ -106,7 +106,10 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       type: "group",
       text: "Accounting",
       icon: FileText,
-      items: [{ text: "Checks", route: "/Dashboard/checks" }],
+      items: [
+        { text: "Chart of Accounts", route: "/Dashboard/chart-of-accounts" },
+        { text: "Checks", route: "/Dashboard/checks" },
+      ],
     },
     {
       type: "link",
