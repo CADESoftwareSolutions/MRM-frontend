@@ -179,7 +179,7 @@ export const alerts = [
     detail: "Pioneer Natural Resources",
     time: "2 hours ago",
     amount: "$2,500",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/revenue-checks",
     iconColor: "bg-pink-500/20 text-pink-400",
   },
   {
@@ -223,7 +223,7 @@ export const quickAccess: QuickAccessItem[] = [
   {
     icon: CheckSquare,
     label: "Process Revenue Checks",
-    route: "/Dashboard/checks",
+    route: "/Dashboard/revenue-checks",
   },
   {
     icon: CreditCard,

@@ -9,6 +9,7 @@ const nextConfig = {
       { source: "/Dashboard/leases",        destination: "/Dashboard/DashboardDirectory/Leases" },
       { source: "/Dashboard/checks",        destination: "/Dashboard/DashboardDirectory/Checks" },
       { source: "/Dashboard/chart-of-accounts", destination: "/Dashboard/DashboardDirectory/ChartOfAccounts" },
+      { source: "/Dashboard/revenue-checks",    destination: "/Dashboard/DashboardDirectory/RevenueChecks" },
       { source: "/Dashboard/documents",     destination: "/Dashboard/DashboardDirectory/Documents" },
       { source: "/Dashboard/wells",         destination: "/Dashboard/DashboardDirectory/Wells" },
       { source: "/Dashboard/acquisitions",  destination: "/Dashboard/DashboardDirectory/Acquisitions" },
