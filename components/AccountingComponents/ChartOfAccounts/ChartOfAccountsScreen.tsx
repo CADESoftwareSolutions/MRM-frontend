@@ -23,7 +23,7 @@ import { downloadChartOfAccountsCsv, formatAuditDate } from "./chartOfAccountsRe
 type CategoryFilter = "ALL" | AccountCategory;
 type Editor = { mode: "add" } | { mode: "edit"; id: string } | null;
 
-const COLUMN_WIDTHS = [112, 88, undefined, 140, 104, 120, 216, 116];
+const COLUMN_WIDTHS = [112, 120, undefined, 184, 104, 148, 264, 116];
 const COLUMN_COUNT = COLUMN_WIDTHS.length;
 
 /** "5250-210 ALLISON DRILLING", as the confirm dialogs name an account. */
@@ -170,6 +170,8 @@ export const ChartOfAccountsScreen = () => {
     }
 
     const name = accountName(a);
+    const created = `Created by ${a.createdBy} · ${formatAuditDate(a.createdAt)}`;
+    const updated = a.isDefault ? "Default · locked" : `Updated by ${a.updatedBy} · ${formatAuditDate(a.updatedAt)}`;
     return (
       <tr
         key={a.id}
@@ -205,11 +207,11 @@ export const ChartOfAccountsScreen = () => {
         </td>
         <td className="px-4 py-3 text-right tabular-nums text-white">{a.transactionCount.toLocaleString("en-US")}</td>
         <td className="px-4 py-3 text-xs leading-snug">
-          <span className="block truncate text-white/90">
-            Created by {a.createdBy} · {formatAuditDate(a.createdAt)}
+          <span className="block truncate text-white/90" title={created}>
+            {created}
           </span>
-          <span className="block truncate text-white/60">
-            {a.isDefault ? "Default · locked" : `Updated by ${a.updatedBy} · ${formatAuditDate(a.updatedAt)}`}
+          <span className="block truncate text-white/60" title={updated}>
+            {updated}
           </span>
         </td>
         <td className="px-3 py-3 whitespace-nowrap">
@@ -360,7 +362,7 @@ export const ChartOfAccountsScreen = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1060px] text-sm" style={{ tableLayout: "fixed" }}>
+          <table className="w-full min-w-[1260px] text-sm" style={{ tableLayout: "fixed" }}>
             <caption className="sr-only">Chart of accounts</caption>
             <colgroup>
               {COLUMN_WIDTHS.map((width, i) => (

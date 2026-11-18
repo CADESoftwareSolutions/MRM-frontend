@@ -223,9 +223,13 @@ export const AccountEditorRow = ({
             aria-label={accountNumber ? `Save ${accountNumber}` : "Save new account"}
             aria-describedby={saveError ? errorId("save") : undefined}
             title="Save"
-            className="w-8 h-8 inline-flex items-center justify-center rounded-md bg-purple-600 hover:bg-purple-700 text-white transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-purple-600"
+            className={`w-8 h-8 inline-flex items-center justify-center rounded-md transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent ${
+              isLight
+                ? "text-purple-600 hover:text-purple-800 hover:bg-purple-100 disabled:hover:text-purple-600"
+                : "text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 disabled:hover:text-purple-300"
+            }`}
           >
-            <Check className="w-4 h-4" strokeWidth={3} />
+            <Check className="w-4 h-4" strokeWidth={2.5} />
           </button>
           <button
             type="button"
