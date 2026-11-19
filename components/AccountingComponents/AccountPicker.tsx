@@ -249,7 +249,7 @@ export const AccountPicker = React.forwardRef<HTMLInputElement, AccountPickerPro
         collisionPadding={8}
         style={{ zIndex: Z_INDEX.modalDropdown }}
         className={cn(
-          "w-[max(var(--radix-popover-trigger-width),18rem)] max-w-[calc(100vw-2rem)] max-h-64 overflow-y-auto rounded-md p-1",
+          "w-[max(var(--radix-popover-trigger-width),28rem)] max-w-[calc(100vw-2rem)] max-h-64 overflow-y-auto rounded-md p-1",
           isLight ? "text-gray-900" : "text-white",
         )}
         onOpenAutoFocus={(event) => event.preventDefault()}
@@ -286,8 +286,8 @@ export const AccountPicker = React.forwardRef<HTMLInputElement, AccountPickerPro
                   )}
                 >
                   <span className="w-[4.75rem] shrink-0 font-medium tabular-nums">{formatAccountNumber(account)}</span>
-                  <span className="min-w-0 flex-1 truncate">{account.description}</span>
-                  <span className={cn("shrink-0 text-[11px]", isLight ? "text-gray-500" : "text-white/50")}>
+                  <span className="min-w-0 flex-1 break-words">{account.description}</span>
+                  <span className={cn("shrink-0 text-xs", isLight ? "text-gray-500" : "text-white/50")}>
                     {account.category}
                   </span>
                   <Check className={cn("size-4 shrink-0", isSelected ? "opacity-100" : "opacity-0")} />

@@ -139,8 +139,6 @@ export const sumCents = (values: number[]): number =>
 export const formatMoney = (value: number): string =>
   roundCents(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export const newRevenueId = (prefix: string): string => `${prefix}-${crypto.randomUUID()}`;
-
 const INCOME_ACCOUNT_BY_PRODUCT: Record<string, string> = {
   OIL: "coa-4000",
   GAS: "coa-4010",

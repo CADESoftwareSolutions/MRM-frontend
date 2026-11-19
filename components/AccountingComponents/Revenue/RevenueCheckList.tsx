@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Search } from "lucide-react";
+import { Info, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { pageHeaderAtom, themeAtom } from "@/atoms/NavigationAtom";
 import { Z_INDEX } from "@/lib/zIndex";
 import { useChartOfAccounts } from "@/hooks/useChartOfAccounts";
@@ -37,6 +38,8 @@ interface CheckRow {
 }
 
 const PAGE_SIZE = 25;
+// The Operator / Owner column takes whatever is left, so the table fits the page with no sideways scroll.
+const COLUMN_WIDTHS = [108, undefined, 112, 112, 134, 88, 128, 168];
 
 // Radix Select reserves "" for clearing back to the placeholder, so "all" needs a real value.
 const ALL = "__all__";
@@ -49,6 +52,68 @@ const STATUS_CHIPS: { id: StatusFilter; label: string }[] = [
   { id: "Posted", label: "Posted" },
   { id: "Void", label: "Void" },
 ];
+
+const STATUS_HELP: { status: string; text: string }[] = [
+  { status: "Draft", text: "Saved but not ready to post. “· 2 to fix” counts what's blocking it; hover the badge for the list." },
+  { status: "Out of Balance", text: "The detail lines don't add up to the check amount." },
+  { status: "Ready to Post", text: "Balanced, and nothing is blocking it." },
+  { status: "Posted", text: "Recorded. It can't be edited, only voided." },
+  { status: "Void", text: "Cancelled. It can be re-entered as a new draft." },
+];
+
+const COLUMN_HELP: Record<string, ReactNode> = {
+  "Detail Total":
+    "The owner's net from the check's detail lines: value minus taxes and deducts, added up across every line. It should equal the check amount.",
+  Difference:
+    "Check amount minus detail total. Anything but 0.00 means the detail lines don't add up to the check, and it can't be posted until they do.",
+  Lines:
+    "How many detail lines the check has. Each line is one product (oil, gas, NGL) for one property and production month, as printed on the stub.",
+  "Prod Months": "The production months this check pays for (MM/YY), earliest to latest.",
+  Status: (
+    <dl className="space-y-1">
+      {STATUS_HELP.map(({ status, text }) => (
+        <div key={status}>
+          <dt className="inline font-semibold">{status}: </dt>
+          <dd className="inline">{text}</dd>
+        </div>
+      ))}
+    </dl>
+  ),
+};
+
+/** The column name with an info icon. The icon stays on the last word's line when the name wraps. */
+const HelpHeading = ({ column, isLight }: { column: string; isLight: boolean }) => {
+  const words = column.split(" ");
+  const lastWord = words.pop();
+  return (
+    <>
+      {words.length > 0 && `${words.join(" ")} `}
+      <span className="whitespace-nowrap">
+        {lastWord}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label={`About ${column}`}
+              className="ml-1 inline-flex align-[-2px] rounded-sm cursor-help outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+            >
+              <Info className="size-3.5" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="top"
+            sideOffset={4}
+            // Portals to <body>, where a plain z-50 would slide under the fixed app bar.
+            style={{ zIndex: Z_INDEX.modalDropdown }}
+            className={`max-w-xs text-left ${isLight ? "" : "border border-purple-300/30"}`}
+          >
+            {COLUMN_HELP[column]}
+          </TooltipContent>
+        </Tooltip>
+      </span>
+    </>
+  );
+};
 
 const isClosed = (status: RevenueDisplayStatus) => status === "Posted" || status === "Void";
 
@@ -214,8 +279,9 @@ export const RevenueCheckList = () => {
     ? "bg-white border-purple-300/30 text-purple-700 hover:bg-purple-100 hover:text-purple-800"
     : "bg-transparent border-purple-300/30 text-purple-200 hover:bg-purple-500/20 hover:text-white";
 
-  const th = `px-4 py-3 text-xs font-semibold uppercase tracking-wider whitespace-nowrap ${headerText}`;
-  const td = "px-4 py-2 h-[52px] whitespace-nowrap";
+  const th = `px-3 py-3 align-bottom text-xs font-semibold uppercase tracking-wider ${headerText}`;
+  const td = "px-3 py-2 h-[52px] whitespace-nowrap";
+  const subText = "block truncate text-xs text-white/60";
   const firstShown = visibleRows.length ? currentPage * PAGE_SIZE + 1 : 0;
   const lastShown = currentPage * PAGE_SIZE + pageRows.length;
 
@@ -342,25 +408,38 @@ export const RevenueCheckList = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] text-sm">
+          <table className="w-full min-w-[1000px] text-sm" style={{ tableLayout: "fixed" }}>
+            <colgroup>
+              {COLUMN_WIDTHS.map((width, i) => (
+                <col key={i} style={width ? { width } : undefined} />
+              ))}
+            </colgroup>
             <thead>
               <tr className="border-b" style={{ borderColor: dividerColor }}>
-                <th className={`${th} text-left`}>Check Date</th>
-                <th className={`${th} text-left`}>Operator</th>
-                <th className={`${th} text-left`}>Check #</th>
-                <th className={`${th} text-left`}>Owner</th>
+                <th className={`${th} text-left`}>Date / Check #</th>
+                <th className={`${th} text-left`}>Operator / Owner</th>
                 <th className={`${th} text-right`}>Check Amount</th>
-                <th className={`${th} text-right`}>Detail Total</th>
-                <th className={`${th} text-right`}>Difference</th>
-                <th className={`${th} text-right`}>Lines</th>
-                <th className={`${th} text-left`}>Prod Months</th>
-                <th className={`${th} text-left`}>Status</th>
+                <th className={`${th} text-right`}>
+                  <HelpHeading column="Detail Total" isLight={isLight} />
+                </th>
+                <th className={`${th} text-right`}>
+                  <HelpHeading column="Difference" isLight={isLight} />
+                </th>
+                <th className={`${th} text-right`}>
+                  <HelpHeading column="Lines" isLight={isLight} />
+                </th>
+                <th className={`${th} text-left`}>
+                  <HelpHeading column="Prod Months" isLight={isLight} />
+                </th>
+                <th className={`${th} text-left`}>
+                  <HelpHeading column="Status" isLight={isLight} />
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16">
+                  <td colSpan={COLUMN_WIDTHS.length} className="text-center py-16">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
                       <span className={`text-sm ${isLight ? "text-gray-500" : "text-purple-200/70"}`}>Loading...</span>
@@ -369,7 +448,7 @@ export const RevenueCheckList = () => {
                 </tr>
               ) : pageRows.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-16">
+                  <td colSpan={COLUMN_WIDTHS.length} className="text-center py-16">
                     <p className={isLight ? "text-gray-500" : "text-purple-200/70"}>
                       {checks.length
                         ? "No checks match these filters"
@@ -387,10 +466,18 @@ export const RevenueCheckList = () => {
                         isLight ? "border-purple-100 hover:bg-purple-300/30" : "border-purple-300/10 hover:bg-purple-500/[0.12]"
                       }`}
                     >
-                      <td className={`${td} tabular-nums text-white`}>{formatCheckDate(check.checkDate)}</td>
-                      <td className={`${td} font-semibold text-white`}>{check.operatorName}</td>
-                      <td className={`${td} tabular-nums text-white`}>{check.checkNumber}</td>
-                      <td className={`${td} text-white`}>{check.ownerName}</td>
+                      <td className={`${td} tabular-nums`}>
+                        <span className="block text-white">{formatCheckDate(check.checkDate)}</span>
+                        <span className={subText}>#{check.checkNumber}</span>
+                      </td>
+                      <td className={td}>
+                        <span className="block truncate font-semibold text-white" title={check.operatorName}>
+                          {check.operatorName}
+                        </span>
+                        <span className={subText} title={check.ownerName}>
+                          {check.ownerName}
+                        </span>
+                      </td>
                       <td className={`${td} text-right tabular-nums text-white`}>{formatMoney(check.checkAmount)}</td>
                       <td
                         className={`${td} text-right tabular-nums ${

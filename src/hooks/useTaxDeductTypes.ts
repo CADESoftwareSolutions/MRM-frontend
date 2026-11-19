@@ -1,25 +1,10 @@
 import { useCallback, useMemo } from "react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MOCK_TAX_DEDUCT_TYPES } from "../mocks/revenue";
-import {
-  TaxDeductKind,
-  TaxDeductType,
-  findTaxDeductType,
-  isTypeMapped,
-  newRevenueId,
-  normalizeLabel,
-} from "../types/revenue";
+import { TaxDeductType, isTypeMapped, normalizeLabel } from "../types/revenue";
 import { revenueChecksQuery } from "./useRevenueChecks";
 
 const EMPTY: TaxDeductType[] = [];
-
-export interface TaxDeductTypeInput {
-  label: string;
-  kind: TaxDeductKind;
-  accountId: string | null;
-}
-
-export type TaxDeductTypePatch = Partial<Pick<TaxDeductType, "label" | "kind" | "accountId" | "isNew">>;
 
 // Read by the Tax & Deduct Types screen, the tab badge, the check list and the account delete
 // guard. gcTime is Infinity only while this is mocked: the cache is the only copy of the
@@ -31,12 +16,6 @@ export const taxDeductTypesQuery = queryOptions({
   staleTime: Infinity,
   gcTime: Infinity,
 });
-
-const assertUnique = (all: TaxDeductType[], label: string, kind: TaxDeductKind, exceptId?: string) => {
-  if (!label) throw new Error("Label is required");
-  const clash = findTaxDeductType(all, label, kind);
-  if (clash && clash.id !== exceptId) throw new Error(`${label} is already a ${kind} label`);
-};
 
 const findOrThrow = (all: TaxDeductType[], id: string) => {
   const found = all.find((t) => t.id === id);
@@ -58,45 +37,15 @@ export const useTaxDeductTypes = (accounts?: { id: string; isActive: boolean }[]
     [queryClient],
   );
 
-  // Mocked: no BE support yet — swap for executeGraphQL(UPDATE_TAX_DEDUCT_TYPE, { id, ...patch })
-  const updateType = useCallback(
-    async (id: string, patch: TaxDeductTypePatch): Promise<TaxDeductType> => {
+  // Mapping a label clears its New flag; clearing the account leaves the flag as it was.
+  // Mocked: no BE support yet — swap for executeGraphQL(UPDATE_TAX_DEDUCT_TYPE, { id, accountId })
+  const setAccount = useCallback(
+    async (id: string, accountId: string | null): Promise<TaxDeductType> => {
       const all = await readAll();
       const existing = findOrThrow(all, id);
-      const label = patch.label !== undefined ? normalizeLabel(patch.label) : existing.label;
-      const kind = patch.kind ?? existing.kind;
-      assertUnique(all, label, kind, id);
-      const updated: TaxDeductType = { ...existing, ...patch, label, kind };
+      const updated: TaxDeductType = { ...existing, accountId, isNew: accountId ? false : existing.isNew };
       writeAll(all.map((t) => (t.id === id ? updated : t)));
       return updated;
-    },
-    [readAll, writeAll],
-  );
-
-  const setAccount = useCallback(
-    (id: string, accountId: string | null) =>
-      updateType(id, accountId ? { accountId, isNew: false } : { accountId }),
-    [updateType],
-  );
-
-  // Mocked: no BE support yet — swap for executeGraphQL(CREATE_TAX_DEDUCT_TYPE, input)
-  const addType = useCallback(
-    async (input: TaxDeductTypeInput): Promise<TaxDeductType> => {
-      const all = await readAll();
-      const label = normalizeLabel(input.label);
-      assertUnique(all, label, input.kind);
-      const created: TaxDeductType = {
-        id: newRevenueId("tdt"),
-        label,
-        kind: input.kind,
-        accountId: input.accountId,
-        lineCount: 0,
-        lastSeen: null,
-        operators: [],
-        isNew: false,
-      };
-      writeAll([...all, created]);
-      return created;
     },
     [readAll, writeAll],
   );
@@ -127,8 +76,6 @@ export const useTaxDeductTypes = (accounts?: { id: string; isActive: boolean }[]
     loading: isLoading,
     unmappedCount,
     setAccount,
-    addType,
-    updateType,
     deleteType,
   };
 };

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Info, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { Info, Search, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,10 @@ import { showToastAtom } from "@/atoms/toastAtom";
 import { Z_INDEX } from "@/lib/zIndex";
 import { useChartOfAccounts } from "@/hooks/useChartOfAccounts";
 import { useRevenueChecks } from "@/hooks/useRevenueChecks";
-import { TaxDeductTypeInput, useTaxDeductTypes } from "@/hooks/useTaxDeductTypes";
+import { useTaxDeductTypes } from "@/hooks/useTaxDeductTypes";
 import { ChartAccount, formatAccountLabel } from "@/types/chartOfAccounts";
 import { TaxDeductKind, TaxDeductType, formatCheckDate, isTypeMapped, normalizeLabel } from "@/types/revenue";
 import { DeleteConfirmModal } from "../../modals/DeleteConfirmModal";
-import { TaxDeductTypeModal } from "./types/TaxDeductTypeModal";
 import { TypeAccountCell } from "./types/TypeAccountCell";
 import {
   KIND_LABEL,
@@ -28,9 +27,7 @@ import {
 } from "./types/typesModel";
 
 const PAGE_SIZE = 15;
-const COLUMN_WIDTHS = [undefined, 104, 290, 80, 124, 190, 84];
-
-type Editor = { mode: "add" } | { mode: "edit"; id: string } | null;
+const COLUMN_WIDTHS = [undefined, 92, 272, 72, 112, 176, 52];
 
 export const TaxDeductTypes = () => {
   const isLight = useAtomValue(themeAtom) === "light";
@@ -38,14 +35,13 @@ export const TaxDeductTypes = () => {
   const showToast = useSetAtom(showToastAtom);
   const { accounts, loading: accountsLoading } = useChartOfAccounts();
   const accountList = accountsLoading ? undefined : accounts;
-  const { types, loading, setAccount, addType, updateType, deleteType } = useTaxDeductTypes(accountList);
+  const { types, loading, setAccount, deleteType } = useTaxDeductTypes(accountList);
   const { checks } = useRevenueChecks();
 
   const [filter, setFilter] = useState<TypeFilter>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [page, setPage] = useState(0);
-  const [editor, setEditor] = useState<Editor>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<TaxDeductType | null>(null);
 
@@ -84,9 +80,6 @@ export const TaxDeductTypes = () => {
   const firstShown = currentPage * PAGE_SIZE + 1;
   const lastShown = currentPage * PAGE_SIZE + pageTypes.length;
 
-  const editingType = editor?.mode === "edit" ? types.find((t) => t.id === editor.id) : undefined;
-  const defaultKind: TaxDeductKind = filter === "DEDUCT" ? "deduct" : "tax";
-
   const pickAccount = async (type: TaxDeductType, account: ChartAccount) => {
     setActionError(null);
     try {
@@ -122,19 +115,6 @@ export const TaxDeductTypes = () => {
     }
   };
 
-  const saveLabel = async (input: TaxDeductTypeInput) => {
-    if (editingType) {
-      if (input.label !== editingType.label || input.kind !== editingType.kind) {
-        const updated = await updateType(editingType.id, { label: input.label, kind: input.kind });
-        showToast(`Saved ${updated.label}`);
-      }
-    } else {
-      const created = await addType(input);
-      showToast(`Added ${created.label}`);
-    }
-    setEditor(null);
-  };
-
   const dividerColor = isLight ? "rgb(167 139 250 / 0.2)" : "rgb(167 139 250 / 0.15)";
   const borderColor = isLight ? "rgb(167 139 250 / 0.25)" : "rgb(167 139 250 / 0.2)";
   const containerBg = isLight ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.06)";
@@ -152,20 +132,21 @@ export const TaxDeductTypes = () => {
     ? "bg-yellow-100 text-yellow-800 border-yellow-300"
     : "bg-yellow-500/20 text-yellow-300 border-yellow-400/30";
 
-  const td = "px-4 py-2 h-[52px]";
+  const td = "px-3 py-2 h-[52px]";
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 p-3 bg-blue-500/10 border border-blue-300/30 rounded-lg">
         <Info className="w-4 h-4 shrink-0 text-blue-300" />
         <p className="text-sm text-blue-200">
-          Operators name the same tax or deduct differently. Map each label to a Chart of Accounts line once, and every
-          check that uses it is coded automatically. New labels from imports land here. Checks already posted keep the
-          account they posted to when you remap or rename a label.
+          Every tax and deduct on a check stub is printed with a label, and operators label the same charge differently
+          (SEVERANCE TAX, TX SEVERANCE TAXES, TEXAS SEVERANCE TAX). Map each label to a Chart of Accounts line once, and
+          every check that prints it is coded to that account. Labels from new checks show up here. Remapping a label
+          doesn&apos;t change checks already posted.
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div
           role="group"
           aria-label="Filter labels"
@@ -203,11 +184,6 @@ export const TaxDeductTypes = () => {
             );
           })}
         </div>
-
-        <Button onClick={() => setEditor({ mode: "add" })} className="bg-purple-600 hover:bg-purple-700 cursor-pointer">
-          <Plus className="w-4 h-4" />
-          Add Label
-        </Button>
       </div>
 
       {actionError && (
@@ -266,7 +242,7 @@ export const TaxDeductTypes = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1140px] text-sm" style={{ tableLayout: "fixed" }}>
+          <table className="w-full min-w-[1000px] text-sm" style={{ tableLayout: "fixed" }}>
             <caption className="sr-only">Tax and deduct labels</caption>
             <colgroup>
               {COLUMN_WIDTHS.map((width, i) => (
@@ -280,12 +256,12 @@ export const TaxDeductTypes = () => {
                 }`}
                 style={{ borderColor: dividerColor }}
               >
-                <th className="px-4 py-3">Label (as printed on stubs)</th>
-                <th className="px-4 py-3">Type</th>
-                <th className="px-4 py-3">Maps to account</th>
-                <th className="px-4 py-3 text-right">Lines</th>
-                <th className="px-4 py-3">Last seen</th>
-                <th className="px-4 py-3">Seen from</th>
+                <th className="px-3 py-3">Label (as printed on stubs)</th>
+                <th className="px-3 py-3">Type</th>
+                <th className="px-3 py-3">Maps to account</th>
+                <th className="px-3 py-3 text-right">Lines</th>
+                <th className="px-3 py-3">Last seen</th>
+                <th className="px-3 py-3">Seen from</th>
                 <th className="px-3 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -307,7 +283,7 @@ export const TaxDeductTypes = () => {
                     <p className={mutedText}>
                       {types.length
                         ? "No labels match"
-                        : "No tax or deduct labels yet. They're added as you import check detail, or add one yourself."}
+                        : "No tax or deduct labels yet. They're added as checks are entered or imported."}
                     </p>
                   </td>
                 </tr>
@@ -369,20 +345,7 @@ export const TaxDeductTypes = () => {
                       )}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={() => setEditor({ mode: "edit", id: t.id })}
-                        aria-label={`Edit ${t.label}`}
-                        title="Edit"
-                        className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                          isLight
-                            ? "text-purple-600 hover:text-purple-800 hover:bg-purple-100"
-                            : "text-purple-300 hover:text-purple-100 hover:bg-purple-500/20"
-                        }`}
-                      >
-                        <Pencil className="w-3.5 h-3.5" strokeWidth={2.5} />
-                      </button>
-                      {!usedLabels.has(`${t.kind}:${t.label}`) && (
+                      {t.lineCount === 0 && !usedLabels.has(`${t.kind}:${t.label}`) && (
                         <button
                           type="button"
                           onClick={() => setPendingDelete(t)}
@@ -444,15 +407,6 @@ export const TaxDeductTypes = () => {
         onConfirm={() => void confirmDelete()}
         onCancel={() => setPendingDelete(null)}
       />
-
-      {(editor?.mode === "add" || editingType) && (
-        <TaxDeductTypeModal
-          type={editingType}
-          defaultKind={defaultKind}
-          onSave={saveLabel}
-          onCancel={() => setEditor(null)}
-        />
-      )}
     </div>
   );
 };
