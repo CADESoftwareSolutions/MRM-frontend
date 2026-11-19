@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { useAtomValue } from "jotai";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { userProfileAtom } from "../atoms/userProfileAtom";
 import { MOCK_CHART_OF_ACCOUNTS } from "../mocks/chartOfAccounts";
+import { taxDeductTypesQuery } from "./useTaxDeductTypes";
 import {
   ChartAccount,
   ChartAccountInput,
@@ -24,6 +25,13 @@ export const chartOfAccountsQuery = queryOptions({
   staleTime: Infinity,
   gcTime: Infinity,
 });
+
+// Where an account is referenced outside the chart, for the delete guard.
+// Mocked: no BE support yet — the backend will answer this from its foreign keys.
+const findAccountUsages = async (queryClient: QueryClient, accountId: string): Promise<string[]> => {
+  const types = await queryClient.ensureQueryData(taxDeductTypesQuery);
+  return types.filter((t) => t.accountId === accountId).map((t) => `Mapped to ${t.kind} label ${t.label}`);
+};
 
 const isWholeInRange = (n: unknown) => Number.isInteger(n) && (n as number) >= 1 && (n as number) <= 9999;
 
@@ -132,14 +140,17 @@ export const useChartOfAccounts = () => {
   // Mocked: no BE support yet — swap for executeGraphQL(DELETE_CHART_ACCOUNT, { id })
   const deleteAccount = useCallback(
     async (id: string): Promise<void> => {
-      const all = await readAll();
-      const existing = findOrThrow(all, id);
+      const existing = findOrThrow(await readAll(), id);
       if (existing.isDefault) throw new Error("Default accounts can't be deleted");
       if (existing.transactionCount > 0) throw new Error("Accounts with posted transactions can't be deleted");
-      writeAll(all.filter((a) => a.id !== id));
+      const usages = await findAccountUsages(queryClient, id);
+      if (usages.length) throw new Error(`Can't delete: ${usages.join("; ")}`);
+      writeAll((await readAll()).filter((a) => a.id !== id));
     },
-    [readAll, writeAll],
+    [queryClient, readAll, writeAll],
   );
+
+  const getAccountUsages = useCallback((id: string) => findAccountUsages(queryClient, id), [queryClient]);
 
   // Mocked: no BE support yet — swap for executeGraphQL(SET_CHART_ACCOUNT_ACTIVE, { id, active })
   const setAccountActive = useCallback(
@@ -161,6 +172,7 @@ export const useChartOfAccounts = () => {
     addAccount,
     updateAccount,
     deleteAccount,
+    getAccountUsages,
     setAccountActive,
   };
 };

@@ -35,12 +35,14 @@ const matchesSearch = (a: ChartAccount, query: string) =>
 export const ChartOfAccountsScreen = () => {
   const isLight = useAtomValue(themeAtom) === "light";
   const showToast = useSetAtom(showToastAtom);
-  const { accounts, loading, addAccount, updateAccount, deleteAccount, setAccountActive } = useChartOfAccounts();
+  const { accounts, loading, addAccount, updateAccount, deleteAccount, getAccountUsages, setAccountActive } =
+    useChartOfAccounts();
 
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
   const [editor, setEditor] = useState<Editor>(null);
   const [pendingDelete, setPendingDelete] = useState<ChartAccount | null>(null);
+  const [pendingUsages, setPendingUsages] = useState<string[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
   // Set when an editor closes; the effect below returns focus to that row's Edit button (or Add).
   const [focusTarget, setFocusTarget] = useState<string | null>(null);
@@ -100,12 +102,21 @@ export const ChartOfAccountsScreen = () => {
     closeEditor(id);
   };
 
-  const requestDelete = (account: ChartAccount) => {
+  const requestDelete = async (account: ChartAccount) => {
     setActionError(null);
+    try {
+      setPendingUsages(account.transactionCount > 0 ? [] : await getAccountUsages(account.id));
+    } catch (err) {
+      setActionError((err as Error).message);
+      return;
+    }
     setPendingDelete(account);
   };
 
-  const clearPendingDelete = () => setPendingDelete(null);
+  const clearPendingDelete = () => {
+    setPendingDelete(null);
+    setPendingUsages([]);
+  };
 
   const confirmDelete = async () => {
     const target = pendingDelete;
@@ -262,7 +273,7 @@ export const ChartOfAccountsScreen = () => {
         <Lock className="w-4 h-4 shrink-0 text-blue-300" />
         <p className="text-sm text-blue-200">
           Accounts with a lock come with CADE and can&apos;t be changed or deleted. An account with posted
-          transactions can&apos;t be deleted either.
+          transactions, or one a tax/deduct label maps to, can&apos;t be deleted either.
         </p>
       </div>
 
@@ -425,16 +436,17 @@ export const ChartOfAccountsScreen = () => {
         </div>
       </div>
 
-      {pendingDelete && pendingDelete.transactionCount > 0 && (
+      {pendingDelete && (pendingDelete.transactionCount > 0 || pendingUsages.length > 0) && (
         <DeleteBlockedModal
           accountName={accountName(pendingDelete)}
           transactionCount={pendingDelete.transactionCount}
+          usages={pendingUsages}
           onMarkInactive={markInactive}
           onCancel={clearPendingDelete}
         />
       )}
       <DeleteConfirmModal
-        isOpen={!!pendingDelete && pendingDelete.transactionCount === 0}
+        isOpen={!!pendingDelete && pendingDelete.transactionCount === 0 && pendingUsages.length === 0}
         itemName={pendingDelete ? accountName(pendingDelete) : "this account"}
         itemType="Account"
         onConfirm={confirmDelete}

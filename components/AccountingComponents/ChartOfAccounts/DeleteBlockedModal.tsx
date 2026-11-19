@@ -4,14 +4,17 @@ import { Modal } from "../../modals/Modal";
 interface DeleteBlockedModalProps {
   accountName: string;
   transactionCount: number;
+  /** Records that still point at the account, e.g. "Mapped to tax label SEVERANCE". */
+  usages?: string[];
   onMarkInactive: () => void;
   onCancel: () => void;
 }
 
-/** Shown instead of DeleteConfirmModal when the account has posted transactions. */
+/** Shown instead of DeleteConfirmModal when the account has posted transactions or a tax/deduct label maps to it. */
 export const DeleteBlockedModal = ({
   accountName,
   transactionCount,
+  usages = [],
   onMarkInactive,
   onCancel,
 }: DeleteBlockedModalProps) => (
@@ -21,15 +24,31 @@ export const DeleteBlockedModal = ({
         Can&apos;t delete this account
       </h2>
       <p className="text-purple-200 text-sm mb-3">
-        <span className="text-white font-medium">{accountName}</span> has{" "}
-        <span className="text-white font-medium">
-          {transactionCount.toLocaleString("en-US")} posted {transactionCount === 1 ? "transaction" : "transactions"}
-        </span>
-        . It stays in the chart so past reports still add up.
+        {transactionCount > 0 ? (
+          <>
+            <span className="text-white font-medium">{accountName}</span> has{" "}
+            <span className="text-white font-medium">
+              {transactionCount.toLocaleString("en-US")} posted {transactionCount === 1 ? "transaction" : "transactions"}
+            </span>
+            . It stays in the chart so past reports still add up.
+          </>
+        ) : (
+          <>
+            <span className="text-white font-medium">{accountName}</span> is still in use:
+          </>
+        )}
       </p>
+      {usages.length > 0 && (
+        <ul className="list-disc pl-5 text-purple-200 text-sm mb-3 space-y-0.5">
+          {usages.map((usage) => (
+            <li key={usage}>{usage}</li>
+          ))}
+        </ul>
+      )}
       <p className="text-purple-200 text-sm mb-6">
         Mark it Inactive instead. It&apos;s hidden from account pickers for new entries, and reports keep its
         history.
+        {usages.length > 0 && " Labels mapped to it will need another account before checks that use them can post."}
       </p>
       <div className="flex gap-3 justify-end">
         <Button
