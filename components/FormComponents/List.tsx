@@ -42,7 +42,7 @@ interface ListProps {
 // placeholder), so the "all" choice needs a real one.
 const ALL_FILTER_VALUE = "__all__";
 
-const CLASSIFICATION_COLORS_DARK: Record<string, string> = {
+export const CLASSIFICATION_COLORS_DARK: Record<string, string> = {
   REV: "bg-green-500/20 text-green-300 border-green-400/30",
   JIB: "bg-blue-500/20 text-blue-300 border-blue-400/30",
   OPERATOR: "bg-violet-500/20 text-violet-300 border-violet-400/30",
@@ -52,7 +52,7 @@ const CLASSIFICATION_COLORS_DARK: Record<string, string> = {
   PARTNER: "bg-cyan-500/20 text-cyan-300 border-cyan-400/30",
 };
 
-const CLASSIFICATION_COLORS_LIGHT: Record<string, string> = {
+export const CLASSIFICATION_COLORS_LIGHT: Record<string, string> = {
   REV: "bg-green-100 text-green-700 border-green-300",
   JIB: "bg-blue-100 text-blue-700 border-blue-300",
   OPERATOR: "bg-violet-100 text-violet-700 border-violet-300",

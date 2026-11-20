@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAtomValue } from "jotai";
+import { useRouter } from "next/router";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { RevenueCheckList } from "../../../../components/AccountingComponents/Revenue/RevenueCheckList";
 import { TaxDeductTypes } from "../../../../components/AccountingComponents/Revenue/TaxDeductTypes";
+import { revenueCheckInputRoute } from "../../../../components/AccountingComponents/Revenue/revenueRoutes";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { useChartOfAccounts } from "@/hooks/useChartOfAccounts";
 import { useTaxDeductTypes } from "@/hooks/useTaxDeductTypes";
@@ -14,8 +16,9 @@ const tabButtonClass = (active: boolean) =>
     active ? "bg-purple-600 text-white" : "text-purple-100 hover:text-white hover:bg-purple-500/30"
   }`;
 
-/** The check register and Tax & Deduct Types. */
+/** The check register and Tax & Deduct Types. Entering a check happens on Revenue Check Input. */
 const RevenueChecks = () => {
+  const router = useRouter();
   const [tab, setTab] = useState<RevenueTab>("checks");
   const isLight = useAtomValue(themeAtom) === "light";
   const { accounts, loading: accountsLoading } = useChartOfAccounts();
@@ -59,7 +62,11 @@ const RevenueChecks = () => {
               </button>
             </div>
             {tab === "checks" ? (
-              <RevenueCheckList />
+              <RevenueCheckList
+                onOpenCheck={(id) => router.push(revenueCheckInputRoute({ id }))}
+                onNewCheck={() => router.push(revenueCheckInputRoute())}
+                onImport={() => router.push(revenueCheckInputRoute({ mode: "import" }))}
+              />
             ) : (
               <TaxDeductTypes />
             )}

@@ -26,6 +26,21 @@ export const chartOfAccountsQuery = queryOptions({
   gcTime: Infinity,
 });
 
+// Each account counts once per posted transaction, however many of its lines use it.
+// Mocked: no BE support yet — the backend will derive counts from the G/L once posting exists.
+export const bumpTransactionCounts = async (
+  queryClient: QueryClient,
+  accountIds: Array<string | null | undefined>,
+  delta: number,
+): Promise<void> => {
+  const ids = new Set(accountIds.filter((id): id is string => !!id));
+  if (!ids.size) return;
+  await queryClient.ensureQueryData(chartOfAccountsQuery);
+  queryClient.setQueryData<ChartAccount[]>(chartOfAccountsQuery.queryKey, (all) =>
+    all?.map((a) => (ids.has(a.id) ? { ...a, transactionCount: Math.max(0, a.transactionCount + delta) } : a)),
+  );
+};
+
 // Where an account is referenced outside the chart, for the delete guard.
 // Mocked: no BE support yet — the backend will answer this from its foreign keys.
 const findAccountUsages = async (queryClient: QueryClient, accountId: string): Promise<string[]> => {
