@@ -18,8 +18,10 @@ import { useContactOptions } from "@/hooks/useContactOptions";
 import { PostBlockedError, useRevenueChecks } from "@/hooks/useRevenueChecks";
 import { useTaxDeductTypes } from "@/hooks/useTaxDeductTypes";
 import { cn } from "@/lib/utils";
+import { findAccountByNumber } from "@/types/chartOfAccounts";
 import type { ExtractedCheckStubFields } from "@/types/documentReader";
 import {
+  DEFAULT_DEPOSIT_ACCOUNT_NUMBER,
   RevenueCheck,
   RevenueLine,
   blankRevenueLine,
@@ -117,7 +119,10 @@ export const RevenueCheckEntry = ({
   onImport,
   onOpenCheck,
 }: RevenueCheckEntryProps) => {
-  const { loading, getCheck } = useRevenueChecks();
+  const { loading: checksLoading, getCheck } = useRevenueChecks();
+  // A new check starts out depositing to the company's 1000 account, so the form waits for the chart.
+  const { loading: accountsLoading } = useChartOfAccounts();
+  const loading = checksLoading || accountsLoading;
   const check = getCheck(checkId);
   // Latched once found, so a check deleted from this screen doesn't flip it to "not found"
   // before onBack lands.
@@ -136,7 +141,7 @@ export const RevenueCheckEntry = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  if (initialCheck === undefined) {
+  if (initialCheck === undefined || accountsLoading) {
     return <EntryPlaceholder loading={loading} onBack={onBack} />;
   }
   return (
@@ -222,7 +227,9 @@ const CheckEntryForm = ({
       ? draftFromCheck(initialCheck)
       : copiedFrom
         ? draftCopyOf(copiedFrom)
-        : newCheckDraft(),
+        : newCheckDraft(
+            findAccountByNumber(accounts, DEFAULT_DEPOSIT_ACCOUNT_NUMBER)?.id ?? "",
+          ),
   );
   const [initialExpanded] = useState<string[]>(() =>
     source ? [] : draft.lines.map((line) => line.id),

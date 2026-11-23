@@ -1,4 +1,17 @@
-import { RevenueCheck, RevenueLine, TaxDeductKind, TaxDeductType, stampCheckAccounts, sumCents } from "@/types/revenue";
+import { type AccountNumberParts, findAccountByNumber } from "@/types/chartOfAccounts";
+import {
+  DEFAULT_DEPOSIT_ACCOUNT_NUMBER,
+  RevenueCheck,
+  RevenueLine,
+  TaxDeductKind,
+  TaxDeductType,
+  stampCheckAccounts,
+  sumCents,
+} from "@/types/revenue";
+
+// The mock checks and labels name accounts by number (5000 PRODUCTION TAX); the builders below swap
+// in the ids of the company's real accounts, which differ per company.
+type NumberedAccount = { id: string } & AccountNumberParts;
 
 type Amount = [label: string, gross: number, net: number];
 
@@ -68,7 +81,7 @@ const PERMIAN = "Permian Crude Purchasing LLC";
 
 // No real contact or well ids are known for these, so operatorId / ownerId / wellId stay null and
 // the printed names (and wellLabel) carry the link.
-const UNSTAMPED_CHECKS: RevenueCheck[] = [
+const UNSTAMPED_CHECKS: Omit<RevenueCheck, "depositAccountId">[] = [
   {
     id: "rc-987654",
     operatorId: null,
@@ -79,7 +92,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "987654",
     checkDate: "2026-10-27",
     checkAmount: 500,
-    depositAccountId: "coa-1000",
     depositDate: "2026-10-30",
     glPeriod: "2026-10",
     status: "draft",
@@ -141,7 +153,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "0047821",
     checkDate: "2026-10-25",
     checkAmount: 12840.66,
-    depositAccountId: "coa-1000",
     depositDate: "2026-10-28",
     glPeriod: "2026-10",
     status: "draft",
@@ -196,7 +207,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "55190",
     checkDate: "2026-10-24",
     checkAmount: 1206.45,
-    depositAccountId: "coa-1000",
     depositDate: "2026-10-27",
     glPeriod: "2026-10",
     status: "posted",
@@ -238,7 +248,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "986102",
     checkDate: "2026-10-20",
     checkAmount: 488.12,
-    depositAccountId: "coa-1000",
     depositDate: "2026-10-22",
     glPeriod: "2026-10",
     status: "posted",
@@ -300,7 +309,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "0047390",
     checkDate: "2026-10-18",
     checkAmount: 26250.89,
-    depositAccountId: "coa-1000",
     depositDate: "2026-10-21",
     glPeriod: "2026-10",
     status: "posted",
@@ -348,7 +356,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "7781",
     checkDate: "2026-10-15",
     checkAmount: 312.4,
-    depositAccountId: "coa-1000",
     depositDate: null,
     glPeriod: "2026-10",
     status: "draft",
@@ -374,7 +381,6 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
     checkNumber: "54871",
     checkDate: "2026-09-24",
     checkAmount: 1123.83,
-    depositAccountId: "coa-1000",
     depositDate: "2026-09-28",
     glPeriod: "2026-09",
     status: "void",
@@ -410,81 +416,91 @@ const UNSTAMPED_CHECKS: RevenueCheck[] = [
 
 type TypeSpec = [
   label: string,
-  accountId: string | null,
+  accountNumber: number | null,
   lineCount: number,
   lastSeen: string | null,
   operators: string[],
 ];
 
-const types = (kind: TaxDeductKind, prefix: string, specs: TypeSpec[]): TaxDeductType[] =>
-  specs.map(([label, accountId, lineCount, lastSeen, operators], i) => ({
+const types = (
+  accounts: NumberedAccount[],
+  kind: TaxDeductKind,
+  prefix: string,
+  specs: TypeSpec[],
+): TaxDeductType[] =>
+  specs.map(([label, accountNumber, lineCount, lastSeen, operators], i) => ({
     id: `tdt-${prefix}-${String(i + 1).padStart(2, "0")}`,
     label,
     kind,
-    accountId,
+    accountId: accountNumber === null ? null : (findAccountByNumber(accounts, accountNumber)?.id ?? null),
     lineCount,
     lastSeen,
     operators,
     isNew: label === "PROCESSING RELATED FEE",
   }));
 
-export const MOCK_TAX_DEDUCT_TYPES: TaxDeductType[] = [
-  ...types("tax", "t", [
-    ["SEVERANCE TAX", "coa-5000", 8, "2026-10-27", [SMITH]],
-    ["SEVERANCE", "coa-5000", 61, "2026-10-27", [SMITH]],
-    ["TX SEVERANCE TAXES", "coa-5000", 114, "2026-10-27", [SMITH]],
-    ["TEXAS SEVERANCE TAX", "coa-5000", 167, "2026-10-25", [CAPROCK]],
-    ["PRODUCTION TAX", "coa-5000", 220, "2026-10-24", [RED_RIVER, PERMIAN]],
-    ["TX PRODUCTION TAX", "coa-5000", 273, "2026-09-30", [PERMIAN]],
+export const buildMockTaxDeductTypes = (accounts: NumberedAccount[]): TaxDeductType[] => [
+  ...types(accounts, "tax", "t", [
+    ["SEVERANCE TAX", 5000, 8, "2026-10-27", [SMITH]],
+    ["SEVERANCE", 5000, 61, "2026-10-27", [SMITH]],
+    ["TX SEVERANCE TAXES", 5000, 114, "2026-10-27", [SMITH]],
+    ["TEXAS SEVERANCE TAX", 5000, 167, "2026-10-25", [CAPROCK]],
+    ["PRODUCTION TAX", 5000, 220, "2026-10-24", [RED_RIVER, PERMIAN]],
+    ["TX PRODUCTION TAX", 5000, 273, "2026-09-30", [PERMIAN]],
     ["TAX", null, 326, "2026-09-30", [PERMIAN]],
-    ["TEXAS ENVIRONMENTAL TAX", "coa-5020", 379, "2026-09-30", [CAPROCK, PERMIAN]],
-    ["TX REGULATORY TAX", "coa-5020", 22, "2026-10-27", [SMITH]],
-    ["TEXAS REGULATORY TAX", "coa-5020", 75, "2026-10-25", [CAPROCK]],
-    ["REGULATORY FEE", "coa-5020", 128, "2026-10-24", [RED_RIVER]],
-    ["REGULATORY TAX", "coa-5020", 181, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
-    ["OILFIELD CLEAN-UP REGULATORY FEE", "coa-5020", 234, "2026-09-30", [PERMIAN]],
-    ["OILFIELD CLEAN-UP REGULATORY FEE (GAS)", "coa-5020", 287, "2026-08-26", [RED_RIVER]],
-    ["FUEL USE TAX", "coa-5020", 340, "2026-08-26", [CAPROCK, PERMIAN]],
+    ["TEXAS ENVIRONMENTAL TAX", 5020, 379, "2026-09-30", [CAPROCK, PERMIAN]],
+    ["TX REGULATORY TAX", 5020, 22, "2026-10-27", [SMITH]],
+    ["TEXAS REGULATORY TAX", 5020, 75, "2026-10-25", [CAPROCK]],
+    ["REGULATORY FEE", 5020, 128, "2026-10-24", [RED_RIVER]],
+    ["REGULATORY TAX", 5020, 181, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
+    ["OILFIELD CLEAN-UP REGULATORY FEE", 5020, 234, "2026-09-30", [PERMIAN]],
+    ["OILFIELD CLEAN-UP REGULATORY FEE (GAS)", 5020, 287, "2026-08-26", [RED_RIVER]],
+    ["FUEL USE TAX", 5020, 340, "2026-08-26", [CAPROCK, PERMIAN]],
   ]),
-  ...types("deduct", "d", [
-    ["TRANSPORTATION", "coa-5120", 379, "2026-10-27", [SMITH, RED_RIVER]],
-    ["TRANSPORTATION - DED", "coa-5120", 22, "2026-10-25", [CAPROCK]],
-    ["TOTAL TRANSPORTATION", "coa-5120", 75, "2026-09-30", [PERMIAN]],
-    ["TRANSP/LINE FILL - DED", "coa-5120", 128, "2026-09-30", [CAPROCK]],
-    ["PURCHASER TRANSPORTATION ADJUSTMENT", "coa-5120", 181, "2026-08-26", [RED_RIVER]],
-    ["GATHERING", "coa-5100", 234, "2026-10-27", [SMITH, RED_RIVER]],
-    ["GATHERING/COMPRESSION", "coa-5100", 287, "2026-10-25", [CAPROCK]],
-    ["GATHERING ASC606", "coa-5100", 340, "2026-09-30", [PERMIAN]],
-    ["COMPRESSION", "coa-5100", 393, "2026-10-27", [SMITH]],
-    ["COMPRESSION/GATH - ADJ", "coa-5100", 36, "2026-08-26", [CAPROCK]],
-    ["PURCHASER GATHERING ADJUSTMENT", "coa-5100", 89, "2026-08-26", [RED_RIVER]],
-    ["METERING FEE", "coa-5100", 142, "2026-09-30", [SMITH, CAPROCK, RED_RIVER]],
-    ["PROCESSING", "coa-5130", 195, "2026-10-27", [SMITH]],
-    ["PROCESSING - ADJ", "coa-5130", 248, "2026-09-30", [SMITH]],
-    ["PROCESSING & TREATING", "coa-5130", 301, "2026-10-25", [CAPROCK]],
-    ["PURCHASER PROCESSING ADJUSTMENT", "coa-5130", 354, "2026-08-26", [RED_RIVER]],
-    ["NGL FRACTIONATION", "coa-5130", 407, "2026-10-24", [SMITH, RED_RIVER]],
-    ["TREATING", "coa-5130", 50, "2026-09-30", [PERMIAN]],
-    ["TREATING - DED", "coa-5130", 103, "2026-10-25", [CAPROCK]],
-    ["TREATING - ADJ", "coa-5130", 156, "2026-08-26", [CAPROCK]],
-    ["FUEL", "coa-5130", 209, "2026-10-24", [RED_RIVER]],
+  ...types(accounts, "deduct", "d", [
+    ["TRANSPORTATION", 5120, 379, "2026-10-27", [SMITH, RED_RIVER]],
+    ["TRANSPORTATION - DED", 5120, 22, "2026-10-25", [CAPROCK]],
+    ["TOTAL TRANSPORTATION", 5120, 75, "2026-09-30", [PERMIAN]],
+    ["TRANSP/LINE FILL - DED", 5120, 128, "2026-09-30", [CAPROCK]],
+    ["PURCHASER TRANSPORTATION ADJUSTMENT", 5120, 181, "2026-08-26", [RED_RIVER]],
+    ["GATHERING", 5100, 234, "2026-10-27", [SMITH, RED_RIVER]],
+    ["GATHERING/COMPRESSION", 5100, 287, "2026-10-25", [CAPROCK]],
+    ["GATHERING ASC606", 5100, 340, "2026-09-30", [PERMIAN]],
+    ["COMPRESSION", 5100, 393, "2026-10-27", [SMITH]],
+    ["COMPRESSION/GATH - ADJ", 5100, 36, "2026-08-26", [CAPROCK]],
+    ["PURCHASER GATHERING ADJUSTMENT", 5100, 89, "2026-08-26", [RED_RIVER]],
+    ["METERING FEE", 5100, 142, "2026-09-30", [SMITH, CAPROCK, RED_RIVER]],
+    ["PROCESSING", 5130, 195, "2026-10-27", [SMITH]],
+    ["PROCESSING - ADJ", 5130, 248, "2026-09-30", [SMITH]],
+    ["PROCESSING & TREATING", 5130, 301, "2026-10-25", [CAPROCK]],
+    ["PURCHASER PROCESSING ADJUSTMENT", 5130, 354, "2026-08-26", [RED_RIVER]],
+    ["NGL FRACTIONATION", 5130, 407, "2026-10-24", [SMITH, RED_RIVER]],
+    ["TREATING", 5130, 50, "2026-09-30", [PERMIAN]],
+    ["TREATING - DED", 5130, 103, "2026-10-25", [CAPROCK]],
+    ["TREATING - ADJ", 5130, 156, "2026-08-26", [CAPROCK]],
+    ["FUEL", 5130, 209, "2026-10-24", [RED_RIVER]],
     ["PROCESSING RELATED FEE", null, 1, "2026-10-27", [SMITH]],
-    ["MARKETING", "coa-5140", 315, "2026-09-30", [RED_RIVER, PERMIAN]],
-    ["DEDUCT", "coa-5140", 368, "2026-08-26", [PERMIAN]],
-    ["DEDUCTS", "coa-5140", 11, "2026-09-30", [SMITH]],
-    ["OTHER", "coa-5140", 64, "2026-08-26", [CAPROCK, PERMIAN]],
-    ["SERVICE FEE ACCT", "coa-5140", 117, "2026-09-30", [RED_RIVER]],
-    ["GROSS EXTERNAL MARKETING REIMBURSEMENT", "coa-5140", 170, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
-    ["OWNER EXTERNAL MARKETING REIMBURSEMENT", "coa-5140", 223, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
+    ["MARKETING", 5140, 315, "2026-09-30", [RED_RIVER, PERMIAN]],
+    ["DEDUCT", 5140, 368, "2026-08-26", [PERMIAN]],
+    ["DEDUCTS", 5140, 11, "2026-09-30", [SMITH]],
+    ["OTHER", 5140, 64, "2026-08-26", [CAPROCK, PERMIAN]],
+    ["SERVICE FEE ACCT", 5140, 117, "2026-09-30", [RED_RIVER]],
+    ["GROSS EXTERNAL MARKETING REIMBURSEMENT", 5140, 170, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
+    ["OWNER EXTERNAL MARKETING REIMBURSEMENT", 5140, 223, "2026-08-26", [SMITH, CAPROCK, RED_RIVER]],
     ["TAX REIMBURSEMENT", null, 276, "2026-08-26", [CAPROCK]],
-    ["REIMBURSEMENT - PRICE", "coa-4100", 329, "2026-09-30", [PERMIAN]],
-    ["PRICE REIMBURSEMENT", "coa-4100", 382, "2026-09-30", [RED_RIVER]],
-    ["INTEREST", "coa-4100", 25, "2026-08-26", [CAPROCK, PERMIAN]],
-    ["INTEREST PAID", "coa-4100", 78, "2026-09-30", [SMITH]],
+    ["REIMBURSEMENT - PRICE", 4100, 329, "2026-09-30", [PERMIAN]],
+    ["PRICE REIMBURSEMENT", 4100, 382, "2026-09-30", [RED_RIVER]],
+    ["INTEREST", 4100, 25, "2026-08-26", [CAPROCK, PERMIAN]],
+    ["INTEREST PAID", 4100, 78, "2026-09-30", [SMITH]],
   ]),
 ];
 
 // Posted and void checks carry the accounts they posted to, as if they'd been posted with these mappings.
-export const MOCK_REVENUE_CHECKS: RevenueCheck[] = UNSTAMPED_CHECKS.map((check) =>
-  check.status === "draft" ? check : stampCheckAccounts(check, MOCK_TAX_DEDUCT_TYPES),
-);
+export const buildMockRevenueChecks = (accounts: NumberedAccount[]): RevenueCheck[] => {
+  const mappings = buildMockTaxDeductTypes(accounts);
+  const depositAccountId = findAccountByNumber(accounts, DEFAULT_DEPOSIT_ACCOUNT_NUMBER)?.id ?? "";
+  return UNSTAMPED_CHECKS.map((unstamped) => {
+    const check: RevenueCheck = { ...structuredClone(unstamped), depositAccountId };
+    return check.status === "draft" ? check : stampCheckAccounts(check, mappings, accounts);
+  });
+};

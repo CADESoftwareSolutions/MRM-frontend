@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import { useChartOfAccounts } from "@/hooks/useChartOfAccounts";
 import { useContactOptions } from "@/hooks/useContactOptions";
 import { useImportMatches } from "@/hooks/useImportMatches";
 import { useTaxDeductTypes } from "@/hooks/useTaxDeductTypes";
 import { useWellOptions } from "@/hooks/useWellOptions";
 import type { CheckDetailCheck } from "@/lib/checkDetailCsv";
+import { findAccountByNumber } from "@/types/chartOfAccounts";
 import { findTaxDeductType, incomeAccountForProduct } from "@/types/revenue";
 import {
   ContactMatchSource,
@@ -17,7 +19,7 @@ import {
   countNeedsMatch,
   isStandardProduct,
   matchContactByName,
-  suggestAccountForLabel,
+  suggestAccountNumberForLabel,
   suggestWell,
 } from "./importModel";
 
@@ -34,6 +36,7 @@ export const useImportResolution = (checks: CheckDetailCheck[], choices: ImportC
   const { options, loading: contactsLoading } = useContactOptions();
   const { wells, loading: wellsLoading } = useWellOptions();
   const { types } = useTaxDeductTypes();
+  const { accounts } = useChartOfAccounts();
   const { findOperatorId, getOwnerId, getWell } = useImportMatches();
 
   const items = useMemo(() => collectImportItems(checks), [checks]);
@@ -97,7 +100,7 @@ export const useImportResolution = (checks: CheckDetailCheck[], choices: ImportC
 
     const products = items.products.map((code) => ({
       code,
-      accountId: incomeAccountForProduct(code),
+      accountId: incomeAccountForProduct(code, accounts),
       standard: isStandardProduct(code),
     }));
 
@@ -110,13 +113,13 @@ export const useImportResolution = (checks: CheckDetailCheck[], choices: ImportC
         type,
         accountId,
         source: type?.accountId ? "saved" : chosen ? "chosen" : null,
-        suggestionId: suggestAccountForLabel(label.label, label.kind),
+        suggestionId: findAccountByNumber(accounts, suggestAccountNumberForLabel(label.label, label.kind))?.id ?? null,
       };
     });
 
     const resolved = { operators, owners, properties, products, labels };
     return { ...resolved, needsMatch: countNeedsMatch(resolved) };
-  }, [items, options, contactsById, wells, types, choices, findOperatorId, getOwnerId, getWell]);
+  }, [items, options, contactsById, wells, types, accounts, choices, findOperatorId, getOwnerId, getWell]);
 
   return { resolution, contactsLoading, wellsLoading, wells };
 };

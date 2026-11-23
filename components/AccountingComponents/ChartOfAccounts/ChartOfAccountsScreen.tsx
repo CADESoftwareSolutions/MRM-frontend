@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { showToastAtom } from "@/atoms/toastAtom";
+import { userProfileAtom } from "@/atoms/userProfileAtom";
 import { useChartOfAccounts } from "@/hooks/useChartOfAccounts";
 import {
   ACCOUNT_CATEGORIES,
@@ -13,6 +14,7 @@ import {
   AccountCategory,
   ChartAccount,
   ChartAccountInput,
+  auditUserName,
   formatAccountNumber,
 } from "@/types/chartOfAccounts";
 import { DeleteConfirmModal } from "../../modals/DeleteConfirmModal";
@@ -35,6 +37,7 @@ const matchesSearch = (a: ChartAccount, query: string) =>
 export const ChartOfAccountsScreen = () => {
   const isLight = useAtomValue(themeAtom) === "light";
   const showToast = useSetAtom(showToastAtom);
+  const currentUser = useAtomValue(userProfileAtom)?.user;
   const { accounts, loading, addAccount, updateAccount, deleteAccount, getAccountUsages, setAccountActive } =
     useChartOfAccounts();
 
@@ -181,8 +184,10 @@ export const ChartOfAccountsScreen = () => {
     }
 
     const name = accountName(a);
-    const created = `Created by ${a.createdBy} · ${formatAuditDate(a.createdAt)}`;
-    const updated = a.isDefault ? "Default · locked" : `Updated by ${a.updatedBy} · ${formatAuditDate(a.updatedAt)}`;
+    const created = `Created by ${auditUserName(a.createdById, currentUser)} · ${formatAuditDate(a.createdAt)}`;
+    const updated = a.isDefault
+      ? "Default · locked"
+      : `Updated by ${auditUserName(a.updatedById, currentUser)} · ${formatAuditDate(a.updatedAt)}`;
     return (
       <tr
         key={a.id}
@@ -315,7 +320,7 @@ export const ChartOfAccountsScreen = () => {
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            onClick={() => downloadChartOfAccountsCsv(accounts)}
+            onClick={() => downloadChartOfAccountsCsv(accounts, currentUser)}
             className={`cursor-pointer ${
               isLight
                 ? "bg-white border-purple-300 text-purple-700 hover:bg-purple-100 hover:text-purple-800"

@@ -54,7 +54,7 @@ export const LineEditor = memo(function LineEditor({
   onChange,
 }: LineEditorProps) {
   const theme = useEntryTheme();
-  const { getAccount } = useChartOfAccounts();
+  const { accounts, getAccount } = useChartOfAccounts();
   const set = (patch: Partial<RevenueLine>) => onChange(line.id, patch);
   const fieldId = (name: string) => `rl-${line.id}-${name}`;
 
@@ -84,7 +84,7 @@ export const LineEditor = memo(function LineEditor({
 
   const grossNet = netMismatch(line, "gross");
   const ownerNet = netMismatch(line, "owner");
-  const incomeAccountId = lineIncomeAccountId(line, status);
+  const incomeAccountId = lineIncomeAccountId(line, status, accounts);
   const incomeAccount = getAccount(incomeAccountId);
 
   const amountLabel = (text: string) => (

@@ -2,18 +2,18 @@ import { useCallback } from "react";
 import { useAtomValue } from "jotai";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { userProfileAtom } from "../atoms/userProfileAtom";
-import { MOCK_REVENUE_CHECKS } from "../mocks/revenue";
-import { bumpTransactionCounts, chartOfAccountsQuery } from "./useChartOfAccounts";
+import { buildMockRevenueChecks } from "../mocks/revenue";
+import { findAccountByNumber } from "../types/chartOfAccounts";
+import { chartOfAccountsQuery } from "./useChartOfAccounts";
 import { taxDeductTypesQuery } from "./useTaxDeductTypes";
 import {
-  DEFAULT_DEPOSIT_ACCOUNT_ID,
+  DEFAULT_DEPOSIT_ACCOUNT_NUMBER,
   MAX_DEDUCTS,
   MAX_TAXES,
   RevenueCheck,
   RevenueCheckInput,
   RevenueLine,
   RevenueLineInput,
-  checkAccountIds,
   glPeriodForDate,
   newRevenueId,
   postBlockers,
@@ -37,8 +37,10 @@ export class PostBlockedError extends Error {
 // gcTime is Infinity only while this is mocked: the cache is the only copy of the session's edits.
 export const revenueChecksQuery = queryOptions({
   queryKey: ["revenueChecks"],
-  // Mocked: no BE support yet — swap for executeGraphQL(FETCH_REVENUE_CHECKS)
-  queryFn: async (): Promise<RevenueCheck[]> => structuredClone(MOCK_REVENUE_CHECKS),
+  // Mocked: no BE support yet — swap for executeGraphQL(FETCH_REVENUE_CHECKS). The mock data names
+  // accounts by number, so it waits for the real chart of accounts to look up their ids.
+  queryFn: async ({ client }): Promise<RevenueCheck[]> =>
+    buildMockRevenueChecks(await client.ensureQueryData(chartOfAccountsQuery)),
   staleTime: Infinity,
   gcTime: Infinity,
 });
@@ -76,8 +78,21 @@ export const useRevenueChecks = () => {
     [queryClient],
   );
 
+  // "" when the company's chart of accounts has no 1000; the user then picks one on the check.
+  const defaultDepositAccountId = useCallback(
+    async () =>
+      findAccountByNumber(await queryClient.ensureQueryData(chartOfAccountsQuery), DEFAULT_DEPOSIT_ACCOUNT_NUMBER)?.id ??
+      "",
+    [queryClient],
+  );
+
   const buildCheck = useCallback(
-    (input: RevenueCheckInput, existing: RevenueCheck | undefined, now: string): RevenueCheck => {
+    (
+      input: RevenueCheckInput,
+      existing: RevenueCheck | undefined,
+      now: string,
+      depositAccountId: string,
+    ): RevenueCheck => {
       const { lines, ...fields } = input;
       const defined = Object.fromEntries(
         Object.entries(fields).filter(([key, value]) => key !== "id" && value !== undefined),
@@ -92,7 +107,7 @@ export const useRevenueChecks = () => {
         checkNumber: "",
         checkDate: input.checkDate,
         checkAmount: 0,
-        depositAccountId: DEFAULT_DEPOSIT_ACCOUNT_ID,
+        depositAccountId,
         depositDate: null,
         glPeriod: glPeriodForDate(input.checkDate),
         status: "draft",
@@ -127,7 +142,7 @@ export const useRevenueChecks = () => {
       const all = await readAll();
       const existing = input.id ? findOrThrow(all, input.id) : undefined;
       if (existing) assertDraft(existing);
-      const saved = buildCheck(input, existing, new Date().toISOString());
+      const saved = buildCheck(input, existing, new Date().toISOString(), await defaultDepositAccountId());
       const source = saved.reenteredFromId ? all.find((c) => c.id === saved.reenteredFromId) : undefined;
       if (source?.reenteredAsId && source.reenteredAsId !== saved.id && all.some((c) => c.id === source.reenteredAsId)) {
         throw new Error(`Check #${source.checkNumber} was already re-entered as a new draft`);
@@ -140,7 +155,7 @@ export const useRevenueChecks = () => {
       );
       return saved;
     },
-    [readAll, writeAll, buildCheck],
+    [readAll, writeAll, buildCheck, defaultDepositAccountId],
   );
 
   // Mocked: no BE support yet — swap for executeGraphQL(POST_REVENUE_CHECK, { id })
@@ -157,7 +172,7 @@ export const useRevenueChecks = () => {
       if (blockers.length) throw new PostBlockedError(check.checkNumber, blockers);
       const now = new Date().toISOString();
       const posted: RevenueCheck = {
-        ...stampCheckAccounts(check, types),
+        ...stampCheckAccounts(check, types, accounts),
         status: "posted",
         postedBy: currentUser,
         postedAt: now,
@@ -165,7 +180,6 @@ export const useRevenueChecks = () => {
         updatedAt: now,
       };
       writeAll(all.map((c) => (c.id === id ? posted : c)));
-      await bumpTransactionCounts(queryClient, checkAccountIds(posted, types), 1);
       return posted;
     },
     [readAll, writeAll, queryClient, currentUser],
@@ -193,7 +207,7 @@ export const useRevenueChecks = () => {
     async (id: string, reason: string): Promise<RevenueCheck> => {
       const trimmed = reason.trim();
       if (!trimmed) throw new Error("Enter a reason for voiding the check");
-      const [all, types] = await Promise.all([readAll(), queryClient.ensureQueryData(taxDeductTypesQuery)]);
+      const all = await readAll();
       const check = findOrThrow(all, id);
       if (check.status === "void") throw new Error(`Check #${check.checkNumber} is already void`);
       if (check.status !== "posted") throw new Error("Only posted checks can be voided. Delete a draft instead.");
@@ -208,10 +222,9 @@ export const useRevenueChecks = () => {
         updatedAt: now,
       };
       writeAll(all.map((c) => (c.id === id ? voided : c)));
-      await bumpTransactionCounts(queryClient, checkAccountIds(check, types), -1);
       return voided;
     },
-    [readAll, writeAll, queryClient, currentUser],
+    [readAll, writeAll, currentUser],
   );
 
   // Imports never post: every check comes in as a draft for someone to review and post.
@@ -220,11 +233,12 @@ export const useRevenueChecks = () => {
     async (drafts: RevenueCheckInput[]): Promise<string[]> => {
       const all = await readAll();
       const now = new Date().toISOString();
-      const created = drafts.map((draft) => buildCheck({ ...draft, id: null }, undefined, now));
+      const depositAccountId = await defaultDepositAccountId();
+      const created = drafts.map((draft) => buildCheck({ ...draft, id: null }, undefined, now, depositAccountId));
       writeAll([...all, ...created]);
       return created.map((c) => c.id);
     },
-    [readAll, writeAll, buildCheck],
+    [readAll, writeAll, buildCheck, defaultDepositAccountId],
   );
 
   // Links (or with nulls, unlinks) every line in the property group, i.e. with this propertyKey.

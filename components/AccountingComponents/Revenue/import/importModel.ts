@@ -6,8 +6,9 @@ import {
   RevenueCheckInput,
   RevenueLineInput,
   TaxDeductKind,
+  OTHER_INCOME_ACCOUNT_NUMBER,
   TaxDeductType,
-  incomeAccountForProduct,
+  incomeAccountNumberForProduct,
   normalizeLabel,
   propertyKey,
 } from "@/types/revenue";
@@ -208,28 +209,26 @@ export const suggestWell = (wells: WellOption[], description: string): WellOptio
 
 // ── Accounts ─────────────────────────────────────────────────────────────────
 
-const LABEL_ACCOUNT_RULES: [words: string[], accountId: string][] = [
-  [["SEVER", "PRODUCTION"], "coa-5000"],
-  [["REGULATORY", "ENVIRONMENTAL", "FUEL USE"], "coa-5020"],
-  [["GATHER", "COMPRESS", "METER"], "coa-5100"],
-  [["TRANSP"], "coa-5120"],
-  [["PROCESS", "TREAT", "FRACTION", "FUEL"], "coa-5130"],
-  [["REIMBURSE", "INTEREST"], "coa-4100"],
+const LABEL_ACCOUNT_RULES: [words: string[], accountNumber: number][] = [
+  [["SEVER", "PRODUCTION"], 5000],
+  [["REGULATORY", "ENVIRONMENTAL", "FUEL USE"], 5020],
+  [["GATHER", "COMPRESS", "METER"], 5100],
+  [["TRANSP"], 5120],
+  [["PROCESS", "TREAT", "FRACTION", "FUEL"], 5130],
+  [["REIMBURSE", "INTEREST"], 4100],
 ];
 
-const FALLBACK_LABEL_ACCOUNT: Record<TaxDeductKind, string> = { tax: "coa-5020", deduct: "coa-5140" };
+const FALLBACK_LABEL_ACCOUNT: Record<TaxDeductKind, number> = { tax: 5020, deduct: 5140 };
 
-/** First rule whose word appears in the label wins, so FUEL USE is checked before FUEL. A label
- * with none of the words falls back to OTHER TAXES or the other-deductions account. */
-export const suggestAccountForLabel = (label: string, kind: TaxDeductKind): string => {
+/** The account number to suggest for a label. First rule whose word appears in the label wins, so
+ * FUEL USE is checked before FUEL. A label with none of the words falls back to OTHER TAXES or the
+ * other-deductions account. */
+export const suggestAccountNumberForLabel = (label: string, kind: TaxDeductKind): number => {
   const text = normalizeLabel(label);
   return LABEL_ACCOUNT_RULES.find(([words]) => words.some((word) => text.includes(word)))?.[1] ?? FALLBACK_LABEL_ACCOUNT[kind];
 };
 
-// incomeAccountForProduct sends any code it doesn't know to this one.
-const OTHER_INCOME_ACCOUNT = incomeAccountForProduct("");
-
-export const isStandardProduct = (code: string) => incomeAccountForProduct(code) !== OTHER_INCOME_ACCOUNT;
+export const isStandardProduct = (code: string) => incomeAccountNumberForProduct(code) !== OTHER_INCOME_ACCOUNT_NUMBER;
 
 // ── Choices and what they resolve to ─────────────────────────────────────────
 
@@ -278,7 +277,8 @@ export interface ResolvedProperty extends FileProperty {
 
 export interface ResolvedProduct {
   code: string;
-  accountId: string;
+  /** null if the company's chart of accounts has no account for this product. */
+  accountId: string | null;
   standard: boolean;
 }
 
@@ -286,7 +286,8 @@ export interface ResolvedLabel extends FileLabel {
   type: TaxDeductType | undefined;
   accountId: string | null;
   source: "saved" | "chosen" | null;
-  suggestionId: string;
+  /** null if the company's chart of accounts has no account with the suggested number. */
+  suggestionId: string | null;
 }
 
 export interface ImportResolution {

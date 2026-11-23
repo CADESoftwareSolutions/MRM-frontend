@@ -1,6 +1,9 @@
+import { type AccountNumberParts, findAccountByNumber } from "./chartOfAccounts";
+
 export const MAX_TAXES = 10;
 export const MAX_DEDUCTS = 10;
-export const DEFAULT_DEPOSIT_ACCOUNT_ID = "coa-1000";
+/** Checks deposit to 1000 CASH unless the user picks another account. */
+export const DEFAULT_DEPOSIT_ACCOUNT_NUMBER = 1000;
 
 export type RevenueCheckStatus = "draft" | "posted" | "void";
 export type RevenueDisplayStatus = "Draft" | "Out of balance" | "Ready to post" | "Posted" | "Void";
@@ -108,7 +111,7 @@ export type RevenueLineInput = Omit<RevenueLine, "id" | "incomeAccountId"> & {
 };
 
 /** What saveDraft / importChecks take. Optional fields keep their stored value on update and get
- * a default on create (deposit to coa-1000, G/L period from the check date). */
+ * a default on create (deposit to the 1000 account, G/L period from the check date). */
 export type RevenueCheckInput = Pick<
   RevenueCheck,
   "operatorName" | "ownerName" | "ownerNumber" | "checkNumber" | "checkDate" | "checkAmount"
@@ -174,14 +177,22 @@ export const formatOwnerPercent = (percent: number): string => `${percent.toFixe
 
 export const newRevenueId = (prefix: string): string => `${prefix}-${crypto.randomUUID()}`;
 
-const INCOME_ACCOUNT_BY_PRODUCT: Record<string, string> = {
-  OIL: "coa-4000",
-  GAS: "coa-4010",
-  NGL: "coa-4020",
+const INCOME_ACCOUNT_NUMBER_BY_PRODUCT: Record<string, number> = {
+  OIL: 4000,
+  GAS: 4010,
+  NGL: 4020,
 };
 
-export const incomeAccountForProduct = (code: string): string =>
-  INCOME_ACCOUNT_BY_PRODUCT[code.trim().toUpperCase()] ?? "coa-4100";
+/** Any product other than oil, gas and NGL goes to 4100 OTHER INCOME. */
+export const OTHER_INCOME_ACCOUNT_NUMBER = 4100;
+
+export const incomeAccountNumberForProduct = (code: string): number =>
+  INCOME_ACCOUNT_NUMBER_BY_PRODUCT[code.trim().toUpperCase()] ?? OTHER_INCOME_ACCOUNT_NUMBER;
+
+/** The product's income account id, or null while the chart of accounts is loading or if the
+ * company's chart has no account with that number. */
+export const incomeAccountForProduct = (code: string, accounts: NumberedAccount[] | undefined): string | null =>
+  findAccountByNumber(accounts, incomeAccountNumberForProduct(code))?.id ?? null;
 
 export const normalizeLabel = (label: string): string =>
   label.trim().replace(/\s+/g, " ").toUpperCase();
@@ -253,6 +264,7 @@ type PostableCheck = Pick<RevenueCheck, "checkAmount"> & {
 };
 
 type AccountStatus = { id: string; isActive: boolean };
+type NumberedAccount = { id: string } & AccountNumberParts;
 
 /** True when the account exists and is active; without an account list, any id counts. */
 export const isUsableAccount = (accountId: string | null | undefined, accounts?: AccountStatus[]): boolean => {
@@ -492,35 +504,23 @@ export const taxDeductAccountId = (
 /** The income account a line counts toward: stamped at post time for posted and void checks. */
 export const lineIncomeAccountId = (
   line: Pick<RevenueLine, "productCode" | "incomeAccountId">,
-  status: RevenueCheckStatus
-): string =>
+  status: RevenueCheckStatus,
+  accounts: NumberedAccount[] | undefined
+): string | null =>
   status === "draft"
-    ? incomeAccountForProduct(line.productCode)
-    : (line.incomeAccountId ?? incomeAccountForProduct(line.productCode));
-
-/** Every distinct account a check touches: tax, deduct and income accounts. */
-export const checkAccountIds = (check: Pick<RevenueCheck, "status" | "lines">, types: TaxDeductType[]): string[] => {
-  const ids = new Set<string>();
-  for (const line of check.lines) {
-    ids.add(lineIncomeAccountId(line, check.status));
-    for (const entry of line.taxes) {
-      const id = taxDeductAccountId(entry, "tax", check.status, types);
-      if (id) ids.add(id);
-    }
-    for (const entry of line.deducts) {
-      const id = taxDeductAccountId(entry, "deduct", check.status, types);
-      if (id) ids.add(id);
-    }
-  }
-  return Array.from(ids);
-};
+    ? incomeAccountForProduct(line.productCode, accounts)
+    : (line.incomeAccountId ?? incomeAccountForProduct(line.productCode, accounts));
 
 /** The check with every line and tax/deduct entry stamped with the account it counts toward now. */
-export const stampCheckAccounts = <C extends Pick<RevenueCheck, "lines">>(check: C, types: TaxDeductType[]): C => ({
+export const stampCheckAccounts = <C extends Pick<RevenueCheck, "lines">>(
+  check: C,
+  types: TaxDeductType[],
+  accounts: NumberedAccount[] | undefined
+): C => ({
   ...check,
   lines: check.lines.map((line) => ({
     ...line,
-    incomeAccountId: incomeAccountForProduct(line.productCode),
+    incomeAccountId: incomeAccountForProduct(line.productCode, accounts),
     taxes: line.taxes.map((entry) => ({
       ...entry,
       accountId: findTaxDeductType(types, entry.label, "tax")?.accountId ?? null,

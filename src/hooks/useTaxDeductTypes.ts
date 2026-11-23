@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MOCK_TAX_DEDUCT_TYPES } from "../mocks/revenue";
+import { buildMockTaxDeductTypes } from "../mocks/revenue";
 import {
   TaxDeductKind,
   TaxDeductType,
@@ -10,6 +10,7 @@ import {
   newRevenueId,
   normalizeLabel,
 } from "../types/revenue";
+import { chartOfAccountsQuery } from "./useChartOfAccounts";
 import { revenueChecksQuery } from "./useRevenueChecks";
 
 const EMPTY: TaxDeductType[] = [];
@@ -27,8 +28,10 @@ export interface SeenTaxDeductLabel {
 // session's edits.
 export const taxDeductTypesQuery = queryOptions({
   queryKey: ["taxDeductTypes"],
-  // Mocked: no BE support yet — swap for executeGraphQL(FETCH_TAX_DEDUCT_TYPES)
-  queryFn: async (): Promise<TaxDeductType[]> => structuredClone(MOCK_TAX_DEDUCT_TYPES),
+  // Mocked: no BE support yet — swap for executeGraphQL(FETCH_TAX_DEDUCT_TYPES). The mock mappings
+  // name accounts by number, so it waits for the real chart of accounts to look up their ids.
+  queryFn: async ({ client }): Promise<TaxDeductType[]> =>
+    buildMockTaxDeductTypes(await client.ensureQueryData(chartOfAccountsQuery)),
   staleTime: Infinity,
   gcTime: Infinity,
 });

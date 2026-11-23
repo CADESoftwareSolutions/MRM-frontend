@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import type { ContactOption } from "@/hooks/useContactOptions";
 import type { SeenTaxDeductLabel } from "@/hooks/useTaxDeductTypes";
 import {
-  DEFAULT_DEPOSIT_ACCOUNT_ID,
   RevenueCheck,
   RevenueCheckInput,
   RevenueLine,
@@ -63,7 +62,8 @@ export const OPERATOR_CLASSIFICATIONS = ["OPERATOR", "PURCHASER"];
 
 export const todayIso = () => format(new Date(), "yyyy-MM-dd");
 
-export const newCheckDraft = (): CheckDraft => {
+/** depositAccountId is the default deposit account's id ("" if the company's chart has none). */
+export const newCheckDraft = (depositAccountId: string): CheckDraft => {
   const checkDate = todayIso();
   return {
     operatorId: null,
@@ -74,7 +74,7 @@ export const newCheckDraft = (): CheckDraft => {
     checkNumber: "",
     checkDate,
     checkAmount: 0,
-    depositAccountId: DEFAULT_DEPOSIT_ACCOUNT_ID,
+    depositAccountId,
     depositDate: null,
     glPeriod: glPeriodForDate(checkDate),
     stubFileName: null,

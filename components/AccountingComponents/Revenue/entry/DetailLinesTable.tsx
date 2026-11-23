@@ -72,7 +72,7 @@ export const DetailLinesTable = ({
   onLinkWell,
 }: DetailLinesTableProps) => {
   const theme = useEntryTheme();
-  const { getAccount } = useChartOfAccounts();
+  const { accounts, getAccount } = useChartOfAccounts();
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(initialExpanded),
   );
@@ -103,13 +103,13 @@ export const DetailLinesTable = ({
   const productOptions = useMemo<SuggestOption[]>(
     () =>
       productKey.split("\u0000").map((code) => {
-        const account = getAccount(incomeAccountForProduct(code));
+        const account = getAccount(incomeAccountForProduct(code, accounts));
         return {
           value: code,
           hint: account ? formatAccountNumber(account) : undefined,
         };
       }),
-    [productKey, getAccount],
+    [productKey, accounts, getAccount],
   );
   const interestKey = uniqueKey(
     lines.map((line) => line.interestType),

@@ -37,8 +37,9 @@ export const AccountEditorRow = ({
   const isEdit = !!account;
   const errorIdBase = useId();
   const errorId = (field: DraftField | "save") => `${errorIdBase}-${field}`;
-  const numberLocked = !!account && account.transactionCount > 0;
-  const categoryLocked = numberLocked;
+  // The backend can't renumber an account, so Account and Sub are set once, when it's added.
+  const numberLocked = !!account;
+  const categoryLocked = !!account && account.transactionCount > 0;
   const categoryLockId = `${useId()}-category-lock`;
   const [draft, setDraft] = useState<AccountDraft>(() =>
     account ? draftFromAccount(account) : { account: "", sub: "", description: "", category: defaultCategory },
@@ -92,12 +93,13 @@ export const AccountEditorRow = ({
   const hint = validation.valid
     ? `Ready to save ${formatAccountNumber(parsed)} ${parsed.description} as ${draft.category}.`
     : RULES_HINT;
-  const lockNote =
-    account && numberLocked
+  const lockNote = !account
+    ? null
+    : categoryLocked
       ? `Account, Sub and Category are locked: ${account.transactionCount.toLocaleString("en-US")} posted ${
           account.transactionCount === 1 ? "transaction" : "transactions"
         }.`
-      : null;
+      : "Account and Sub can't change once an account is added. To use a different number, add a new account.";
 
   const accountNumber = account ? formatAccountNumber(account) : null;
   const labelPrefix = accountNumber ? `${accountNumber} ` : "New ";
@@ -122,7 +124,7 @@ export const AccountEditorRow = ({
           placeholder="1–9999"
           autoFocus={!numberLocked}
           disabled={numberLocked}
-          title={numberLocked ? "Locked: this account has posted transactions" : undefined}
+          title={numberLocked ? "Set when the account was added" : undefined}
           value={draft.account}
           onChange={(e) => update("account", e.target.value)}
           onBlur={() => touch("account")}
@@ -139,7 +141,7 @@ export const AccountEditorRow = ({
           inputMode="numeric"
           placeholder="Optional"
           disabled={numberLocked}
-          title={numberLocked ? "Locked: this account has posted transactions" : undefined}
+          title={numberLocked ? "Set when the account was added" : undefined}
           value={draft.sub}
           onChange={(e) => update("sub", e.target.value)}
           onBlur={() => touch("sub")}
