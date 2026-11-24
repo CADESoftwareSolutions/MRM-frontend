@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { themeAtom } from "@/atoms/NavigationAtom";
 
-export const SECTION_HEADER_CLASS = "text-sm font-semibold text-white/90 uppercase tracking-wider";
+export const SECTION_HEADER_CLASS = "text-base font-bold uppercase tracking-wider text-white";
 export const PRIMARY_BUTTON_CLASS = "bg-purple-600 hover:bg-purple-700 cursor-pointer";
 
 /** Classes the .light-theme overrides in index.css don't cover, picked per theme. Popover classes
@@ -12,7 +12,7 @@ export const useImportTheme = () => {
   return useMemo(
     () => ({
       isLight,
-      headerText: isLight ? "text-gray-500" : "text-purple-200/80",
+      headerText: isLight ? "text-gray-500" : "text-white",
       rowBorder: isLight ? "border-purple-100" : "border-purple-300/10",
       outlineButton: isLight
         ? "bg-white border-purple-300/30 text-purple-700 hover:bg-purple-100 hover:text-purple-800"

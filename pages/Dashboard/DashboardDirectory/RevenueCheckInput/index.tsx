@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import DashboardLayout from "../../../../components/DashboardComponents/DashboardLayout";
 import { RevenueCheckEntry } from "../../../../components/AccountingComponents/Revenue/RevenueCheckEntry";
@@ -17,11 +17,23 @@ const RevenueCheckInput = () => {
   const checkId = queryValue(router.query.id);
   const importing = queryValue(router.query.mode) === "import";
 
+  // Saving a new check moves the address to ?id=… so the sidebar link starts a fresh check, but the
+  // form that saved it stays mounted. Any other change of check opens a fresh form.
+  const [savedNewId, setSavedNewId] = useState<string | null>(null);
+  const [entry, setEntry] = useState({ checkId, key: 0 });
+  if (entry.checkId !== checkId) {
+    setEntry({ checkId, key: checkId !== null && checkId === savedNewId ? entry.key : entry.key + 1 });
+  }
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [checkId, importing]);
+  }, [entry.key, importing]);
 
   const openCheck = (id: string) => router.push(revenueCheckInputRoute({ id }));
+  const showSavedCheck = (id: string) => {
+    setSavedNewId(id);
+    router.replace(revenueCheckInputRoute({ id }), undefined, { shallow: true });
+  };
   const backToList = () => router.push(REVENUE_CHECKS_ROUTE);
 
   return (
@@ -33,10 +45,11 @@ const RevenueCheckInput = () => {
               <RevenueImport onCancel={backToList} onDone={(id) => (id ? openCheck(id) : backToList())} />
             ) : (
               <RevenueCheckEntry
-                key={checkId ?? "new"}
+                key={entry.key}
                 checkId={checkId}
                 onBack={backToList}
                 onOpenCheck={openCheck}
+                onSaved={showSavedCheck}
                 onImport={() => router.push(revenueCheckInputRoute({ mode: "import" }))}
               />
             ))}

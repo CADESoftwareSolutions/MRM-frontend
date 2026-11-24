@@ -21,7 +21,13 @@ import {
   taxDeductAccountId,
 } from "@/types/revenue";
 import { AccountPicker } from "../../AccountPicker";
-import { INPUT_SM_CLASS, NUM_CLASS, useEntryTheme } from "./entryTheme";
+import {
+  EDITOR_PANEL_CLASS,
+  EDITOR_PANEL_TITLE_CLASS,
+  INPUT_CLASS,
+  NUM_CLASS,
+  useEntryTheme,
+} from "./entryTheme";
 import { NumberInput } from "./NumberInput";
 import { SuggestInput, type SuggestOption } from "./SuggestInput";
 
@@ -145,7 +151,7 @@ export const TaxDeductList = ({
     const label = normalizeLabel(entry.label);
     if (!label)
       return (
-        <span className="text-xs text-white/60">Enter the label first</span>
+        <span className="text-sm text-white/60">Enter the label first</span>
       );
     const type = findByLabel(label, kind);
     const accountId = taxDeductAccountId(entry, kind, status, types);
@@ -153,18 +159,18 @@ export const TaxDeductList = ({
     if (accountId) {
       const accountLabel = account ? formatAccountLabel(account) : accountId;
       return (
-        <span className="flex min-w-0 items-center gap-1.5">
+        <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
           <Badge
             variant="outline"
             title={accountLabel}
             className={cn(
-              "min-w-0 shrink rounded-md text-xs font-medium",
+              "min-w-0 max-w-full shrink rounded-md text-sm font-medium",
               theme.accountBadge,
             )}
           >
             <span className="truncate">{accountLabel}</span>
           </Badge>
-          <span className="shrink-0 text-xs text-white/60">
+          <span className="shrink-0 text-sm text-white/60">
             {status === "draft" ? "saved match" : "posted to"}
           </span>
         </span>
@@ -174,7 +180,7 @@ export const TaxDeductList = ({
       <Badge
         variant="outline"
         className={cn(
-          "shrink-0 rounded-md text-xs font-medium",
+          "shrink-0 rounded-md text-sm font-medium",
           theme.warnBadge,
         )}
       >
@@ -183,20 +189,19 @@ export const TaxDeductList = ({
     );
     if (readOnly) return badge;
     return (
-      <span className="flex min-w-0 items-center gap-1.5">
-        <span className="min-w-0 flex-1">
+      <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <span className="min-w-40 flex-1">
           <AccountPicker
             aria-label={`Account for ${label}, line ${lineNumber}`}
             value={null}
             onChange={(accountId) => mapLabel(label, accountId)}
             categories={allCategories ? undefined : [copy.category]}
             placeholder="Choose account"
-            size="sm"
             disabled={mappingLabel === label}
           />
         </span>
         {mappingLabel === label ? (
-          <Loader2 className="size-3.5 shrink-0 animate-spin text-purple-300" />
+          <Loader2 className="size-4 shrink-0 animate-spin text-purple-300" />
         ) : (
           badge
         )}
@@ -205,7 +210,7 @@ export const TaxDeductList = ({
   };
 
   const th = cn(
-    "px-1.5 py-1 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap",
+    "px-2 py-1.5 text-sm font-bold uppercase tracking-wider whitespace-nowrap",
     theme.headerText,
   );
   const hasUnmapped = entries.some((entry) => {
@@ -216,10 +221,10 @@ export const TaxDeductList = ({
   return (
     <div
       ref={rootRef}
-      className="flex min-w-0 flex-col gap-1.5 rounded-lg border border-purple-300/20 bg-white/5 px-3 py-2.5"
+      className={cn("flex min-w-0 flex-col gap-2", EDITOR_PANEL_CLASS)}
     >
       <div className="flex items-center justify-between gap-2">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-white/90">
+        <h4 className={EDITOR_PANEL_TITLE_CLASS}>
           {copy.title}
           <span className="ml-1.5 font-normal normal-case tracking-normal text-white/60">
             · up to {copy.max}
@@ -230,7 +235,7 @@ export const TaxDeductList = ({
             type="button"
             onClick={() => setAllCategories((all) => !all)}
             className={cn(
-              "cursor-pointer text-xs underline underline-offset-2",
+              "cursor-pointer text-sm underline underline-offset-2",
               theme.ghostButton,
             )}
           >
@@ -242,25 +247,25 @@ export const TaxDeductList = ({
       </div>
 
       {entries.length === 0 ? (
-        <p className="py-1 text-xs text-white/60">
+        <p className="py-1 text-sm text-white/60">
           No {copy.plural} on this line.
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table
-            className="w-full min-w-[658px] text-xs"
+            className="w-full min-w-[600px] text-sm"
             style={{ tableLayout: "fixed" }}
           >
             <colgroup>
               <col />
-              <col style={{ width: 96 }} />
-              <col style={{ width: 92 }} />
-              <col style={{ width: 292 }} />
-              {!readOnly && <col style={{ width: 28 }} />}
+              <col style={{ width: 104 }} />
+              <col style={{ width: 104 }} />
+              <col style={{ width: "33%" }} />
+              {!readOnly && <col style={{ width: 36 }} />}
             </colgroup>
             <thead>
               <tr className={cn("border-b text-left", theme.rowBorder)}>
-                <th className={th}>{copy.column}</th>
+                <th className={cn(th, "whitespace-normal")}>{copy.column}</th>
                 <th className={cn(th, "text-right")}>Gross</th>
                 <th className={cn(th, "text-right")}>Owner</th>
                 <th className={th}>Account</th>
@@ -278,7 +283,7 @@ export const TaxDeductList = ({
                   data-row={index}
                   className={cn("border-b last:border-0", theme.rowBorder)}
                 >
-                  <td className="px-1.5 py-1">
+                  <td className="px-2 py-1.5">
                     {readOnly ? (
                       <span
                         className="block truncate text-white"
@@ -296,11 +301,11 @@ export const TaxDeductList = ({
                         newValueNote="new label"
                         placeholder="As printed"
                         autoFocus={index === focusNewRow}
-                        className={INPUT_SM_CLASS}
+                        className={INPUT_CLASS}
                       />
                     )}
                   </td>
-                  <td className="px-1.5 py-1">
+                  <td className="px-2 py-1.5">
                     {readOnly ? (
                       <span className={cn("block text-white", NUM_CLASS)}>
                         {formatMoney(entry.gross)}
@@ -313,11 +318,11 @@ export const TaxDeductList = ({
                           update(index, { gross: gross ?? 0 })
                         }
                         format={formatMoney}
-                        className={INPUT_SM_CLASS}
+                        className={INPUT_CLASS}
                       />
                     )}
                   </td>
-                  <td className="px-1.5 py-1">
+                  <td className="px-2 py-1.5">
                     {readOnly ? (
                       <span className={cn("block text-white", NUM_CLASS)}>
                         {formatMoney(entry.net)}
@@ -330,13 +335,13 @@ export const TaxDeductList = ({
                           update(index, { net: net ?? 0 })
                         }
                         format={formatMoney}
-                        className={INPUT_SM_CLASS}
+                        className={INPUT_CLASS}
                       />
                     )}
                   </td>
-                  <td className="px-1.5 py-1">{renderAccount(entry)}</td>
+                  <td className="px-2 py-1.5">{renderAccount(entry)}</td>
                   {!readOnly && (
-                    <td className="px-0.5 py-1 text-center">
+                    <td className="px-0.5 py-1.5 text-center">
                       <button
                         type="button"
                         aria-label={`Remove ${copy.noun} ${entry.label || index + 1}, line ${lineNumber}`}
@@ -346,11 +351,11 @@ export const TaxDeductList = ({
                           setFocusAfterRemove(index);
                         }}
                         className={cn(
-                          "rounded-md p-1 cursor-pointer",
+                          "rounded-md p-1.5 cursor-pointer",
                           theme.dangerIconButton,
                         )}
                       >
-                        <X className="size-3.5" />
+                        <X className="size-4" />
                       </button>
                     </td>
                   )}
@@ -361,13 +366,12 @@ export const TaxDeductList = ({
         </div>
       )}
 
-      {mapError && <p className="text-xs text-red-400">{mapError}</p>}
+      {mapError && <p className="text-sm text-red-400">{mapError}</p>}
 
       {!readOnly && (
         <Button
           type="button"
           variant="ghost"
-          size="sm"
           data-add
           disabled={entries.length >= copy.max}
           onClick={() => {
@@ -375,11 +379,11 @@ export const TaxDeductList = ({
             onChange([...entries, { label: "", gross: 0, net: 0 }]);
           }}
           className={cn(
-            "h-7 w-fit px-1.5 text-xs cursor-pointer",
+            "h-8 w-fit px-2 cursor-pointer",
             theme.ghostButton,
           )}
         >
-          <Plus className="size-3.5" />
+          <Plus className="size-4" />
           Add {copy.noun}
         </Button>
       )}

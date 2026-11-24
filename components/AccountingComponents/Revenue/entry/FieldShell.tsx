@@ -17,8 +17,6 @@ interface FieldShellProps {
   autoFilled?: boolean;
   help?: ReactNode;
   error?: string;
-  /** Small labels for the dense line editor. */
-  compact?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -30,7 +28,6 @@ export const FieldShell = ({
   autoFilled,
   help,
   error,
-  compact,
   className,
   children,
 }: FieldShellProps) => {
@@ -50,12 +47,7 @@ export const FieldShell = ({
     <div className={cn("min-w-0", className)}>
       <Label
         htmlFor={htmlFor}
-        className={cn(
-          "mb-1 flex items-center gap-1",
-          compact
-            ? "text-xs font-medium text-white/70"
-            : "text-sm font-semibold text-white",
-        )}
+        className="mb-1 flex items-center gap-1 text-sm font-semibold text-white"
       >
         {label}
         {required && <span className="text-sm font-bold text-red-500">*</span>}

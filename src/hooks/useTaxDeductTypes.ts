@@ -45,7 +45,7 @@ const findOrThrow = (all: TaxDeductType[], id: string) => {
 /** Pass the chart of accounts so a label mapped to a missing or inactive account counts as unmapped. */
 export const useTaxDeductTypes = (accounts?: { id: string; isActive: boolean }[]) => {
   const queryClient = useQueryClient();
-  const { data = EMPTY, isLoading } = useQuery(taxDeductTypesQuery);
+  const { data = EMPTY, isLoading, isFetching, dataUpdatedAt, error, refetch } = useQuery(taxDeductTypesQuery);
 
   const unmappedCount = useMemo(() => data.filter((t) => !isTypeMapped(t, accounts)).length, [data, accounts]);
 
@@ -141,7 +141,10 @@ export const useTaxDeductTypes = (accounts?: { id: string; isActive: boolean }[]
 
   return {
     types: data,
-    loading: isLoading,
+    // "Try again" after a failed first load counts as loading too.
+    loading: isLoading || (isFetching && dataUpdatedAt === 0),
+    error: error ? error.message : null,
+    reload: refetch,
     unmappedCount,
     findByLabel,
     setAccount,

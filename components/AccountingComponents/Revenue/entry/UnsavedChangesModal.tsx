@@ -1,30 +1,30 @@
 import { useAtomValue } from "jotai";
-import { Upload } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { themeAtom } from "@/atoms/NavigationAtom";
 import { Modal, ModalHeader } from "../../../modals/Modal";
 
 interface UnsavedChangesModalProps {
+  /** Why leaving matters, after "This check has changes that aren't saved." */
+  reason: string;
   onSave: () => void;
   onDiscard: () => void;
   onCancel: () => void;
 }
 
-/** Asked before leaving for the Excel import, which starts new checks and drops what's on screen. */
-export const UnsavedChangesModal = ({ onSave, onDiscard, onCancel }: UnsavedChangesModalProps) => {
+export const UnsavedChangesModal = ({ reason, onSave, onDiscard, onCancel }: UnsavedChangesModalProps) => {
   const isLight = useAtomValue(themeAtom) === "light";
   return (
     <Modal onClose={onCancel} closeOnBackdropClick maxWidthClassName="max-w-md" isLight={isLight}>
       <ModalHeader
         title="Unsaved changes"
-        icon={<Upload className={`w-5 h-5 ${isLight ? "text-purple-700" : "text-purple-300"}`} />}
+        icon={<AlertTriangle className={`w-5 h-5 ${isLight ? "text-purple-700" : "text-purple-300"}`} />}
         onClose={onCancel}
         isLight={isLight}
       />
       <div className="p-6 flex flex-col gap-4">
         <p className={`text-sm ${isLight ? "text-gray-600" : "text-purple-200"}`}>
-          This check has changes that aren&apos;t saved. Importing detail from Excel creates new checks and leaves this
-          one, so save it first or discard the changes.
+          This check has changes that aren&apos;t saved. {reason}
         </p>
         <div className="flex flex-wrap gap-3 justify-end">
           <Button
@@ -32,7 +32,7 @@ export const UnsavedChangesModal = ({ onSave, onDiscard, onCancel }: UnsavedChan
             onClick={onCancel}
             className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white cursor-pointer"
           >
-            Cancel
+            Keep editing
           </Button>
           <Button
             variant="outline"

@@ -24,7 +24,8 @@ export interface ImportMatchesInput {
   /** The operator name as printed on the file. */
   printedName: string;
   owners: Record<string, string>;
-  wells: Record<string, RememberedWell>;
+  /** null forgets the well remembered for that Operator CC. */
+  wells: Record<string, RememberedWell | null>;
 }
 
 const EMPTY: OperatorImportMatches[] = [];
@@ -92,7 +93,12 @@ export const useImportMatches = () => {
         }
         if (name && !entry.printedNames.includes(name)) entry.printedNames.push(name);
         Object.assign(entry.owners, withoutBlanks(input.owners));
-        Object.assign(entry.wells, withoutBlanks(input.wells));
+        for (const [cc, well] of Object.entries(input.wells)) {
+          const key = cc.trim();
+          if (!key) continue;
+          if (well) entry.wells[key] = well;
+          else delete entry.wells[key];
+        }
       }
       queryClient.setQueryData(importMatchesQuery.queryKey, next);
     },

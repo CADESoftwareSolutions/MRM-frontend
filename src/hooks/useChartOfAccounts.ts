@@ -87,7 +87,7 @@ const countPostedEntries = (entries: PostedEntryRow[]): Map<string, number> => {
 export const chartOfAccountsQuery = queryOptions({
   queryKey: ["chartOfAccounts"],
   queryFn: async (): Promise<ChartAccount[]> => {
-    const result = await executeGraphQL(FETCH_CHART_OF_ACCOUNTS);
+    const result = await runGraphQL(FETCH_CHART_OF_ACCOUNTS, {});
     const counts = countPostedEntries((result?.journalEntries ?? []) as PostedEntryRow[]);
     return ((result?.chartOfAccounts ?? []) as ChartOfAccountRow[]).map((row) =>
       toChartAccount(row, counts.get(String(row.id)) ?? 0),
@@ -128,7 +128,7 @@ const findOrThrow = (all: ChartAccount[], id: string) => {
 export const useChartOfAccounts = () => {
   const queryClient = useQueryClient();
 
-  const { data = EMPTY, isLoading } = useQuery(chartOfAccountsQuery);
+  const { data = EMPTY, isLoading, isFetching, dataUpdatedAt, error, refetch } = useQuery(chartOfAccountsQuery);
 
   const accounts = useMemo(() => [...data].sort(compareAccounts), [data]);
   const byId = useMemo(() => new Map(data.map((a) => [a.id, a])), [data]);
@@ -137,12 +137,21 @@ export const useChartOfAccounts = () => {
 
   const readAll = useCallback(() => queryClient.ensureQueryData(chartOfAccountsQuery), [queryClient]);
 
+  // A background refetch that started before the save would land afterwards and drop the change.
+  const updateCache = useCallback(
+    async (update: (all: ChartAccount[]) => ChartAccount[]) => {
+      await queryClient.cancelQueries({ queryKey: chartOfAccountsQuery.queryKey });
+      queryClient.setQueryData<ChartAccount[]>(chartOfAccountsQuery.queryKey, (all = []) => update(all));
+    },
+    [queryClient],
+  );
+
   const writeAccount = useCallback(
     (account: ChartAccount) =>
-      queryClient.setQueryData<ChartAccount[]>(chartOfAccountsQuery.queryKey, (all = []) =>
+      updateCache((all) =>
         all.some((a) => a.id === account.id) ? all.map((a) => (a.id === account.id ? account : a)) : [...all, account],
       ),
-    [queryClient],
+    [updateCache],
   );
 
   const addAccount = useCallback(
@@ -157,7 +166,7 @@ export const useChartOfAccounts = () => {
         category: clean.category,
       });
       const created = toChartAccount(result.createChartOfAccount.chartOfAccount, 0);
-      writeAccount(created);
+      await writeAccount(created);
       return created;
     },
     [readAll, writeAccount],
@@ -191,7 +200,7 @@ export const useChartOfAccounts = () => {
         category: next.category,
       });
       const updated = toChartAccount(result.updateChartOfAccount.chartOfAccount, existing.transactionCount);
-      writeAccount(updated);
+      await writeAccount(updated);
       return updated;
     },
     [readAll, writeAccount],
@@ -206,11 +215,9 @@ export const useChartOfAccounts = () => {
       if (usages.length) throw new Error(`Can't delete: ${usages.join("; ")}`);
       const result = await runGraphQL(DELETE_CHART_OF_ACCOUNT, { id: Number(id) });
       if (!result?.deleteChartOfAccount?.success) throw new Error(`Couldn't delete ${formatAccountNumber(existing)}`);
-      queryClient.setQueryData<ChartAccount[]>(chartOfAccountsQuery.queryKey, (all = []) =>
-        all.filter((a) => a.id !== id),
-      );
+      await updateCache((all) => all.filter((a) => a.id !== id));
     },
-    [queryClient, readAll],
+    [queryClient, readAll, updateCache],
   );
 
   const getAccountUsages = useCallback((id: string) => findAccountUsages(queryClient, id), [queryClient]);
@@ -221,14 +228,17 @@ export const useChartOfAccounts = () => {
       if (existing.isDefault) throw new Error("Default accounts are always active");
       if (existing.isActive === active) return;
       const result = await runGraphQL(UPDATE_CHART_OF_ACCOUNT, { id: Number(id), isActive: active });
-      writeAccount(toChartAccount(result.updateChartOfAccount.chartOfAccount, existing.transactionCount));
+      await writeAccount(toChartAccount(result.updateChartOfAccount.chartOfAccount, existing.transactionCount));
     },
     [readAll, writeAccount],
   );
 
   return {
     accounts,
-    loading: isLoading,
+    // "Try again" after a failed first load counts as loading too.
+    loading: isLoading || (isFetching && dataUpdatedAt === 0),
+    error: error ? error.message : null,
+    reload: refetch,
     getAccount,
     addAccount,
     updateAccount,

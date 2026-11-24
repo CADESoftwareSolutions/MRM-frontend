@@ -83,11 +83,11 @@ export const WellLinkPicker = ({
 
   if (disabled) {
     return linked ? (
-      <Badge variant="outline" className={cn("text-xs font-medium", theme.okBadge)}>
+      <Badge variant="outline" className={cn("text-sm font-medium", theme.okBadge)}>
         Linked to well {wellLabel ?? wellId}
       </Badge>
     ) : (
-      <Badge variant="outline" className={cn("text-xs font-medium", theme.warnBadge)}>
+      <Badge variant="outline" className={cn("text-sm font-medium", theme.warnBadge)}>
         Not linked to a well
       </Badge>
     );
@@ -128,24 +128,24 @@ export const WellLinkPicker = ({
             type="button"
             title="Change the linked well"
             className={cn(
-              "inline-flex h-[22px] cursor-pointer items-center gap-1 rounded-md border px-2 text-xs font-medium",
+              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border px-2.5 text-sm font-medium",
               theme.okBadge,
             )}
           >
             Linked to well {wellLabel ?? wellId}
-            <ChevronDown className="size-3" />
+            <ChevronDown className="size-4" />
           </button>
         ) : (
           <button
             type="button"
             className={cn(
-              "inline-flex h-[26px] cursor-pointer items-center gap-1.5 rounded-md border-[1.5px] border-dashed px-2 text-xs font-medium",
+              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border-[1.5px] border-dashed px-2.5 text-sm font-medium",
               theme.dashedLink,
             )}
           >
-            <Link2 className="size-3.5" />
+            <Link2 className="size-4" />
             Link to a well
-            <ChevronDown className="size-3" />
+            <ChevronDown className="size-4" />
           </button>
         )}
       </PopoverTrigger>

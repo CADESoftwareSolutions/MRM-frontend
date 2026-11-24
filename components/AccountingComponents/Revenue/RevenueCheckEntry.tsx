@@ -37,6 +37,7 @@ import {
   propertyKey,
 } from "@/types/revenue";
 import { DeleteConfirmModal } from "../../modals/DeleteConfirmModal";
+import { LoadError } from "../LoadError";
 import { RevenueStatusBadge } from "./list/RevenueStatusBadge";
 import { BalanceBar } from "./entry/BalanceBar";
 import { CheckHeaderFields } from "./entry/CheckHeaderFields";
@@ -73,13 +74,24 @@ export interface RevenueCheckEntryProps {
   onImport: () => void;
   /** Opens another check, for the duplicate warning and a re-entry draft. */
   onOpenCheck?: (id: string) => void;
+  /** A new check was saved and stays open, so the page can point its address at it. */
+  onSaved?: (id: string) => void;
 }
+
+type EntryTab = "info" | "lines";
 
 const CARD_CLASS =
   "bg-white/10 backdrop-blur-md border-purple-300/30 gap-4 py-4";
 const BACK_BUTTON_CLASS =
   "text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 cursor-pointer";
 const HEADER_FIELD_ORDER = Object.keys(HEADER_FIELD_LABELS) as HeaderField[];
+const tabButtonClass = (active: boolean) =>
+  cn(
+    "inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all",
+    active ? "bg-purple-600 text-white" : "text-purple-100 hover:bg-purple-500/30 hover:text-white",
+  );
+const LEAVE_REASON = "Save it as a draft before you leave, or discard the changes.";
+const TAB_BADGE_CLASS = "rounded-[5px] px-1.5 text-[11px] font-semibold";
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 const usePageHeader = (subtitle: string) => {
@@ -118,10 +130,18 @@ export const RevenueCheckEntry = ({
   onBack,
   onImport,
   onOpenCheck,
+  onSaved,
 }: RevenueCheckEntryProps) => {
-  const { loading: checksLoading, getCheck } = useRevenueChecks();
+  const { loading: checksLoading, error: checksError, reload: reloadChecks, getCheck } = useRevenueChecks();
   // A new check starts out depositing to the company's 1000 account, so the form waits for the chart.
-  const { loading: accountsLoading } = useChartOfAccounts();
+  const {
+    accounts,
+    loading: accountsLoading,
+    error: accountsError,
+    reload: reloadAccounts,
+  } = useChartOfAccounts();
+  const chartMissing = !!accountsError && !accounts.length;
+  const loadError = chartMissing ? accountsError : checksError;
   const loading = checksLoading || accountsLoading;
   const check = getCheck(checkId);
   // Latched once found, so a check deleted from this screen doesn't flip it to "not found"
@@ -141,8 +161,19 @@ export const RevenueCheckEntry = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  if (initialCheck === undefined || accountsLoading) {
-    return <EntryPlaceholder loading={loading} onBack={onBack} />;
+  if (initialCheck === undefined || accountsLoading || chartMissing) {
+    return (
+      <EntryPlaceholder
+        loading={loading}
+        error={loadError}
+        errorSubject={chartMissing ? "the chart of accounts" : "the check"}
+        onRetry={() => {
+          reloadAccounts();
+          reloadChecks();
+        }}
+        onBack={onBack}
+      />
+    );
   }
   return (
     <CheckEntryForm
@@ -152,6 +183,7 @@ export const RevenueCheckEntry = ({
       onBack={onBack}
       onImport={onImport}
       onOpenCheck={onOpenCheck}
+      onSaved={onSaved}
       onReenter={reenter}
     />
   );
@@ -159,12 +191,18 @@ export const RevenueCheckEntry = ({
 
 const EntryPlaceholder = ({
   loading,
+  error,
+  errorSubject,
+  onRetry,
   onBack,
 }: {
   loading: boolean;
+  error: string | null;
+  errorSubject: string;
+  onRetry: () => void;
   onBack: () => void;
 }) => {
-  usePageHeader(loading ? "Loading check…" : "Check not found");
+  usePageHeader(loading ? "Loading check…" : error ? "Couldn't load" : "Check not found");
   return (
     <Card className={CARD_CLASS}>
       <CardContent className="flex flex-col items-center gap-3 py-12">
@@ -172,6 +210,13 @@ const EntryPlaceholder = ({
           <>
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-300/20 border-t-purple-400" />
             <span className="text-sm text-white/60">Loading...</span>
+          </>
+        ) : error ? (
+          <>
+            <LoadError what={errorSubject} message={error} onRetry={onRetry} className="py-0" />
+            <Button variant="ghost" onClick={onBack} className={BACK_BUTTON_CLASS}>
+              Back to Revenue Checks
+            </Button>
           </>
         ) : (
           <>
@@ -199,6 +244,7 @@ interface CheckEntryFormProps {
   onBack: () => void;
   onImport: () => void;
   onOpenCheck?: (id: string) => void;
+  onSaved?: (id: string) => void;
   onReenter: (voided: RevenueCheck) => void;
 }
 
@@ -208,6 +254,7 @@ const CheckEntryForm = ({
   onBack,
   onImport,
   onOpenCheck,
+  onSaved,
   onReenter,
 }: CheckEntryFormProps) => {
   const showToast = useSetAtom(showToastAtom);
@@ -247,12 +294,13 @@ const CheckEntryForm = ({
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [confirmingVoid, setConfirmingVoid] = useState(false);
-  const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
+  const [pendingLeave, setPendingLeave] = useState<{ leave: () => void; reason: string } | null>(null);
   const [ownerNumberFromMemory, setOwnerNumberFromMemory] = useState(false);
   const [unreadable, setUnreadable] = useState<ReadonlyMap<string, string>>(
     () => new Map(),
   );
   const [baseline, setBaseline] = useState(() => JSON.stringify(draft));
+  const [tab, setTab] = useState<EntryTab>("info");
 
   const reportUnreadable = useCallback((key: string, label: string | null) => {
     setUnreadable((prev) => {
@@ -492,7 +540,9 @@ const CheckEntryForm = ({
       );
       return false;
     }
-    return Object.keys(headerErrors(draft)).length === 0;
+    const headerOk = Object.keys(headerErrors(draft)).length === 0;
+    if (!headerOk) setTab("info");
+    return headerOk;
   };
 
   const persist = async () => {
@@ -515,8 +565,10 @@ const CheckEntryForm = ({
     if (!validate()) return;
     setBusy("save");
     try {
+      const isNew = !savedId;
       const saved = await persist();
       showToast(`Check #${saved.checkNumber} saved as a draft`);
+      if (isNew) onSaved?.(saved.id);
     } catch (err) {
       setActionError((err as Error).message);
     } finally {
@@ -559,13 +611,13 @@ const CheckEntryForm = ({
     }
   };
 
-  const leaveSafely = (leave: () => void) => {
-    if (dirty) setPendingLeave(() => leave);
+  const leaveSafely = (leave: () => void, reason: string) => {
+    if (dirty) setPendingLeave({ leave, reason });
     else leave();
   };
 
   const saveAndLeave = async () => {
-    const leave = pendingLeave;
+    const leave = pendingLeave?.leave;
     setPendingLeave(null);
     setActionError(null);
     if (!leave || !validate()) return;
@@ -607,7 +659,7 @@ const CheckEntryForm = ({
             </CardTitle>
             <Button
               variant="ghost"
-              onClick={onBack}
+              onClick={() => leaveSafely(onBack, LEAVE_REASON)}
               className={BACK_BUTTON_CLASS}
             >
               Back to Revenue Checks
@@ -679,7 +731,12 @@ const CheckEntryForm = ({
                     {" "}
                     <button
                       type="button"
-                      onClick={() => leaveSafely(() => onOpenCheck(duplicate.id))}
+                      onClick={() =>
+                        leaveSafely(
+                          () => onOpenCheck(duplicate.id),
+                          "Opening the other check leaves this one, so save it first or discard the changes.",
+                        )
+                      }
                       className="cursor-pointer font-medium underline underline-offset-2"
                     >
                       Open it
@@ -690,7 +747,47 @@ const CheckEntryForm = ({
             </div>
           )}
 
-          <div className="flex flex-wrap items-start gap-5">
+          <BalanceBar
+            checkAmount={draft.checkAmount}
+            totals={totals}
+            readyToPost={readyToPost}
+          />
+
+          <div
+            role="group"
+            aria-label="Check sections"
+            className="inline-flex gap-1 self-start rounded-xl border border-purple-300/20 bg-white/5 p-1"
+          >
+            <button
+              type="button"
+              aria-pressed={tab === "info"}
+              onClick={() => setTab("info")}
+              className={tabButtonClass(tab === "info")}
+            >
+              Check Info
+              {missing.length > 0 && (
+                <span className={cn(TAB_BADGE_CLASS, "bg-red-500/20 text-red-300")}>
+                  <span className="sr-only">, </span>
+                  {missing.length} missing
+                </span>
+              )}
+            </button>
+            <button
+              type="button"
+              aria-pressed={tab === "lines"}
+              onClick={() => setTab("lines")}
+              className={tabButtonClass(tab === "lines")}
+            >
+              Detail Lines
+              <span className={cn(TAB_BADGE_CLASS, "bg-white/10 text-white/80")}>
+                <span className="sr-only">, </span>
+                {lines.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Both tabs stay mounted so switching keeps open lines and half-typed numbers. */}
+          <div hidden={tab !== "info"} className="flex flex-wrap items-start gap-5">
             <div className="min-w-0 grow-[999] basis-[600px]">
               <CheckHeaderFields
                 draft={draft}
@@ -711,29 +808,30 @@ const CheckEntryForm = ({
                 onFileChange={changeStubFile}
                 onExtracted={applyStub}
                 autoFilledLabels={autoFilledLabels}
-                onImport={() => leaveSafely(onImport)}
+                onImport={() =>
+                  leaveSafely(
+                    onImport,
+                    "Importing detail from Excel creates new checks and leaves this one, so save it first or discard the changes.",
+                  )
+                }
               />
             </aside>
           </div>
 
-          <BalanceBar
-            checkAmount={draft.checkAmount}
-            totals={totals}
-            readyToPost={readyToPost}
-          />
-
-          <DetailLinesTable
-            lines={draft.lines}
-            totals={totals}
-            readOnly={readOnly}
-            status={savedStatus}
-            operatorName={draft.operatorName}
-            initialExpanded={initialExpanded}
-            onAddLine={addLine}
-            onChangeLine={changeLine}
-            onRemoveLine={removeLine}
-            onLinkWell={linkWell}
-          />
+          <div hidden={tab !== "lines"}>
+            <DetailLinesTable
+              lines={draft.lines}
+              totals={totals}
+              readOnly={readOnly}
+              status={savedStatus}
+              operatorName={draft.operatorName}
+              initialExpanded={initialExpanded}
+              onAddLine={addLine}
+              onChangeLine={changeLine}
+              onRemoveLine={removeLine}
+              onLinkWell={linkWell}
+            />
+          </div>
 
           {missing.length > 0 &&
             errorBox(
@@ -746,7 +844,7 @@ const CheckEntryForm = ({
             canDelete={!!savedId && !readOnly}
             busy={busy}
             blockers={blockers}
-            onCancel={onBack}
+            onCancel={() => leaveSafely(onBack, LEAVE_REASON)}
             onSave={handleSave}
             onPost={handlePost}
             onDelete={() => setConfirmingDelete(true)}
@@ -778,10 +876,11 @@ const CheckEntryForm = ({
       />
       {pendingLeave && (
         <UnsavedChangesModal
+          reason={pendingLeave.reason}
           onSave={saveAndLeave}
           onDiscard={() => {
             setPendingLeave(null);
-            pendingLeave();
+            pendingLeave.leave();
           }}
           onCancel={() => setPendingLeave(null)}
         />

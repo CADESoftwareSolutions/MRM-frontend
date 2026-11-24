@@ -3,10 +3,11 @@ import { useAtomValue } from "jotai";
 import { themeAtom } from "@/atoms/NavigationAtom";
 
 export const INPUT_CLASS = "h-9 bg-white/5 border-purple-300/30 text-white";
-export const INPUT_SM_CLASS = "h-8 px-2 text-[13px] md:text-[13px] bg-white/5 border-purple-300/30 text-white";
+export const EDITOR_PANEL_CLASS = "rounded-lg border border-purple-300/20 bg-white/5 px-4 py-3";
+export const EDITOR_PANEL_TITLE_CLASS = "text-base font-bold uppercase tracking-wider text-white";
 /** Disabled (posted, read-only) fields stay legible instead of fading to half opacity. */
 export const READ_ONLY_CLASS = "disabled:opacity-80 disabled:cursor-default";
-export const SECTION_HEADER_CLASS = "text-sm font-semibold text-white/90 uppercase tracking-wider";
+export const SECTION_HEADER_CLASS = "text-base font-bold uppercase tracking-wider text-white";
 export const NUM_CLASS = "text-right tabular-nums";
 
 /** Classes the .light-theme overrides in index.css don't cover, picked per theme. Popover
@@ -16,7 +17,7 @@ export const useEntryTheme = () => {
   return useMemo(
     () => ({
       isLight,
-      headerText: isLight ? "text-gray-500" : "text-purple-200/80",
+      headerText: isLight ? "text-gray-500" : "text-white",
       rowBorder: isLight ? "border-purple-100" : "border-purple-300/10",
       groupRow: isLight ? "bg-purple-100" : "bg-purple-600/20",
       expandedRow: isLight ? "bg-purple-50/70" : "bg-white/[0.03]",

@@ -67,7 +67,7 @@ export const useRevenueChecks = () => {
   const profile = useAtomValue(userProfileAtom);
   const currentUser = profile?.user?.username || "you";
 
-  const { data = EMPTY, isLoading } = useQuery(revenueChecksQuery);
+  const { data = EMPTY, isLoading, isFetching, dataUpdatedAt, error, refetch } = useQuery(revenueChecksQuery);
 
   const getCheck = useCallback((id: string | null | undefined) => (id ? data.find((c) => c.id === id) : undefined), [data]);
 
@@ -264,7 +264,10 @@ export const useRevenueChecks = () => {
 
   return {
     checks: data,
-    loading: isLoading,
+    // "Try again" after a failed first load counts as loading too.
+    loading: isLoading || (isFetching && dataUpdatedAt === 0),
+    error: error ? error.message : null,
+    reload: refetch,
     getCheck,
     saveDraft,
     postCheck,

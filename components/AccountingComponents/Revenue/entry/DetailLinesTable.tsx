@@ -22,7 +22,7 @@ import {
 } from "@/types/revenue";
 import { NUM_CLASS, SECTION_HEADER_CLASS, useEntryTheme } from "./entryTheme";
 import { LineEditor } from "./LineEditor";
-import { LineRow } from "./LineRow";
+import { LineRow, lineColumnCount } from "./LineRow";
 import type { SuggestOption } from "./SuggestInput";
 import { WellLinkPicker, type LinkedWell } from "./WellLinkPicker";
 
@@ -44,7 +44,9 @@ export interface DetailLinesTableProps {
 
 const BASE_PRODUCTS = ["OIL", "GAS", "NGL"];
 const BASE_INTERESTS = ["Royalty", "Overriding Royalty", "Working Interest"];
-const COLUMN_COUNT = 17;
+// Below this width the owner volume, taxes and deducts columns drop out of the table (they're
+// still in each line's editor), so it never scrolls sideways.
+const ALL_COLUMNS_MIN_WIDTH = 900;
 
 const uniqueKey = (values: string[], base: string[]) =>
   Array.from(
@@ -78,7 +80,23 @@ export const DetailLinesTable = ({
   );
   const [focusLineId, setFocusLineId] = useState<string | null>(null);
   const [focusAfterRemove, setFocusAfterRemove] = useState<string | null>(null);
+  const [allColumns, setAllColumns] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
+  const tableBoxRef = useRef<HTMLDivElement>(null);
+  const columnCount = lineColumnCount(allColumns);
+
+  useEffect(() => {
+    const box = tableBoxRef.current;
+    if (!box) return;
+    const observer = new ResizeObserver(([entry]) => {
+      // A hidden tab panel measures 0 wide; keep the last real layout until it's shown again.
+      if (entry.contentRect.width > 0) {
+        setAllColumns(entry.contentRect.width >= ALL_COLUMNS_MIN_WIDTH);
+      }
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, []);
 
   const groups = useMemo(() => groupLinesByProperty(lines), [lines]);
   const rows = useMemo<TableRow[]>(
@@ -172,15 +190,12 @@ export const DetailLinesTable = ({
   };
 
   const th = cn(
-    "px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap",
+    "px-3 py-2.5 text-sm font-bold uppercase tracking-wider whitespace-nowrap",
     theme.headerText,
   );
-  const groupTh = cn(
-    "px-2.5 pt-2.5 text-center text-[11px] font-semibold uppercase tracking-wider",
-    theme.headerText,
-  );
+  const ownerTh = cn(th, "text-right", theme.ownerTint);
   const foot = cn(
-    "px-2.5 py-2 h-[42px] whitespace-nowrap font-semibold text-white",
+    "px-3 py-2.5 h-12 whitespace-nowrap font-semibold text-white",
     NUM_CLASS,
     theme.ownerTint,
   );
@@ -189,7 +204,7 @@ export const DetailLinesTable = ({
     <section
       ref={sectionRef}
       aria-labelledby="rc-detail-lines"
-      className="flex flex-col gap-2.5 border-t border-purple-300/30 pt-3"
+      className="flex flex-col gap-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 id="rc-detail-lines" className={SECTION_HEADER_CLASS}>
@@ -199,7 +214,6 @@ export const DetailLinesTable = ({
           <Button
             type="button"
             variant="outline"
-            size="sm"
             disabled={!lines.length}
             onClick={toggleAll}
             className={cn("cursor-pointer", theme.outlineButton)}
@@ -210,7 +224,6 @@ export const DetailLinesTable = ({
             <Button
               type="button"
               variant="outline"
-              size="sm"
               data-add-line
               onClick={addLine}
               className={cn(
@@ -218,31 +231,32 @@ export const DetailLinesTable = ({
                 theme.outlineButton,
               )}
             >
-              <Plus className="size-3.5" />
+              <Plus className="size-4" />
               Add Line
             </Button>
           )}
         </div>
       </div>
 
-      {/* The 1400px table scrolls inside this box. As a size container it can't widen the page,
-          and the property headers and line editors size to it (cqw) and stick to its left edge,
-          so they stay in view however far the numbers are scrolled. relative keeps the sr-only
-          header text (absolutely positioned) inside the scroll area. */}
-      <div className="@container relative overflow-x-auto rounded-xl border border-purple-300/20 bg-white/5">
-        <table className="w-full min-w-[1400px] text-[13px]">
+      {/* relative keeps the sr-only caption (absolutely positioned) inside the scroll box. */}
+      <div
+        ref={tableBoxRef}
+        className="relative overflow-x-auto rounded-xl border border-purple-300/20 bg-white/5"
+      >
+        <table className="w-full text-sm">
           <caption className="sr-only">
             Detail lines, grouped by property
           </caption>
           <thead>
             <tr>
-              <th colSpan={5} />
-              <th colSpan={6} className={groupTh}>
-                <span className="block border-b border-purple-300/40 pb-1.5">
-                  Gross (100%)
-                </span>
-              </th>
-              <th colSpan={5} className={groupTh}>
+              <th colSpan={4} />
+              <th
+                colSpan={allColumns ? 5 : 2}
+                className={cn(
+                  "px-3 pt-3 text-center text-sm font-bold uppercase tracking-wider",
+                  theme.headerText,
+                )}
+              >
                 <span className="block border-b border-purple-300/40 pb-1.5">
                   Owner Share
                 </span>
@@ -250,25 +264,18 @@ export const DetailLinesTable = ({
               <th />
             </tr>
             <tr className={cn("border-b", theme.rowBorder)}>
-              <th className="w-9">
+              <th className="w-11">
                 <span className="sr-only">Expand</span>
               </th>
               <th className={cn(th, "text-left")}>Prod Date</th>
               <th className={cn(th, "text-left")}>Product</th>
               <th className={cn(th, "text-left")}>Interest</th>
-              <th className={cn(th, "text-right")}>Owner %</th>
-              <th className={cn(th, "text-right")}>Price</th>
-              <th className={cn(th, "text-right")}>Volume</th>
-              <th className={cn(th, "text-right")}>Value</th>
-              <th className={cn(th, "text-right")}>Taxes</th>
-              <th className={cn(th, "text-right")}>Deducts</th>
-              <th className={cn(th, "text-right")}>Net</th>
-              <th className={cn(th, "text-right", theme.ownerTint)}>Volume</th>
-              <th className={cn(th, "text-right", theme.ownerTint)}>Value</th>
-              <th className={cn(th, "text-right", theme.ownerTint)}>Taxes</th>
-              <th className={cn(th, "text-right", theme.ownerTint)}>Deducts</th>
-              <th className={cn(th, "text-right", theme.ownerTint)}>Net</th>
-              <th className="w-9">
+              {allColumns && <th className={ownerTh}>Volume</th>}
+              <th className={ownerTh}>Value</th>
+              {allColumns && <th className={ownerTh}>Taxes</th>}
+              {allColumns && <th className={ownerTh}>Deducts</th>}
+              <th className={ownerTh}>Net</th>
+              <th className="w-11">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -277,7 +284,7 @@ export const DetailLinesTable = ({
             {groups.length === 0 && (
               <tr>
                 <td
-                  colSpan={COLUMN_COUNT}
+                  colSpan={columnCount}
                   className="py-10 text-center text-sm text-white/60"
                 >
                   No detail lines yet. Add a line, or import the operator&apos;s
@@ -293,13 +300,13 @@ export const DetailLinesTable = ({
                   .join(" · ");
                 return (
                   <tr key={`group-${group.key}`} className={theme.groupRow}>
-                    <td colSpan={COLUMN_COUNT} className="px-2.5 py-2.5">
-                      <span className="sticky left-2.5 flex w-[calc(100cqw-1.25rem)] flex-wrap items-center justify-between gap-3">
-                        <span className="flex flex-wrap items-center gap-2.5">
-                          <strong className="text-white">
+                    <td colSpan={columnCount} className="px-3 py-3">
+                      <span className="flex flex-wrap items-center justify-between gap-3">
+                        <span className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                          <strong className="text-base text-white">
                             {name || "No Operator CC yet"}
                           </strong>
-                          <span className="text-xs text-white/60">
+                          <span className="text-sm text-white/60">
                             Operator CC · property
                           </span>
                           {group.key !== "desc:" ? (
@@ -311,14 +318,14 @@ export const DetailLinesTable = ({
                               disabled={readOnly}
                             />
                           ) : (
-                            <span className={cn("text-xs", theme.warnText)}>
+                            <span className={cn("text-sm", theme.warnText)}>
                               Enter the Operator CC to link a well
                             </span>
                           )}
                         </span>
-                        <span className="text-xs text-white">
+                        <span className="text-sm text-white">
                           Property owner net{" "}
-                          <strong className="text-sm tabular-nums">
+                          <strong className="text-base tabular-nums">
                             {formatMoney(group.ownerNet)}
                           </strong>
                         </span>
@@ -337,6 +344,7 @@ export const DetailLinesTable = ({
                     lineNumber={lineNumber}
                     expanded={isExpanded}
                     readOnly={readOnly}
+                    allColumns={allColumns}
                     onToggle={toggle}
                     onRemove={removeLine}
                   />
@@ -348,21 +356,17 @@ export const DetailLinesTable = ({
                         theme.expandedRow,
                       )}
                     >
-                      <td />
-                      <td colSpan={COLUMN_COUNT - 1} className="px-2.5 py-3">
-                        {/* left = the expand column (w-9) plus this cell's padding. */}
-                        <div className="sticky left-[2.875rem] w-[calc(100cqw-3.5rem)]">
-                          <LineEditor
-                            line={line}
-                            lineNumber={lineNumber}
-                            readOnly={readOnly}
-                            status={status}
-                            operatorName={operatorName}
-                            productOptions={productOptions}
-                            interestOptions={interestOptions}
-                            onChange={onChangeLine}
-                          />
-                        </div>
+                      <td colSpan={columnCount} className="px-3 py-3">
+                        <LineEditor
+                          line={line}
+                          lineNumber={lineNumber}
+                          readOnly={readOnly}
+                          status={status}
+                          operatorName={operatorName}
+                          productOptions={productOptions}
+                          interestOptions={interestOptions}
+                          onChange={onChangeLine}
+                        />
                       </td>
                     </tr>
                   )}
@@ -374,17 +378,14 @@ export const DetailLinesTable = ({
             <tfoot>
               <tr className="border-t-[1.5px] border-purple-300/40">
                 <td />
-                <td
-                  colSpan={10}
-                  className="px-2.5 py-2 font-semibold text-white"
-                >
+                <td colSpan={3} className="px-3 py-2.5 font-semibold text-white">
                   Check total · {plural(lines.length, "line", "lines")} ·{" "}
                   {plural(groups.length, "property", "properties")}
                 </td>
-                <td className={cn(foot, "text-white/60")}>—</td>
+                {allColumns && <td className={cn(foot, "text-white/60")}>—</td>}
                 <td className={foot}>{formatMoney(totals.ownerValue)}</td>
-                <td className={foot}>{formatMoney(totals.ownerTaxes)}</td>
-                <td className={foot}>{formatMoney(totals.ownerDeducts)}</td>
+                {allColumns && <td className={foot}>{formatMoney(totals.ownerTaxes)}</td>}
+                {allColumns && <td className={foot}>{formatMoney(totals.ownerDeducts)}</td>}
                 <td className={foot}>{formatMoney(totals.ownerNet)}</td>
                 <td />
               </tr>
@@ -392,9 +393,10 @@ export const DetailLinesTable = ({
           )}
         </table>
       </div>
-      <p className="text-xs text-white/60">
-        Owner % is shown as printed on the stub (0.134003% = 0.00134003 as a
-        decimal). Prod Date 0326 on the stub reads as 03/2026.
+      <p className="text-sm text-white/60">
+        Open a line for its gross amounts, Owner %, taxes and deducts. Owner % is
+        shown as printed on the stub (0.134003% = 0.00134003 as a decimal). Prod
+        Date 0326 on the stub reads as 03/2026.
       </p>
     </section>
   );

@@ -194,13 +194,16 @@ export const labelsOnLines = (lines: RevenueLine[], operator: string): SeenTaxDe
  * line (the whole property was renamed). */
 export const applyLinePatch = (lines: RevenueLine[], line: RevenueLine, patch: Partial<RevenueLine>): RevenueLine => {
   const next = { ...line, ...patch };
-  if (patch.operatorCc === undefined || patch.operatorCc.trim() === line.operatorCc.trim()) return next;
-  const cc = next.operatorCc.trim();
-  const siblings = cc ? lines.filter((other) => other.id !== line.id && other.operatorCc.trim() === cc) : [];
+  const oldKey = propertyKey(line);
+  const newKey = propertyKey(next);
+  if (newKey === oldKey) return next;
+  // Lines without an Operator CC are grouped by their description, so editing either can move the
+  // line to another property.
+  const siblings = lines.filter((other) => other.id !== line.id && propertyKey(other) === newKey);
   if (!siblings.length) {
-    const oldKey = propertyKey(line);
+    const ccCleared = patch.operatorCc !== undefined && !next.operatorCc.trim();
     const oldGroupHasOthers = lines.some((other) => other.id !== line.id && propertyKey(other) === oldKey);
-    return !cc || oldGroupHasOthers ? { ...next, wellId: null, wellLabel: null } : next;
+    return ccCleared || oldGroupHasOthers ? { ...next, wellId: null, wellLabel: null } : next;
   }
   const linked = siblings.find(isLineLinked);
   return {

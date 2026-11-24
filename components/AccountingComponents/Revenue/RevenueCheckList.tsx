@@ -22,6 +22,7 @@ import {
   postBlockers,
 } from "@/types/revenue";
 import { RevenueStatusBadge } from "./list/RevenueStatusBadge";
+import { LoadError } from "../LoadError";
 
 type StatusFilter = "all" | RevenueDisplayStatus;
 
@@ -148,11 +149,23 @@ const uniqueSorted = (values: string[]) =>
 export const RevenueCheckList = ({ onOpenCheck, onNewCheck, onImport }: RevenueCheckListProps) => {
   const isLight = useAtomValue(themeAtom) === "light";
   const setPageHeader = useSetAtom(pageHeaderAtom);
-  const { checks, loading: checksLoading } = useRevenueChecks();
-  const { accounts, loading: accountsLoading } = useChartOfAccounts();
+  const { checks, loading: checksLoading, error: checksError, reload: reloadChecks } = useRevenueChecks();
+  const { accounts, loading: accountsLoading, error: accountsError } = useChartOfAccounts();
   const accountList = accountsLoading ? undefined : accounts;
-  const { types, unmappedCount, loading: typesLoading } = useTaxDeductTypes(accountList);
+  const {
+    types,
+    unmappedCount,
+    loading: typesLoading,
+    error: typesError,
+    reload: reloadTypes,
+  } = useTaxDeductTypes(accountList);
   const loading = checksLoading || typesLoading || accountsLoading;
+  // The checks and their label types are built on the chart of accounts, so its error is usually the cause.
+  const loadError = accountsError ?? checksError ?? typesError;
+  const retryLoad = () => {
+    reloadChecks();
+    reloadTypes();
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [operatorFilter, setOperatorFilter] = useState("");
@@ -461,6 +474,12 @@ export const RevenueCheckList = ({ onOpenCheck, onNewCheck, onImport }: RevenueC
                       <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
                       <span className={`text-sm ${isLight ? "text-gray-500" : "text-purple-200/70"}`}>Loading...</span>
                     </div>
+                  </td>
+                </tr>
+              ) : loadError && !checks.length ? (
+                <tr>
+                  <td colSpan={COLUMN_WIDTHS.length}>
+                    <LoadError what="revenue checks" message={loadError} onRetry={retryLoad} isLight={isLight} />
                   </td>
                 </tr>
               ) : pageRows.length === 0 ? (

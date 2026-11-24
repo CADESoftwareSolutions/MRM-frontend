@@ -18,6 +18,7 @@ import {
   formatAccountNumber,
 } from "@/types/chartOfAccounts";
 import { DeleteConfirmModal } from "../../modals/DeleteConfirmModal";
+import { LoadError } from "../LoadError";
 import { AccountEditorRow } from "./AccountEditorRow";
 import { DeleteBlockedModal } from "./DeleteBlockedModal";
 import { downloadChartOfAccountsCsv, formatAuditDate } from "./chartOfAccountsReport";
@@ -38,8 +39,17 @@ export const ChartOfAccountsScreen = () => {
   const isLight = useAtomValue(themeAtom) === "light";
   const showToast = useSetAtom(showToastAtom);
   const currentUser = useAtomValue(userProfileAtom)?.user;
-  const { accounts, loading, addAccount, updateAccount, deleteAccount, getAccountUsages, setAccountActive } =
-    useChartOfAccounts();
+  const {
+    accounts,
+    loading,
+    error: loadError,
+    reload,
+    addAccount,
+    updateAccount,
+    deleteAccount,
+    getAccountUsages,
+    setAccountActive,
+  } = useChartOfAccounts();
 
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -421,6 +431,12 @@ export const ChartOfAccountsScreen = () => {
                       <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
                       <span className={`text-sm ${mutedText}`}>Loading...</span>
                     </div>
+                  </td>
+                </tr>
+              ) : loadError && !accounts.length ? (
+                <tr>
+                  <td colSpan={COLUMN_COUNT}>
+                    <LoadError what="the chart of accounts" message={loadError} onRetry={reload} isLight={isLight} />
                   </td>
                 </tr>
               ) : rows.length === 0 ? (

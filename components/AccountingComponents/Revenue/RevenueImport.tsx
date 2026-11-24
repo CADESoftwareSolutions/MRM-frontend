@@ -21,6 +21,7 @@ import { EMPTY_CHOICES, ImportChoices, WellChoice, plural, projectTypes } from "
 import { PRIMARY_BUTTON_CLASS, useImportTheme } from "./import/importTheme";
 import { buildReviewRows } from "./import/reviewModel";
 import { useImportResolution } from "./import/useImportResolution";
+import { LoadError } from "../LoadError";
 
 export interface RevenueImportProps {
   onCancel: () => void;
@@ -61,8 +62,8 @@ export const RevenueImport = ({ onCancel, onDone }: RevenueImportProps) => {
   const setPageHeader = useSetAtom(pageHeaderAtom);
   const showToast = useSetAtom(showToastAtom);
   const { checks: existingChecks, importChecks } = useRevenueChecks();
-  const { accounts, loading: accountsLoading } = useChartOfAccounts();
-  const { types, ensureTypes, setAccount } = useTaxDeductTypes();
+  const { accounts, loading: accountsLoading, error: accountsError, reload: reloadAccounts } = useChartOfAccounts();
+  const { types, ensureTypes, setAccount, reload: reloadTypes } = useTaxDeductTypes();
   const { saveMatches } = useImportMatches();
 
   const [step, setStep] = useState<ImportStep>(1);
@@ -181,8 +182,14 @@ export const RevenueImport = ({ onCancel, onDone }: RevenueImportProps) => {
                 ),
                 wells: Object.fromEntries(
                   resolution.properties
-                    .filter((property) => property.operatorKey === operator.key && property.operatorCc && property.well)
-                    .map((property) => [property.operatorCc, property.well!]),
+                    .filter((property) => property.operatorKey === operator.key && property.operatorCc)
+                    .flatMap((property): [string, typeof property.well][] =>
+                      property.well
+                        ? [[property.operatorCc, property.well]]
+                        : choices.wells[property.key] === "none"
+                          ? [[property.operatorCc, null]]
+                          : [],
+                    ),
                 ),
               })),
           );
@@ -240,6 +247,18 @@ export const RevenueImport = ({ onCancel, onDone }: RevenueImportProps) => {
       </div>
 
       <ImportStepper current={step} notes={stepNotes} onSelect={saving ? undefined : setStep} />
+
+      {accountsError && (
+        <LoadError
+          what="the chart of accounts, so income and tax/deduct accounts can't be filled in"
+          message={accountsError}
+          onRetry={() => {
+            reloadAccounts();
+            reloadTypes();
+          }}
+          className="rounded-lg border border-red-500/40 bg-red-500/10 py-5"
+        />
+      )}
 
       <div className="flex items-start gap-2 rounded-lg border border-blue-300/30 bg-blue-500/10 p-3">
         <Info className="mt-0.5 size-4 shrink-0 text-blue-300" aria-hidden />
