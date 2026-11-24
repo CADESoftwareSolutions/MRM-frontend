@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ChartAccount } from "@/types/chartOfAccounts";
+import { ChartAccount, auditUserName } from "@/types/chartOfAccounts";
 
 export const formatAuditDate = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
@@ -27,7 +27,10 @@ const HEADERS = [
   "Updated",
 ];
 
-export const downloadChartOfAccountsCsv = (accounts: ChartAccount[]) => {
+export const downloadChartOfAccountsCsv = (
+  accounts: ChartAccount[],
+  currentUser: Parameters<typeof auditUserName>[1],
+) => {
   const rows = accounts.map((a) => [
     a.account,
     a.sub ?? "",
@@ -36,9 +39,9 @@ export const downloadChartOfAccountsCsv = (accounts: ChartAccount[]) => {
     a.isActive ? "Active" : "Inactive",
     a.isDefault ? "Yes" : "No",
     a.transactionCount,
-    a.createdBy,
+    auditUserName(a.createdById, currentUser),
     formatAuditDate(a.createdAt),
-    a.updatedBy,
+    auditUserName(a.updatedById, currentUser),
     formatAuditDate(a.updatedAt),
   ]);
   const csv = [HEADERS, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");

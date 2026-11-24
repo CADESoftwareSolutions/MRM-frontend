@@ -1,3 +1,10 @@
+import { type AccountNumberParts, findAccountByNumber } from "./chartOfAccounts";
+
+export const MAX_TAXES = 10;
+export const MAX_DEDUCTS = 10;
+/** Checks deposit to 1000 CASH unless the user picks another account. */
+export const DEFAULT_DEPOSIT_ACCOUNT_NUMBER = 1000;
+
 export type RevenueCheckStatus = "draft" | "posted" | "void";
 export type RevenueDisplayStatus = "Draft" | "Out of balance" | "Ready to post" | "Posted" | "Void";
 export type TaxDeductKind = "tax" | "deduct";
@@ -98,6 +105,33 @@ export interface TaxDeductType {
   isNew: boolean;
 }
 
+export type RevenueLineInput = Omit<RevenueLine, "id" | "incomeAccountId"> & {
+  id?: string | null;
+  incomeAccountId?: string | null;
+};
+
+/** What saveDraft / importChecks take. Optional fields keep their stored value on update and get
+ * a default on create (deposit to the 1000 account, G/L period from the check date). */
+export type RevenueCheckInput = Pick<
+  RevenueCheck,
+  "operatorName" | "ownerName" | "ownerNumber" | "checkNumber" | "checkDate" | "checkAmount"
+> &
+  Partial<
+    Pick<
+      RevenueCheck,
+      | "operatorId"
+      | "ownerId"
+      | "depositAccountId"
+      | "depositDate"
+      | "glPeriod"
+      | "stubFileName"
+      | "reenteredFromId"
+    >
+  > & {
+    id?: string | null;
+    lines: RevenueLineInput[];
+  };
+
 export interface RevenueCheckTotals {
   ownerValue: number;
   ownerTaxes: number;
@@ -139,14 +173,26 @@ export const sumCents = (values: number[]): number =>
 export const formatMoney = (value: number): string =>
   roundCents(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const INCOME_ACCOUNT_BY_PRODUCT: Record<string, string> = {
-  OIL: "coa-4000",
-  GAS: "coa-4010",
-  NGL: "coa-4020",
+export const formatOwnerPercent = (percent: number): string => `${percent.toFixed(6)}%`;
+
+export const newRevenueId = (prefix: string): string => `${prefix}-${crypto.randomUUID()}`;
+
+const INCOME_ACCOUNT_NUMBER_BY_PRODUCT: Record<string, number> = {
+  OIL: 4000,
+  GAS: 4010,
+  NGL: 4020,
 };
 
-export const incomeAccountForProduct = (code: string): string =>
-  INCOME_ACCOUNT_BY_PRODUCT[code.trim().toUpperCase()] ?? "coa-4100";
+/** Any product other than oil, gas and NGL goes to 4100 OTHER INCOME. */
+export const OTHER_INCOME_ACCOUNT_NUMBER = 4100;
+
+export const incomeAccountNumberForProduct = (code: string): number =>
+  INCOME_ACCOUNT_NUMBER_BY_PRODUCT[code.trim().toUpperCase()] ?? OTHER_INCOME_ACCOUNT_NUMBER;
+
+/** The product's income account id, or null while the chart of accounts is loading or if the
+ * company's chart has no account with that number. */
+export const incomeAccountForProduct = (code: string, accounts: NumberedAccount[] | undefined): string | null =>
+  findAccountByNumber(accounts, incomeAccountNumberForProduct(code))?.id ?? null;
 
 export const normalizeLabel = (label: string): string =>
   label.trim().replace(/\s+/g, " ").toUpperCase();
@@ -218,6 +264,7 @@ type PostableCheck = Pick<RevenueCheck, "checkAmount"> & {
 };
 
 type AccountStatus = { id: string; isActive: boolean };
+type NumberedAccount = { id: string } & AccountNumberParts;
 
 /** True when the account exists and is active; without an account list, any id counts. */
 export const isUsableAccount = (accountId: string | null | undefined, accounts?: AccountStatus[]): boolean => {
@@ -301,11 +348,72 @@ export const checkDisplayStatus = (
   return postBlockers(check, types, accounts).length ? "Draft" : "Ready to post";
 };
 
+const isMonth = (month: number) => month >= 1 && month <= 12;
+const toProdDate = (year: number, month: number) => `${year}-${String(month).padStart(2, "0")}`;
+
+const MONTH_ABBREVIATIONS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+const monthFromName = (name: string): number => {
+  const index = MONTH_ABBREVIATIONS.indexOf(name.slice(0, 3).toLowerCase());
+  return index === -1 ? NaN : index + 1;
+};
+
+const buildProdDate = (month: number, yearText: string): string | null => {
+  if (!isMonth(month) || !yearText) return null;
+  const short = +yearText;
+  const year = yearText.length === 2 ? (short <= 29 ? 2000 + short : 1900 + short) : short;
+  return year >= 1950 && year <= 2100 ? toProdDate(year, month) : null;
+};
+
+/** Reads a stub's production date ("0326", 326, "032026", "03/26", "03/2026", "2026-03", "Mar-26",
+ * "Mar 2026" or a full date like "03/01/2026" or "2026-03-01") as "2026-03"; null when it can't
+ * be read. Two-digit years follow Excel's pivot (00-29 is 2000s, 30-99 is 1900s) and years outside
+ * 1950-2100 are rejected, which also catches an Excel serial number like "46082". */
+export const parseProdDate = (raw: string | number | null | undefined): string | null => {
+  if (raw == null) return null;
+  const text = String(raw).trim();
+
+  const iso = /^(\d{4})-(\d{1,2})(?:-\d{1,2})?$/.exec(text);
+  if (iso) return buildProdDate(+iso[2], iso[1]);
+
+  const fullDate = /^(\d{1,2})[/-](\d{1,2})[/-](\d{2}|\d{4})$/.exec(text);
+  if (fullDate) return buildProdDate(+fullDate[1], fullDate[3]);
+
+  const slashed = /^(\d{1,2})[/-](\d{2}|\d{4})$/.exec(text);
+  if (slashed) return buildProdDate(+slashed[1], slashed[2]);
+
+  const named = /^([A-Za-z]{3,9})[-\s/.]*(\d{2}|\d{4})$/.exec(text);
+  if (named) return buildProdDate(monthFromName(named[1]), named[2]);
+
+  if (/^\d{3,6}$/.test(text)) {
+    const digits = text.padStart(text.length <= 4 ? 4 : 6, "0");
+    return buildProdDate(+digits.slice(0, 2), digits.slice(2));
+  }
+  return null;
+};
+
+/** "2026-03" → "03/2026". */
+export const formatProdDate = (prodDate: string): string => {
+  const match = /^(\d{4})-(\d{2})$/.exec(prodDate);
+  return match ? `${match[2]}/${match[1]}` : prodDate;
+};
+
 /** "2026-10-27" → "10/27/2026". Slices the text, so it's for date-only values, not timestamps. */
 export const formatCheckDate = (isoDate: string | null): string => {
   if (!isoDate) return "";
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
   return match ? `${match[2]}/${match[3]}/${match[1]}` : isoDate;
+};
+
+/** A local "2026-10-27" for a Date (not the UTC day that toISOString gives). */
+export const localIsoDate = (date: Date = new Date()): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+/** An ISO timestamp ("2026-10-28T02:30:00Z") as the viewer's local "10/27/2026". */
+export const formatCheckTimestamp = (timestamp: string | null): string => {
+  if (!timestamp) return "";
+  const date = new Date(timestamp);
+  return Number.isNaN(date.getTime()) ? timestamp : formatCheckDate(localIsoDate(date));
 };
 
 /** "2026-10-27" → "2026-10". */
@@ -323,12 +431,96 @@ export const formatGlPeriod = (period: string): string => {
   return match && month ? `${month} ${match[1]}` : period;
 };
 
+export const blankRevenueLine = (overrides: Partial<RevenueLine> = {}): RevenueLine => ({
+  id: newRevenueId("rl"),
+  operatorCc: "",
+  propertyDescription: "",
+  wellId: null,
+  wellLabel: null,
+  productCode: "",
+  interestType: "",
+  ownerPercent: 0,
+  distributionPercent: 0,
+  prodDate: "",
+  price: 0,
+  btuFactor: null,
+  grossVolume: 0,
+  grossValue: 0,
+  grossTaxes: 0,
+  grossDeducts: 0,
+  netValue: 0,
+  ownerVolume: 0,
+  ownerValue: 0,
+  ownerTaxes: 0,
+  ownerDeducts: 0,
+  ownerNetValue: 0,
+  taxes: [],
+  deducts: [],
+  notation: "",
+  incomeAccountId: null,
+  ...overrides,
+});
+
+const stripLeadingZeros = (checkNumber: string) => checkNumber.trim().replace(/^0+(?=.)/, "");
+
+export interface CheckIdentity {
+  operatorId?: string | null;
+  /** Used when either side has no operatorId. */
+  operatorName?: string;
+  checkNumber: string;
+  checkDate: string;
+}
+
+/** Existing non-void checks from the same operator with the same check number (leading zeros
+ * ignored) and check date. Pass excludeId to leave out the check being edited. */
+export const findDuplicateChecks = (
+  checks: RevenueCheck[],
+  wanted: CheckIdentity,
+  excludeId?: string | null
+): RevenueCheck[] => {
+  const number = stripLeadingZeros(wanted.checkNumber);
+  const name = wanted.operatorName ? normalizeLabel(wanted.operatorName) : "";
+  return checks.filter((check) => {
+    if (check.status === "void" || check.id === excludeId) return false;
+    if (check.checkDate !== wanted.checkDate || stripLeadingZeros(check.checkNumber) !== number) return false;
+    if (wanted.operatorId && check.operatorId) return wanted.operatorId === check.operatorId;
+    if (name) return normalizeLabel(check.operatorName) === name;
+    return !wanted.operatorId && !check.operatorId;
+  });
+};
+
+/** The account a tax or deduct amount counts toward: what it posted to once the check is posted or
+ * void, the label's current mapping while it's still a draft. */
+export const taxDeductAccountId = (
+  entry: RevenueTaxDeduct,
+  kind: TaxDeductKind,
+  status: RevenueCheckStatus,
+  types: TaxDeductType[]
+): string | null => {
+  const live = findTaxDeductType(types, entry.label, kind)?.accountId ?? null;
+  return status === "draft" ? live : (entry.accountId ?? live);
+};
+
+/** The income account a line counts toward: stamped at post time for posted and void checks. */
+export const lineIncomeAccountId = (
+  line: Pick<RevenueLine, "productCode" | "incomeAccountId">,
+  status: RevenueCheckStatus,
+  accounts: NumberedAccount[] | undefined
+): string | null =>
+  status === "draft"
+    ? incomeAccountForProduct(line.productCode, accounts)
+    : (line.incomeAccountId ?? incomeAccountForProduct(line.productCode, accounts));
+
 /** The check with every line and tax/deduct entry stamped with the account it counts toward now. */
-export const stampCheckAccounts = <C extends Pick<RevenueCheck, "lines">>(check: C, types: TaxDeductType[]): C => ({
+export const stampCheckAccounts = <C extends Pick<RevenueCheck, "lines">>(
+  check: C,
+  types: TaxDeductType[],
+  accounts: NumberedAccount[] | undefined
+): C => ({
   ...check,
   lines: check.lines.map((line) => ({
     ...line,
-    incomeAccountId: incomeAccountForProduct(line.productCode),
+    incomeAccountId: incomeAccountForProduct(line.productCode, accounts),
     taxes: line.taxes.map((entry) => ({
       ...entry,
       accountId: findTaxDeductType(types, entry.label, "tax")?.accountId ?? null,

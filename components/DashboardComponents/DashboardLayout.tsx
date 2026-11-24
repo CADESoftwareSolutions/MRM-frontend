@@ -53,8 +53,11 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
 
   // Module pages switch between their list and add/edit form via moduleViewAtom, not the URL, so
   // pushing the route you're already on does nothing — reset the view to get back to the list.
+  // A query string means the page is showing one record by URL (e.g. revenue-check-input?id=…),
+  // so going to the bare route is the way back to its starting view.
+  const hasQuery = router.asPath.split("#")[0].includes("?");
   const navigate = (route: string) => {
-    if (isCurrentRoute(route)) setModuleView("list");
+    if (isCurrentRoute(route) && !hasQuery) setModuleView("list");
     else router.push(route);
   };
 
@@ -108,6 +111,7 @@ const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
       icon: FileText,
       items: [
         { text: "Chart of Accounts", route: "/Dashboard/chart-of-accounts" },
+        { text: "Revenue Check Input", route: "/Dashboard/revenue-check-input" },
         { text: "Revenue Checks", route: "/Dashboard/revenue-checks" },
       ],
     },

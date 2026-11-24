@@ -165,6 +165,23 @@ textarea,
   border-color: rgb(196 181 253 / 0.75);
 }
 
+/* Dark theme: a thicker, near-white border so a field can't blend into the purple card behind it.
+   Read-only fields get a dimmer one so they don't read as editable. */
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] [data-slot="select-trigger"] {
+  border-width: 2px;
+  border-color: rgb(221 214 254);
+}
+:root[data-theme="dark"] input:disabled,
+:root[data-theme="dark"] textarea:disabled,
+:root[data-theme="dark"] [data-slot="select-trigger"]:disabled {
+  border-color: rgb(221 214 254 / 0.45);
+}
+:root[data-theme="dark"] :is(input, textarea, [data-slot="select-trigger"])[aria-invalid="true"] {
+  border-color: rgb(248 113 113);
+}
+
 /* Matched via [data-slot] (not the bare `input`/`textarea` type selector) so every
    field type ties the .bg-white/5 override on specificity — source order then makes
    this win consistently, keeping text fields and selects the same shade. */

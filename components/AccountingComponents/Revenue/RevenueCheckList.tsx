@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Info, Search } from "lucide-react";
+import { Info, Plus, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,8 +22,15 @@ import {
   postBlockers,
 } from "@/types/revenue";
 import { RevenueStatusBadge } from "./list/RevenueStatusBadge";
+import { LoadError } from "../LoadError";
 
 type StatusFilter = "all" | RevenueDisplayStatus;
+
+export interface RevenueCheckListProps {
+  onOpenCheck: (id: string) => void;
+  onNewCheck: () => void;
+  onImport: () => void;
+}
 
 interface CheckRow {
   check: RevenueCheck;
@@ -139,14 +146,26 @@ const countLabel = (n: number) => `${n} ${n === 1 ? "check" : "checks"}`;
 const uniqueSorted = (values: string[]) =>
   Array.from(new Set(values.filter(Boolean))).sort((a, b) => a.localeCompare(b));
 
-export const RevenueCheckList = () => {
+export const RevenueCheckList = ({ onOpenCheck, onNewCheck, onImport }: RevenueCheckListProps) => {
   const isLight = useAtomValue(themeAtom) === "light";
   const setPageHeader = useSetAtom(pageHeaderAtom);
-  const { checks, loading: checksLoading } = useRevenueChecks();
-  const { accounts, loading: accountsLoading } = useChartOfAccounts();
+  const { checks, loading: checksLoading, error: checksError, reload: reloadChecks } = useRevenueChecks();
+  const { accounts, loading: accountsLoading, error: accountsError } = useChartOfAccounts();
   const accountList = accountsLoading ? undefined : accounts;
-  const { types, unmappedCount, loading: typesLoading } = useTaxDeductTypes(accountList);
+  const {
+    types,
+    unmappedCount,
+    loading: typesLoading,
+    error: typesError,
+    reload: reloadTypes,
+  } = useTaxDeductTypes(accountList);
   const loading = checksLoading || typesLoading || accountsLoading;
+  // The checks and their label types are built on the chart of accounts, so its error is usually the cause.
+  const loadError = accountsError ?? checksError ?? typesError;
+  const retryLoad = () => {
+    reloadChecks();
+    reloadTypes();
+  };
 
   const [searchTerm, setSearchTerm] = useState("");
   const [operatorFilter, setOperatorFilter] = useState("");
@@ -302,7 +321,7 @@ export const RevenueCheckList = () => {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div
           role="group"
           aria-label="Filter by status"
@@ -338,6 +357,17 @@ export const RevenueCheckList = () => {
               </button>
             );
           })}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={onImport} className={`cursor-pointer ${outlineButton}`}>
+            <Upload className="w-4 h-4" />
+            Import Check Detail
+          </Button>
+          <Button onClick={onNewCheck} className="bg-purple-600 hover:bg-purple-700 cursor-pointer">
+            <Plus className="w-4 h-4" />
+            Enter Check
+          </Button>
         </div>
       </div>
 
@@ -446,6 +476,12 @@ export const RevenueCheckList = () => {
                     </div>
                   </td>
                 </tr>
+              ) : loadError && !checks.length ? (
+                <tr>
+                  <td colSpan={COLUMN_WIDTHS.length}>
+                    <LoadError what="revenue checks" message={loadError} onRetry={retryLoad} isLight={isLight} />
+                  </td>
+                </tr>
               ) : pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={COLUMN_WIDTHS.length} className="text-center py-16">
@@ -459,16 +495,29 @@ export const RevenueCheckList = () => {
               ) : (
                 pageRows.map((row) => {
                   const { check } = row;
+                  const viewOnly = isClosed(row.status);
                   return (
                     <tr
                       key={check.id}
-                      className={`border-b last:border-0 transition-colors ${
+                      onClick={() => onOpenCheck(check.id)}
+                      className={`border-b last:border-0 transition-colors cursor-pointer ${
                         isLight ? "border-purple-100 hover:bg-purple-300/30" : "border-purple-300/10 hover:bg-purple-500/[0.12]"
                       }`}
                     >
                       <td className={`${td} tabular-nums`}>
                         <span className="block text-white">{formatCheckDate(check.checkDate)}</span>
-                        <span className={subText}>#{check.checkNumber}</span>
+                        {/* The whole row opens the check; this button is the keyboard way in. */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenCheck(check.id);
+                          }}
+                          aria-label={`${viewOnly ? "View" : "Open"} check ${check.checkNumber}`}
+                          className={`${subText} max-w-full cursor-pointer rounded-sm text-left outline-none hover:underline focus-visible:ring-2 focus-visible:ring-purple-400`}
+                        >
+                          #{check.checkNumber}
+                        </button>
                       </td>
                       <td className={td}>
                         <span className="block truncate font-semibold text-white" title={check.operatorName}>

@@ -16,6 +16,7 @@ import { ChartAccount, formatAccountLabel } from "@/types/chartOfAccounts";
 import { TaxDeductKind, TaxDeductType, formatCheckDate, isTypeMapped, normalizeLabel } from "@/types/revenue";
 import { DeleteConfirmModal } from "../../modals/DeleteConfirmModal";
 import { TypeAccountCell } from "./types/TypeAccountCell";
+import { LoadError } from "../LoadError";
 import {
   KIND_LABEL,
   TYPE_FILTERS,
@@ -33,9 +34,10 @@ export const TaxDeductTypes = () => {
   const isLight = useAtomValue(themeAtom) === "light";
   const setPageHeader = useSetAtom(pageHeaderAtom);
   const showToast = useSetAtom(showToastAtom);
-  const { accounts, loading: accountsLoading } = useChartOfAccounts();
+  const { accounts, loading: accountsLoading, error: accountsError } = useChartOfAccounts();
   const accountList = accountsLoading ? undefined : accounts;
-  const { types, loading, setAccount, deleteType } = useTaxDeductTypes(accountList);
+  const { types, loading, error: typesError, reload, setAccount, deleteType } = useTaxDeductTypes(accountList);
+  const loadError = accountsError ?? typesError;
   const { checks } = useRevenueChecks();
 
   const [filter, setFilter] = useState<TypeFilter>("ALL");
@@ -275,6 +277,12 @@ export const TaxDeductTypes = () => {
                       <div className="w-8 h-8 rounded-full border-4 border-purple-300/20 border-t-purple-400 animate-spin" />
                       <span className={`text-sm ${mutedText}`}>Loading...</span>
                     </div>
+                  </td>
+                </tr>
+              ) : loadError && !types.length ? (
+                <tr>
+                  <td colSpan={COLUMN_WIDTHS.length}>
+                    <LoadError what="tax and deduct labels" message={loadError} onRetry={reload} isLight={isLight} />
                   </td>
                 </tr>
               ) : pageTypes.length === 0 ? (
